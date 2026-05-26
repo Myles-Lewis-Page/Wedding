@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model WeddingSettings {
+  id              String   @id @default(cuid())
+  brideName       String   @default("Bride")
+  groomName       String   @default("Groom")
+  weddingDate     String   @default("2026-06-14")
+  selectedVenueId String?
+  dressCode       String   @default("Garden Formal")
+  ourStory        String   @default("")
+  ceremonyTime    String   @default("4:00 PM")
+  receptionTime   String   @default("6:00 PM")
+  rsvpDeadline    String?
+  createdAt       DateTime @default(now())
+  @@map("wedding_settings")
+}
+
+model Venue {
+  id          String   @id @default(cuid())
+  name        String
+  url         String   @default("")
+  imageUrl    String   @default("")
+  cost        Float    @default(0)
+  address     String   @default("")
+  description String   @default("")
+  capacity    Int?
+  phone       String   @default("")
+  email       String   @default("")
+  website     String   @default("")
+  amenities   String[] @default([])
+  isSelected  Boolean  @default(false)
+  notes       String   @default("")
+  createdAt   DateTime @default(now())
+  @@map("venues")
+}
+
+model Guest {
+  id             String    @id @default(cuid())
+  name           String
+  email          String?
+  side           String    @default("bride")
+  hasPlusOne     Boolean   @default(false)
+  plusOneName    String?
+  plusOneDietary String?
+  dietary        String?
+  rsvpStatus     String    @default("pending")
+  tableId        String?
+  seatNumber     Int?
+  rsvpAt         DateTime?
+  createdAt      DateTime  @default(now())
+  @@map("guests")
+}
+
+model SeatingTable {
+  id        String   @id @default(cuid())
+  name      String
+  shape     String   @default("round")
+  seats     Int      @default(8)
+  x         Float    @default(100)
+  y         Float    @default(100)
+  color     String   @default("#E1F5EE")
+  createdAt DateTime @default(now())
+  @@map("seating_tables")
+}
+
+model BudgetCategory {
+  id       String @id @default(cuid())
+  name     String
+  budgeted Float  @default(0)
+  paid     Float  @default(0)
+  color    String @default("#8FAF7A")
+  order    Int    @default(0)
+  @@map("budget_categories")
+}
+
+model Vendor {
+  id          String   @id @default(cuid())
+  category    String   @default("Other")
+  name        String
+  contactName String   @default("")
+  phone       String   @default("")
+  email       String   @default("")
+  website     String   @default("")
+  cost        Float    @default(0)
+  paid        Float    @default(0)
+  status      String   @default("researching")
+  notes       String   @default("")
+  createdAt   DateTime @default(now())
+  @@map("vendors")
+}
+
+model Task {
+  id         String    @id @default(cuid())
+  title      String
+  category   String    @default("General")
+  dueDate    DateTime?
+  priority   String    @default("medium")
+  completed  Boolean   @default(false)
+  assignedTo String    @default("Both")
+  createdAt  DateTime  @default(now())
+  @@map("tasks")
+}
+
+model Gift {
+  id           String    @id @default(cuid())
+  fromName     String
+  description  String    @default("")
+  value        Float?
+  thankYouSent Boolean   @default(false)
+  receivedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  @@map("gifts")
+}
