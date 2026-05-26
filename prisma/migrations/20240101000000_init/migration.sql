@@ -132,3 +132,9 @@ INSERT INTO "budget_categories" ("id", "name", "color", "order") VALUES
 -- Seed default wedding settings
 INSERT INTO "wedding_settings" ("id", "brideName", "groomName", "weddingDate") VALUES
   ('settings_1', 'Bride', 'Groom', '2026-06-14');
+
+-- Add new columns to guests table (safe - won't fail if already exists)
+DO $$ BEGIN
+  ALTER TABLE "guests" ADD COLUMN IF NOT EXISTS "notes" TEXT;
+  ALTER TABLE "guests" ADD COLUMN IF NOT EXISTS "isInvitee" BOOLEAN NOT NULL DEFAULT false;
+END $$;
