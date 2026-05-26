@@ -60,8 +60,6 @@ export async function POST(req: NextRequest) {
         side: guest.side,
         hasPlusOne: false,
         rsvpStatus: 'attending',
-        isInvitee: true,
-        notes: `Plus one of ${guest.name}`,
       }})
     }
   }
