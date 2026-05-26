@@ -50,6 +50,22 @@ export async function POST(req: NextRequest) {
 
   const guest = await prisma.guest.update({ where: { id: guest_id }, data })
 
+  // If attending with a plus one, add them as a guest tagged as invitee
+  if (attending && plus_one_name) {
+    const existing = await prisma.guest.findFirst({ where: { name: plus_one_name } })
+    if (!existing) {
+      await prisma.guest.create({ data: {
+        name: plus_one_name,
+        dietary: plus_one_dietary || null,
+        side: guest.side,
+        hasPlusOne: false,
+        rsvpStatus: 'attending',
+        isInvitee: true,
+        notes: `Plus one of ${guest.name}`,
+      }})
+    }
+  }
+
   if (attending && email) {
     try { await sendConfirmationEmail(email, guest.name, plus_one_name) } catch {}
   }

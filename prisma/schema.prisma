@@ -9,15 +9,14 @@ datasource db {
 
 model WeddingSettings {
   id              String   @id @default(cuid())
-  brideName       String   @default("Bride")
-  groomName       String   @default("Groom")
-  weddingDate     String   @default("2026-06-14")
+  brideName       String   @default("Jennifer")
+  groomName       String   @default("Myles")
+  weddingDate     String   @default("")
   selectedVenueId String?
   dressCode       String   @default("Garden Formal")
   ourStory        String   @default("")
   ceremonyTime    String   @default("4:00 PM")
   receptionTime   String   @default("6:00 PM")
-  rsvpDeadline    String?
   createdAt       DateTime @default(now())
   @@map("wedding_settings")
 }
@@ -54,6 +53,8 @@ model Guest {
   tableId        String?
   seatNumber     Int?
   rsvpAt         DateTime?
+  notes          String?
+  isInvitee      Boolean   @default(false)
   createdAt      DateTime  @default(now())
   @@map("guests")
 }

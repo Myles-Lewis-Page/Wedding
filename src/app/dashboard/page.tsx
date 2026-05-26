@@ -125,7 +125,7 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
 }
 
 // ─── GUESTS ────────────────────────────────────────────────────────────────
-interface Guest { id: string; name: string; email: string | null; side: string; hasPlusOne: boolean; plusOneName: string | null; dietary: string | null; rsvpStatus: string; tableId: string | null }
+interface Guest { id: string; name: string; email: string | null; side: string; hasPlusOne: boolean; plusOneName: string | null; dietary: string | null; rsvpStatus: string; tableId: string | null; isInvitee: boolean; notes: string | null }
 
 function TabGuests() {
   const [guests, setGuests] = useState<Guest[]>([])
@@ -200,7 +200,14 @@ function TabGuests() {
                           <div className="w-8 h-8 rounded-full bg-[#EDF4EA] flex items-center justify-center text-xs font-semibold text-[#3d6b2e] shrink-0">
                             {g.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase()}
                           </div>
-                          <div><p className="font-medium text-stone-800">{g.name}</p>{g.email && <p className="text-xs text-stone-400">{g.email}</p>}</div>
+                          <div>
+                          <div className="flex items-center gap-1.5">
+                            <p className="font-medium text-stone-800">{g.name}</p>
+                            {g.isInvitee && <span className="text-[10px] px-1.5 py-0.5 bg-purple-50 text-purple-600 rounded-full font-medium">Invitee</span>}
+                          </div>
+                          {g.email && <p className="text-xs text-stone-400">{g.email}</p>}
+                          {g.notes && <p className="text-xs text-stone-300 italic">{g.notes}</p>}
+                        </div>
                         </div>
                       </td>
                       <td className="px-4 py-3 text-stone-500 text-xs capitalize">{g.side}</td>
@@ -276,9 +283,31 @@ function TabVenues() {
     setForm({ name:'', imageUrl:'', cost:'', address:'', description:'', capacity:'', phone:'', email:'', website:'', amenities:'', notes:'' }); setUrl(''); setStep('url')
   }
 
+  const [showEdit, setShowEdit] = useState(false)
+  const [editVenue, setEditVenue] = useState({ name:'', imageUrl:'', cost:'', address:'', description:'', capacity:'', phone:'', email:'', website:'', amenities:'', notes:'' })
+
   const selectVenue = async (v: Venue) => {
     const res = await $post('venue-select', { id: v.id })
     setVenues(p => p.map(x => ({ ...x, isSelected: x.id === res.id }))); setDetail(res)
+  }
+
+  const unselectVenue = async (v: Venue) => {
+    const res = await $patch('venue', { id: v.id, isSelected: false })
+    setVenues(p => p.map(x => x.id === v.id ? { ...x, isSelected: false } : x)); setDetail(res)
+  }
+
+  const saveEdit = async () => {
+    if (!detail || !editVenue.name.trim()) return
+    const res = await $patch('venue', {
+      id: detail.id,
+      name: editVenue.name, imageUrl: editVenue.imageUrl, cost: parseFloat(editVenue.cost) || 0,
+      address: editVenue.address, description: editVenue.description,
+      capacity: parseInt(editVenue.capacity) || null, phone: editVenue.phone,
+      email: editVenue.email, website: editVenue.website,
+      amenities: editVenue.amenities ? editVenue.amenities.split(',').map((s:string) => s.trim()).filter(Boolean) : [],
+      notes: editVenue.notes,
+    })
+    setVenues(p => p.map(v => v.id === res.id ? res : v)); setDetail(res); setShowEdit(false)
   }
 
   const delVenue = async (id: string) => {
@@ -402,6 +431,27 @@ function TabVenues() {
         </Modal>
       )}
 
+      {/* Edit venue modal */}
+      {showEdit && detail && (
+        <Modal title={`Edit — ${detail.name}`} onClose={() => setShowEdit(false)}
+          footer={<><Btn variant="ghost" onClick={() => setShowEdit(false)}>Cancel</Btn><Btn onClick={saveEdit} disabled={!editVenue.name.trim()}><Check size={14}/>Save changes</Btn></>}>
+          <Field label="Venue name *"><Input value={editVenue.name} onChange={e=>setEditVenue(f=>({...f,name:e.target.value}))} autoFocus /></Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Rental cost ($)"><Input type="number" value={editVenue.cost} onChange={e=>setEditVenue(f=>({...f,cost:e.target.value}))} /></Field>
+            <Field label="Capacity"><Input type="number" value={editVenue.capacity} onChange={e=>setEditVenue(f=>({...f,capacity:e.target.value}))} /></Field>
+          </div>
+          <Field label="Address"><Input value={editVenue.address} onChange={e=>setEditVenue(f=>({...f,address:e.target.value}))} /></Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Phone"><Input value={editVenue.phone} onChange={e=>setEditVenue(f=>({...f,phone:e.target.value}))} /></Field>
+            <Field label="Email"><Input value={editVenue.email} onChange={e=>setEditVenue(f=>({...f,email:e.target.value}))} /></Field>
+          </div>
+          <Field label="Description"><textarea value={editVenue.description} onChange={e=>setEditVenue(f=>({...f,description:e.target.value}))} rows={3} className="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:border-[#7A9C6E] resize-none" /></Field>
+          <Field label="Image URL"><Input value={editVenue.imageUrl} onChange={e=>setEditVenue(f=>({...f,imageUrl:e.target.value}))} placeholder="https://..." /></Field>
+          <Field label="Amenities (comma separated)"><Input value={editVenue.amenities} onChange={e=>setEditVenue(f=>({...f,amenities:e.target.value}))} placeholder="Parking, Bridal suite…" /></Field>
+          <Field label="Notes"><textarea value={editVenue.notes} onChange={e=>setEditVenue(f=>({...f,notes:e.target.value}))} rows={2} className="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:border-[#7A9C6E] resize-none" /></Field>
+        </Modal>
+      )}
+
       {/* Detail slide-out */}
       {detail && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/35" onClick={e => e.target === e.currentTarget && setDetail(null)}>
@@ -439,8 +489,17 @@ function TabVenues() {
               <button onClick={() => delVenue(detail.id)} className="text-sm text-red-400 hover:text-red-600 flex items-center gap-1.5"><Trash2 size={13}/>Remove</button>
               <div className="flex gap-2">
                 {detail.website && <Btn variant="ghost" onClick={() => window.open(detail.website, '_blank')}><ExternalLink size={13}/>Visit site</Btn>}
+                <Btn variant="ghost" onClick={() => {
+                  setEditVenue({
+                    name: detail.name, imageUrl: detail.imageUrl, cost: String(detail.cost),
+                    address: detail.address, description: detail.description, capacity: detail.capacity ? String(detail.capacity) : '',
+                    phone: detail.phone, email: detail.email, website: detail.website,
+                    amenities: detail.amenities.join(', '), notes: detail.notes,
+                  })
+                  setShowEdit(true)
+                }}><Edit3 size={13}/>Edit</Btn>
                 {detail.isSelected
-                  ? <div className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-[#3d6b2e] bg-[#EDF4EA]"><Check size={13}/>Our venue</div>
+                  ? <Btn variant="ghost" onClick={() => unselectVenue(detail)}><X size={13}/>Unselect</Btn>
                   : <Btn onClick={() => selectVenue(detail)}><Star size={13}/>Select as our venue</Btn>}
               </div>
             </div>
@@ -788,22 +847,73 @@ function TabChecklist() {
 }
 
 function TabRSVP() {
-  const rsvpUrl = typeof window !== 'undefined' ? `${window.location.origin}/rsvp` : '/rsvp'
+  const RSVP_URL = 'https://wedding-production-7483.up.railway.app/rsvp'
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    // Draw QR code using canvas — simple matrix-based QR for the fixed URL
+    // We use a data URL approach via an img tag with the QR API
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(RSVP_URL)}&bgcolor=ffffff&color=3d6b2e&margin=10`
+    img.onload = () => {
+      const ctx = canvas.getContext('2d')
+      if (ctx) { ctx.clearRect(0,0,200,200); ctx.drawImage(img,0,0,200,200) }
+    }
+  }, [])
+
+  const downloadQR = () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const a = document.createElement('a')
+    a.download = 'rsvp-qr-code.png'
+    a.href = canvas.toDataURL('image/png')
+    a.click()
+  }
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(RSVP_URL)
+    setCopied(true); setTimeout(() => setCopied(false), 2000)
+  }
+
   return (
     <div>
-      <PageHeader title="RSVP portal" sub="Share this link or QR on your invitations" />
-      <div className="max-w-sm">
-        <div className="bg-white rounded-2xl border border-stone-200 p-6 text-center">
-          <div className="w-32 h-32 bg-stone-100 rounded-xl flex items-center justify-center mx-auto mb-4"><QrCode size={48} className="text-stone-300"/></div>
-          <p className="text-xs text-stone-400 mb-4 break-all">{rsvpUrl}</p>
-          <div className="flex gap-2 justify-center">
-            <Btn variant="ghost" onClick={() => navigator.clipboard.writeText(rsvpUrl)}>Copy link</Btn>
-            <Btn onClick={() => window.open(rsvpUrl,'_blank')}><ExternalLink size={13}/>Preview</Btn>
+      <PageHeader title="RSVP portal" sub="Share this QR code on your invitations" />
+      <div className="flex gap-6 items-start max-w-2xl">
+        <div className="bg-white rounded-2xl border border-stone-200 p-6 text-center shrink-0">
+          <canvas ref={canvasRef} width={200} height={200} className="rounded-xl mx-auto mb-4 block" style={{imageRendering:'pixelated'}} />
+          <p className="text-xs text-stone-400 mb-4 break-all max-w-[200px]">{RSVP_URL}</p>
+          <div className="flex flex-col gap-2">
+            <Btn onClick={downloadQR} className="w-full justify-center"><QrCode size={14}/>Download QR</Btn>
+            <Btn variant="ghost" onClick={copyLink} className="w-full justify-center">
+              {copied ? <><Check size={13}/>Copied!</> : 'Copy link'}
+            </Btn>
+            <Btn variant="ghost" onClick={() => window.open(RSVP_URL,'_blank')} className="w-full justify-center"><ExternalLink size={13}/>Preview RSVP</Btn>
           </div>
         </div>
-        <div className="mt-4 bg-stone-50 rounded-2xl p-4 text-sm text-stone-500 space-y-2">
-          <p className="font-medium text-stone-700">Guest flow:</p>
-          {['Scan QR on invite','Enter name — matched against your list','Confirm plus one & dietary needs','Enter email — gets confirmation','Auto-added to unassigned seating'].map((s,i)=><p key={i} className="text-xs"><span className="font-semibold text-[#7A9C6E] mr-2">{i+1}.</span>{s}</p>)}
+        <div className="flex-1 space-y-4">
+          <div className="bg-[#EDF4EA] rounded-2xl p-5">
+            <p className="text-sm font-semibold text-[#3d6b2e] mb-3">How guests RSVP</p>
+            {[
+              ['Scan QR code on invite','Opens the RSVP page on their phone'],
+              ['Enter their name','System matches against your guest list'],
+              ['Confirm plus one','Only shown if they are allowed one'],
+              ['Dietary needs & email','We collect for catering and send confirmation'],
+              ['Auto-added to seating','Attending guests appear in unassigned pool'],
+            ].map(([title, desc], i) => (
+              <div key={i} className="flex gap-3 mb-3 last:mb-0">
+                <div className="w-5 h-5 rounded-full bg-[#7A9C6E] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i+1}</div>
+                <div><p className="text-sm font-medium text-[#3d6b2e]">{title}</p><p className="text-xs text-[#5a8a4a]">{desc}</p></div>
+              </div>
+            ))}
+          </div>
+          <div className="bg-white rounded-2xl border border-stone-200 p-4">
+            <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">Print tip</p>
+            <p className="text-sm text-stone-500">Download the QR code and add it to your invitation design. Recommended size: 1.5" × 1.5" minimum so it scans reliably.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -885,18 +995,360 @@ function TabMenu() {
   )
 }
 
-// Simple placeholder tabs for remaining sections
-function SimplePlaceholder({ title, icon: Icon, desc }: { title: string; icon: React.ElementType; desc: string }) {
+// ─── WEDDING PARTY ──────────────────────────────────────────────────────────
+function TabParty() {
+  const [members, setMembers] = useState<{id:string;name:string;role:string;side:string;phone:string;email:string;attire:string;notes:string}[]>([])
+  const [showAdd, setShowAdd] = useState(false)
+  const [form, setForm] = useState({name:'',role:'Bridesmaid',side:'bride',phone:'',email:'',attire:'',notes:''})
+  const BRIDE_ROLES = ['Maid of Honor','Bridesmaid','Flower Girl','Junior Bridesmaid']
+  const GROOM_ROLES = ['Best Man','Groomsman','Usher','Ring Bearer']
+  const add = () => {
+    if (!form.name.trim()) return
+    setMembers(p=>[...p,{id:Date.now().toString(),...form}])
+    setForm({name:'',role:'Bridesmaid',side:'bride',phone:'',email:'',attire:'',notes:''}); setShowAdd(false)
+  }
+  const bride = members.filter(m=>m.side==='bride')
+  const groom = members.filter(m=>m.side==='groom')
   return (
     <div>
-      <PageHeader title={title} />
-      <div className="bg-white rounded-2xl border border-stone-200 p-12 text-center">
-        <Icon size={36} className="text-stone-200 mx-auto mb-4" />
-        <p className="text-stone-400">{desc}</p>
+      <PageHeader title="Wedding party" sub={`${members.length} members`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={14}/>Add member</Btn>} />
+      <div className="grid grid-cols-2 gap-6">
+        {[{label:"Bride's side",side:'bride',list:bride,roles:BRIDE_ROLES},{label:"Groom's side",side:'groom',list:groom,roles:GROOM_ROLES}].map(({label,list,side,roles})=>(
+          <div key={label}>
+            <h2 className="text-lg font-light text-stone-600 mb-3" style={{fontFamily:'var(--font-display)'}}>{label}</h2>
+            <div className="space-y-2">
+              {list.length===0?<div className="border-2 border-dashed border-stone-200 rounded-2xl py-10 text-center text-stone-400 text-sm">No members yet</div>
+                :list.map(m=>(
+                  <div key={m.id} className="bg-white rounded-2xl border border-stone-200 p-4 group">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-[#EDF4EA] flex items-center justify-center text-sm font-semibold text-[#3d6b2e]">{m.name.split(' ').map((w:string)=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+                        <div><p className="font-medium text-stone-800">{m.name}</p><p className="text-xs text-[#7A9C6E]">{m.role}</p></div>
+                      </div>
+                      <button onClick={()=>setMembers(p=>p.filter(x=>x.id!==m.id))} className="text-stone-200 hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={13}/></button>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-3">
+                      {m.phone&&<a href={`tel:${m.phone}`} className="flex items-center gap-1 text-xs text-stone-400 hover:text-[#7A9C6E]"><Phone size={11}/>{m.phone}</a>}
+                      {m.email&&<a href={`mailto:${m.email}`} className="flex items-center gap-1 text-xs text-stone-400 hover:text-[#7A9C6E]"><Mail size={11}/>{m.email}</a>}
+                    </div>
+                    {m.attire&&<p className="text-xs text-stone-400 mt-1.5">Attire: {m.attire}</p>}
+                  </div>
+                ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      {showAdd&&(
+        <Modal title="Add party member" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.name.trim()}><Plus size={14}/>Add</Btn></>}>
+          <Field label="Name *"><Input value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} autoFocus /></Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Side"><Select value={form.side} onChange={e=>setForm(f=>({...f,side:e.target.value,role:e.target.value==='bride'?'Bridesmaid':'Groomsman'}))}><option value="bride">Bride&apos;s side</option><option value="groom">Groom&apos;s side</option></Select></Field>
+            <Field label="Role"><Select value={form.role} onChange={e=>setForm(f=>({...f,role:e.target.value}))}>{(form.side==='bride'?BRIDE_ROLES:GROOM_ROLES).map(r=><option key={r}>{r}</option>)}</Select></Field>
+            <Field label="Phone"><Input value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))} /></Field>
+            <Field label="Email"><Input value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} /></Field>
+          </div>
+          <Field label="Attire"><Input value={form.attire} onChange={e=>setForm(f=>({...f,attire:e.target.value}))} placeholder="e.g. Sage green, floor length" /></Field>
+        </Modal>
+      )}
+    </div>
+  )
+}
+
+// ─── TIMELINE ────────────────────────────────────────────────────────────────
+function TabTimeline() {
+  const [items, setItems] = useState([
+    {id:'1',time:'3:30 PM',title:'Guests arrive',who:'Ushers',desc:''},
+    {id:'2',time:'4:00 PM',title:'Ceremony begins',who:'Everyone',desc:'Processional starts'},
+    {id:'3',time:'4:45 PM',title:'Cocktail hour',who:'Guests',desc:'Couple does portraits'},
+    {id:'4',time:'6:00 PM',title:'Reception opens',who:'Everyone',desc:''},
+    {id:'5',time:'6:30 PM',title:'First dances & toasts',who:'Couple, Best man, MOH',desc:''},
+    {id:'6',time:'7:00 PM',title:'Dinner service',who:'Catering',desc:''},
+    {id:'7',time:'9:00 PM',title:'Cake cutting',who:'Couple',desc:''},
+    {id:'8',time:'11:30 PM',title:'Last dance & send-off',who:'Everyone',desc:'Sparkler exit'},
+  ])
+  const [editing, setEditing] = useState<string|null>(null)
+  const update = (id:string,field:string,val:string) => setItems(p=>p.map(i=>i.id===id?{...i,[field]:val}:i))
+  const add = () => { const id=Date.now().toString(); setItems(p=>[...p,{id,time:'',title:'New event',who:'',desc:''}]); setEditing(id) }
+  return (
+    <div>
+      <PageHeader title="Day-of timeline" action={<div className="flex gap-2"><Btn variant="ghost" onClick={()=>window.print()}>Print</Btn><Btn onClick={add}><Plus size={14}/>Add event</Btn></div>} />
+      <div className="relative">
+        <div className="absolute left-[72px] top-0 bottom-0 w-px bg-stone-200"/>
+        <div className="space-y-2">
+          {items.map(item=>(
+            <div key={item.id} className="flex gap-4 group items-start">
+              <div className="w-16 text-right shrink-0 pt-3">
+                {editing===item.id
+                  ?<input value={item.time} onChange={e=>update(item.id,'time',e.target.value)} className="w-full text-right text-xs font-medium border border-stone-200 rounded-lg px-1.5 py-1 focus:outline-none focus:border-[#7A9C6E]" placeholder="4:00 PM"/>
+                  :<span className="text-xs font-semibold text-stone-500">{item.time||'—'}</span>}
+              </div>
+              <div className="w-3 h-3 rounded-full bg-[#7A9C6E] border-2 border-white shadow shrink-0 mt-3.5 relative z-10"/>
+              <div className={`flex-1 bg-white rounded-xl border p-3.5 cursor-pointer transition-colors ${editing===item.id?'border-[#7A9C6E]':'border-stone-200 hover:border-stone-300'}`} onClick={()=>setEditing(editing===item.id?null:item.id)}>
+                {editing===item.id?(
+                  <div className="space-y-2" onClick={e=>e.stopPropagation()}>
+                    <input value={item.title} onChange={e=>update(item.id,'title',e.target.value)} className="w-full font-medium text-sm border-0 focus:outline-none bg-transparent"/>
+                    <input value={item.desc} onChange={e=>update(item.id,'desc',e.target.value)} className="w-full text-xs text-stone-400 border-0 focus:outline-none bg-transparent" placeholder="Description"/>
+                    <input value={item.who} onChange={e=>update(item.id,'who',e.target.value)} className="w-full text-xs text-[#7A9C6E] border-0 focus:outline-none bg-transparent" placeholder="Who's involved"/>
+                    <div className="flex gap-2 pt-1">
+                      <button onClick={()=>setEditing(null)} className="text-xs px-3 py-1 rounded-lg bg-[#7A9C6E] text-white">Done</button>
+                      <button onClick={()=>setItems(p=>p.filter(i=>i.id!==item.id))} className="text-xs px-3 py-1 rounded-lg text-red-400 border border-red-200">Delete</button>
+                    </div>
+                  </div>
+                ):(
+                  <div className="flex items-center justify-between">
+                    <div><p className="text-sm font-medium text-stone-800">{item.title}</p>{item.desc&&<p className="text-xs text-stone-400 mt-0.5">{item.desc}</p>}{item.who&&<p className="text-xs text-[#7A9C6E] mt-0.5">{item.who}</p>}</div>
+                    <span className="text-xs text-stone-300 opacity-0 group-hover:opacity-100">click to edit</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
 }
+
+// ─── DECOR ───────────────────────────────────────────────────────────────────
+function TabDecor() {
+  const AREAS = ['Ceremony arch','Aisle','Head table','Guest tables','Cocktail hour','Entrance','Cake table','Outdoor','Lighting','Other']
+  const [items, setItems] = useState<{id:string;area:string;desc:string;vendor:string;cost:string;done:boolean}[]>([])
+  const [showAdd, setShowAdd] = useState(false)
+  const [form, setForm] = useState({area:'Guest tables',desc:'',vendor:'',cost:''})
+  const add = () => { if(!form.desc.trim()) return; setItems(p=>[...p,{id:Date.now().toString(),...form,done:false}]); setForm({area:'Guest tables',desc:'',vendor:'',cost:''}); setShowAdd(false) }
+  return (
+    <div>
+      <PageHeader title="Décor" sub={`${items.filter(i=>i.done).length}/${items.length} ordered`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={14}/>Add item</Btn>} />
+      <div className="space-y-2">
+        {items.length===0?<div className="text-center py-16 text-stone-400">Track florals, centrepieces, lighting and décor items here</div>:
+          items.map(i=>(
+            <div key={i.id} className={`bg-white rounded-xl border border-stone-200 p-3.5 flex items-center gap-3 group ${i.done?'opacity-60':''}`}>
+              <button onClick={()=>setItems(p=>p.map(x=>x.id===i.id?{...x,done:!x.done}:x))} className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${i.done?'border-[#7A9C6E] bg-[#7A9C6E]':'border-stone-300'}`}>{i.done&&<Check size={11} className="text-white"/>}</button>
+              <div className="flex-1"><p className={`text-sm font-medium ${i.done?'line-through text-stone-400':'text-stone-800'}`}>{i.desc}</p><p className="text-xs text-stone-400">{i.area}{i.vendor?` · ${i.vendor}`:''}{i.cost?` · $${i.cost}`:''}</p></div>
+              <button onClick={()=>setItems(p=>p.filter(x=>x.id!==i.id))} className="text-stone-200 hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={13}/></button>
+            </div>
+          ))}
+      </div>
+      {showAdd&&(
+        <Modal title="Add décor item" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.desc.trim()}><Plus size={14}/>Add</Btn></>}>
+          <Field label="Area"><Select value={form.area} onChange={e=>setForm(f=>({...f,area:e.target.value}))}>{AREAS.map(a=><option key={a}>{a}</option>)}</Select></Field>
+          <Field label="Description *"><Input value={form.desc} onChange={e=>setForm(f=>({...f,desc:e.target.value}))} placeholder="e.g. Eucalyptus centrepieces" autoFocus /></Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Vendor"><Input value={form.vendor} onChange={e=>setForm(f=>({...f,vendor:e.target.value}))} /></Field>
+            <Field label="Cost ($)"><Input value={form.cost} onChange={e=>setForm(f=>({...f,cost:e.target.value}))} type="number" /></Field>
+          </div>
+        </Modal>
+      )}
+    </div>
+  )
+}
+
+// ─── ATTIRE ──────────────────────────────────────────────────────────────────
+function TabAttire() {
+  const STATUSES = ['Shopping','Ordered','In alterations','Fitting 1','Fitting 2','Ready','Picked up']
+  const [items, setItems] = useState([
+    {id:'1',person:'Jennifer',item:'Wedding gown',shop:'',status:'Shopping',notes:''},
+    {id:'2',person:'Jennifer',item:'Veil & accessories',shop:'',status:'Shopping',notes:''},
+    {id:'3',person:'Myles',item:'Suit / tuxedo',shop:'',status:'Shopping',notes:''},
+  ])
+  const [showAdd, setShowAdd] = useState(false)
+  const [form, setForm] = useState({person:'Jennifer',item:'',shop:'',notes:''})
+  const add = () => { if(!form.item.trim()) return; setItems(p=>[...p,{id:Date.now().toString(),...form,status:'Shopping'}]); setForm({person:'Jennifer',item:'',shop:'',notes:''}); setShowAdd(false) }
+  const upd = (id:string,f:string,v:string) => setItems(p=>p.map(i=>i.id===id?{...i,[f]:v}:i))
+  return (
+    <div>
+      <PageHeader title="Attire" action={<Btn onClick={()=>setShowAdd(true)}><Plus size={14}/>Add item</Btn>} />
+      <div className="bg-white rounded-2xl border border-stone-200 overflow-x-auto">
+        <table className="w-full text-sm min-w-[560px]">
+          <thead><tr className="border-b border-stone-100 bg-stone-50 text-left text-xs text-stone-400 uppercase tracking-wider">{['Person','Item','Shop','Status','Notes',''].map(h=><th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr></thead>
+          <tbody>
+            {items.map(i=>(
+              <tr key={i.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50 group">
+                <td className="px-4 py-2.5 text-xs font-medium text-stone-600">{i.person}</td>
+                <td className="px-4 py-2.5 font-medium text-stone-800">{i.item}</td>
+                <td className="px-4 py-2.5"><input value={i.shop} onChange={e=>upd(i.id,'shop',e.target.value)} className="w-full bg-transparent border-0 focus:outline-none text-sm text-stone-600" placeholder="Add shop…"/></td>
+                <td className="px-4 py-2.5"><select value={i.status} onChange={e=>upd(i.id,'status',e.target.value)} className={`text-xs px-2.5 py-1 rounded-full border-0 font-medium cursor-pointer focus:outline-none ${i.status==='Ready'||i.status==='Picked up'?'bg-emerald-50 text-emerald-700':'bg-amber-50 text-amber-600'}`}>{STATUSES.map(s=><option key={s}>{s}</option>)}</select></td>
+                <td className="px-4 py-2.5"><input value={i.notes} onChange={e=>upd(i.id,'notes',e.target.value)} className="w-full bg-transparent border-0 focus:outline-none text-xs text-stone-400" placeholder="Notes…"/></td>
+                <td className="px-4 py-2.5"><button onClick={()=>setItems(p=>p.filter(x=>x.id!==i.id))} className="text-stone-200 hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={13}/></button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {showAdd&&(
+        <Modal title="Add attire item" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.item.trim()}><Plus size={14}/>Add</Btn></>}>
+          <Field label="Person"><Select value={form.person} onChange={e=>setForm(f=>({...f,person:e.target.value}))}>{['Jennifer','Myles','Maid of Honor','Bridesmaid','Best Man','Groomsman','Flower Girl'].map(p=><option key={p}>{p}</option>)}</Select></Field>
+          <Field label="Item *"><Input value={form.item} onChange={e=>setForm(f=>({...f,item:e.target.value}))} placeholder="Wedding gown, Suit…" autoFocus /></Field>
+          <Field label="Shop / Designer"><Input value={form.shop} onChange={e=>setForm(f=>({...f,shop:e.target.value}))} /></Field>
+          <Field label="Notes"><Input value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} /></Field>
+        </Modal>
+      )}
+    </div>
+  )
+}
+
+// ─── PHOTOSHOOT ───────────────────────────────────────────────────────────────
+function TabPhotoshoot() {
+  const GROUPS = ['Couples','Ceremony','Family — Jennifer','Family — Myles','Wedding party','Details','Getting ready','Reception']
+  const [shots, setShots] = useState([
+    {id:'1',group:'Couples',desc:'First look reveal',mustHave:true,done:false},
+    {id:'2',group:'Ceremony',desc:'Bride walking down the aisle',mustHave:true,done:false},
+    {id:'3',group:'Ceremony',desc:'First kiss',mustHave:true,done:false},
+    {id:'4',group:'Family — Jennifer',desc:'Jennifer with both parents',mustHave:true,done:false},
+    {id:'5',group:'Family — Myles',desc:'Myles with both parents',mustHave:true,done:false},
+  ])
+  const [showAdd, setShowAdd] = useState(false)
+  const [form, setForm] = useState({group:'Couples',desc:'',mustHave:false})
+  const add = () => { if(!form.desc.trim()) return; setShots(p=>[...p,{id:Date.now().toString(),...form,done:false}]); setForm({group:'Couples',desc:'',mustHave:false}); setShowAdd(false) }
+  const grouped = GROUPS.map(g=>({g,shots:shots.filter(s=>s.group===g)})).filter(x=>x.shots.length>0)
+  return (
+    <div>
+      <PageHeader title="Photoshoot" sub={`${shots.filter(s=>s.done).length}/${shots.length} shots done`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={14}/>Add shot</Btn>} />
+      <div className="space-y-4">
+        {grouped.map(({g,shots:gs})=>(
+          <div key={g} className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+            <div className="flex justify-between px-5 py-3 border-b border-stone-100 bg-stone-50"><p className="text-sm font-medium text-stone-700">{g}</p><span className="text-xs text-stone-400">{gs.filter(s=>s.done).length}/{gs.length}</span></div>
+            <div className="p-2">
+              {gs.map(s=>(
+                <div key={s.id} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl group hover:bg-stone-50 ${s.done?'opacity-60':''}`}>
+                  <button onClick={()=>setShots(p=>p.map(x=>x.id===s.id?{...x,done:!x.done}:x))} className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${s.done?'border-[#7A9C6E] bg-[#7A9C6E]':'border-stone-300'}`}>{s.done&&<Check size={11} className="text-white"/>}</button>
+                  <span className={`text-sm flex-1 ${s.done?'line-through text-stone-400':'text-stone-700'}`}>{s.desc}</span>
+                  {s.mustHave&&<span className="text-xs px-2 py-0.5 bg-[#EDF4EA] text-[#3d6b2e] rounded-full">Must have</span>}
+                  <button onClick={()=>setShots(p=>p.filter(x=>x.id!==s.id))} className="text-stone-200 hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={13}/></button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      {showAdd&&(
+        <Modal title="Add shot" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.desc.trim()}><Plus size={14}/>Add</Btn></>}>
+          <Field label="Group"><Select value={form.group} onChange={e=>setForm(f=>({...f,group:e.target.value}))}>{GROUPS.map(g=><option key={g}>{g}</option>)}</Select></Field>
+          <Field label="Description *"><Input value={form.desc} onChange={e=>setForm(f=>({...f,desc:e.target.value}))} placeholder="Describe the shot" autoFocus /></Field>
+          <div className="flex items-center justify-between py-1">
+            <p className="text-sm text-stone-700">Must-have</p>
+            <button onClick={()=>setForm(f=>({...f,mustHave:!f.mustHave}))} className={`w-11 h-6 rounded-full transition-colors relative ${form.mustHave?'bg-[#7A9C6E]':'bg-stone-200'}`}><div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${form.mustHave?'translate-x-5':'translate-x-0.5'}`}/></button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  )
+}
+
+// ─── PLAYLIST ─────────────────────────────────────────────────────────────────
+function TabPlaylist() {
+  const SECS: Record<string,string> = {ceremony:'Ceremony',cocktail:'Cocktail hour',dinner:'Dinner',dancing:'Dancing',donotplay:'Do not play'}
+  const COLORS: Record<string,[string,string]> = {ceremony:['#EDF4EA','#3d6b2e'],cocktail:['#E6F1FB','#185FA5'],dinner:['#FAEEDA','#854F0B'],dancing:['#EEEDFE','#3C3489'],donotplay:['#FCEBEB','#A32D2D']}
+  const [songs, setSongs] = useState([
+    {id:'1',section:'ceremony',title:'Canon in D',artist:'Pachelbel',note:'Processional'},
+    {id:'2',section:'ceremony',title:'A Thousand Years',artist:'Christina Perri',note:'Bride entrance'},
+    {id:'3',section:'dancing',title:'Thinking Out Loud',artist:'Ed Sheeran',note:'First dance'},
+    {id:'4',section:'donotplay',title:'YMCA',artist:'Village People',note:''},
+  ])
+  const [adding, setAdding] = useState<string|null>(null)
+  const [form, setForm] = useState({title:'',artist:'',note:''})
+  const add = (sec:string) => { if(!form.title.trim()) return; setSongs(p=>[...p,{id:Date.now().toString(),section:sec,...form}]); setForm({title:'',artist:'',note:''}); setAdding(null) }
+  return (
+    <div>
+      <PageHeader title="Playlist" sub={`${songs.length} songs`} />
+      <div className="space-y-4">
+        {Object.entries(SECS).map(([sec,label])=>{
+          const ss=songs.filter(s=>s.section===sec)
+          const [bg,color]=COLORS[sec]||['#f5f5f4','#78716c']
+          return (
+            <div key={sec} className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-3 border-b border-stone-100" style={{background:bg}}>
+                <div className="flex items-center gap-2"><Music size={13} style={{color}}/><h3 className="font-medium text-sm" style={{color}}>{label}</h3><span className="text-xs opacity-60" style={{color}}>({ss.length})</span></div>
+                <button onClick={()=>setAdding(adding===sec?null:sec)} className="text-xs px-2.5 py-1 rounded-full font-medium" style={{background:color+'22',color}}><Plus size={12} className="inline mr-1"/>Add</button>
+              </div>
+              <div className="p-2">
+                {adding===sec&&(
+                  <div className="flex gap-2 p-2 bg-stone-50 rounded-xl mb-2">
+                    <input value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&add(sec)} className="flex-1 px-2 py-1.5 rounded-lg border border-stone-200 text-sm focus:outline-none focus:border-[#7A9C6E]" placeholder="Song title" autoFocus/>
+                    <input value={form.artist} onChange={e=>setForm(f=>({...f,artist:e.target.value}))} className="w-32 px-2 py-1.5 rounded-lg border border-stone-200 text-sm focus:outline-none focus:border-[#7A9C6E]" placeholder="Artist"/>
+                    <input value={form.note} onChange={e=>setForm(f=>({...f,note:e.target.value}))} className="w-24 px-2 py-1.5 rounded-lg border border-stone-200 text-sm focus:outline-none focus:border-[#7A9C6E]" placeholder="Note"/>
+                    <button onClick={()=>add(sec)} className="px-3 py-1.5 rounded-lg text-white text-sm font-medium" style={{background:'#7A9C6E'}}>Add</button>
+                    <button onClick={()=>setAdding(null)} className="text-stone-400"><X size={15}/></button>
+                  </div>
+                )}
+                {ss.length===0&&adding!==sec?<p className="text-xs text-stone-300 px-3 py-2">No songs yet</p>:
+                  ss.map(s=>(
+                    <div key={s.id} className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-stone-50 group">
+                      <div className="flex-1"><p className="text-sm font-medium text-stone-800">{s.title}</p><p className="text-xs text-stone-400">{s.artist}{s.note?` · ${s.note}`:''}</p></div>
+                      <button onClick={()=>setSongs(p=>p.filter(x=>x.id!==s.id))} className="text-stone-200 hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={13}/></button>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ─── GIFTS ────────────────────────────────────────────────────────────────────
+function TabGifts() {
+  const [gifts, setGifts] = useState<{id:string;fromName:string;description:string;value:number|null;thankYouSent:boolean}[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showAdd, setShowAdd] = useState(false)
+  const [form, setForm] = useState({fromName:'',description:'',value:'',receivedAt:''})
+  const [saving, setSaving] = useState(false)
+  useEffect(()=>{$get('gifts').then(d=>{setGifts(Array.isArray(d)?d:[]); setLoading(false)})},[])
+  const add = async () => {
+    if(!form.fromName.trim()) return
+    setSaving(true)
+    const res = await $post('gift',{...form,value:parseFloat(form.value)||null})
+    setGifts(p=>[res,...p]); setForm({fromName:'',description:'',value:'',receivedAt:''}); setShowAdd(false); setSaving(false)
+  }
+  const toggle = async (id:string, sent:boolean) => {
+    setGifts(p=>p.map(g=>g.id===id?{...g,thankYouSent:!sent}:g))
+    await $patch('gift',{id,thankYouSent:!sent})
+  }
+  const total = gifts.reduce((s,g)=>s+(g.value||0),0)
+  const pending = gifts.filter(g=>!g.thankYouSent).length
+  return (
+    <div>
+      <PageHeader title="Gifts & thank yous" sub={`${gifts.length} gifts · ${pending} thank you${pending!==1?'s':''} to send`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={14}/>Log gift</Btn>} />
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        {[{label:'Total gifts',val:String(gifts.length)},{label:'Thank yous pending',val:String(pending)},{label:'Est. value',val:fmt$(total)}].map(({label,val})=>(
+          <div key={label} className="bg-white rounded-2xl border border-stone-200 p-4 text-center">
+            <p className="text-2xl font-light" style={{fontFamily:'var(--font-display)'}}>{val}</p>
+            <p className="text-xs text-stone-400 mt-0.5">{label}</p>
+          </div>
+        ))}
+      </div>
+      {loading?<div className="flex justify-center py-8"><Loader2 className="animate-spin text-stone-300" size={22}/></div>:(
+        <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+          {gifts.length===0?<div className="text-center py-14 text-stone-400">No gifts logged yet</div>:(
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-stone-100 bg-stone-50 text-left text-xs text-stone-400 uppercase tracking-wider">{['From','Gift','Value','Thank you'].map(h=><th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr></thead>
+              <tbody>{gifts.map(g=>(
+                <tr key={g.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50">
+                  <td className="px-4 py-3 font-medium text-stone-800">{g.fromName}</td>
+                  <td className="px-4 py-3 text-stone-500 text-xs">{g.description||'—'}</td>
+                  <td className="px-4 py-3">{g.value?`$${g.value.toLocaleString()}`:'—'}</td>
+                  <td className="px-4 py-3"><button onClick={()=>toggle(g.id,g.thankYouSent)} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${g.thankYouSent?'bg-emerald-50 text-emerald-700':'bg-amber-50 text-amber-600'}`}>{g.thankYouSent?<><Check size={11}/>Sent</>:'Mark sent'}</button></td>
+                </tr>
+              ))}</tbody>
+            </table>
+          )}
+        </div>
+      )}
+      {showAdd&&(
+        <Modal title="Log a gift" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={saving||!form.fromName.trim()}>{saving?<><Loader2 size={14} className="animate-spin"/>Saving…</>:<><Plus size={14}/>Save</>}</Btn></>}>
+          <Field label="From *"><Input value={form.fromName} onChange={e=>setForm(f=>({...f,fromName:e.target.value}))} placeholder="John & Jane Smith" autoFocus /></Field>
+          <Field label="Description"><Input value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} placeholder="KitchenAid stand mixer" /></Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Value ($)"><Input type="number" value={form.value} onChange={e=>setForm(f=>({...f,value:e.target.value}))} /></Field>
+            <Field label="Received date"><Input type="date" value={form.receivedAt} onChange={e=>setForm(f=>({...f,receivedAt:e.target.value}))} /></Field>
+          </div>
+        </Modal>
+      )}
+    </div>
+  )
+}
+
 
 // ─── SEATING ────────────────────────────────────────────────────────────────
 function TabSeating() {
@@ -966,9 +1418,12 @@ function TabSeating() {
               <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-3">Tables</p>
               {tables.map(t => {
                 const cnt = guests.filter(g=>g.tableId===t.id).length
-                return <div key={t.id} className="py-2 border-b border-stone-50 last:border-0 cursor-pointer hover:bg-stone-50 rounded-lg px-1" onClick={()=>setAssignTarget(t.id)}>
-                  <p className="text-sm font-medium text-stone-700">{t.name}</p>
-                  <p className="text-xs text-stone-400 capitalize">{t.shape} · {cnt}/{t.seats}</p>
+                return <div key={t.id} className="flex items-center gap-1 py-2 border-b border-stone-50 last:border-0 group rounded-lg px-1 hover:bg-stone-50">
+                  <div className="flex-1 cursor-pointer" onClick={()=>setAssignTarget(t.id)}>
+                    <p className="text-sm font-medium text-stone-700">{t.name}</p>
+                    <p className="text-xs text-stone-400 capitalize">{t.shape} · {cnt}/{t.seats}</p>
+                  </div>
+                  <button onClick={async()=>{ if(!confirm(`Delete ${t.name}?`)) return; await $del('table',t.id); setTables(p=>p.filter(x=>x.id!==t.id)) }} className="text-stone-200 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-1 shrink-0"><Trash2 size={12}/></button>
                 </div>
               })}
               {tables.length===0 && <p className="text-xs text-stone-400">No tables yet</p>}
@@ -1047,13 +1502,13 @@ const TAB_COMPONENTS: Record<string, React.ComponentType<{ onTab?: (t: string) =
   seating:   TabSeating,
   moodboard: TabMoodboard,
   menu:      TabMenu,
-  party:     () => <SimplePlaceholder title="Wedding party" icon={Star} desc="Add bridesmaid, groomsmen, and other wedding party members with their roles, attire, and contact info." />,
-  timeline:  () => <SimplePlaceholder title="Timeline" icon={Clock} desc="Build your hour-by-hour day-of schedule to share with vendors and your wedding party." />,
-  decor:     () => <SimplePlaceholder title="Décor" icon={Flower2} desc="Track florals, centerpieces, lighting, and all décor items by area of the venue." />,
-  attire:    () => <SimplePlaceholder title="Attire" icon={Shirt} desc="Track dress fittings, alterations, groomswear orders, and pickup dates." />,
-  photoshoot:() => <SimplePlaceholder title="Photoshoot" icon={Camera} desc="Build your must-have shot list by group — ceremony, family, couples, reception." />,
-  playlist:  () => <SimplePlaceholder title="Playlist" icon={Music} desc="Organize songs for ceremony, cocktail hour, dinner, dancing, and your do-not-play list." />,
-  gifts:     () => <SimplePlaceholder title="Gifts & thank yous" icon={Gift} desc="Log gifts as they arrive and track which thank-you notes have been sent." />,
+  party:      TabParty,
+  timeline:   TabTimeline,
+  decor:      TabDecor,
+  attire:     TabAttire,
+  photoshoot: TabPhotoshoot,
+  playlist:   TabPlaylist,
+  gifts:      TabGifts,
 }
 
 export default function DashboardPage() {

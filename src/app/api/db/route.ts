@@ -5,7 +5,7 @@ export async function GET(req: NextRequest) {
   const t = req.nextUrl.searchParams.get('t')
   try {
     switch (t) {
-      case 'guests':       return ok(await prisma.guest.findMany({ orderBy: { name: 'asc' } }))
+      case 'guests':      return ok(await prisma.guest.findMany({ orderBy: { name: 'asc' } }))
       case 'guest-stats': {
         const [total, attending, declined, pending] = await Promise.all([
           prisma.guest.count(),
@@ -34,7 +34,9 @@ export async function POST(req: NextRequest) {
       case 'guest':
         return ok(await prisma.guest.create({ data: {
           name: body.name, email: body.email || null, side: body.side || 'bride',
-          hasPlusOne: !!body.hasPlusOne, dietary: body.dietary || null, rsvpStatus: 'pending',
+          hasPlusOne: !!body.hasPlusOne, dietary: body.dietary || null,
+          rsvpStatus: 'pending', notes: body.notes || null,
+          isInvitee: !!body.isInvitee,
         }}))
       case 'venue':
         return ok(await prisma.venue.create({ data: {
