@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Search, Heart, Check, ChevronRight, Loader2, Edit3, X, ArrowLeft } from 'lucide-react'
 
 interface Settings {
-  heading: string; subheading: string; heroImage: string; accentColor: string
+  heading: string; subheading: string; heroImage: string; accentColor: string; secondaryColor: string; bgColor: string
   searchLabel: string; attendingLabel: string; declineLabel: string
   confirmedMessage: string; declinedMessage: string; contactEmail: string
   coupleNames: string; ourStory: string; photo1: string; photo2: string
@@ -30,7 +30,7 @@ const DEFAULT: Settings = {
   attendingLabel: "Yes, I'll be there!", declineLabel: 'Regretfully no',
   confirmedMessage: "We can't wait to celebrate with you!",
   declinedMessage: "Thank you for letting us know. We'll be thinking of you!",
-  contactEmail: '', coupleNames: 'Jennifer & Myles',
+  contactEmail: '', coupleNames: 'Jennifer & Myles', secondaryColor: sage, bgColor: '#111714',
   ourStory: "We didn't expect our story to begin the way it did, but from the very first moment something just felt right.\n\nWhat started with simple conversations quickly turned into something deeper, and little by little we realised we had found someone truly special.\n\nSince then, we've shared so many memories — the quiet moments, the big laughs, the small adventures that somehow become the ones you cherish most.",
   photo1: '', photo2: '', dressCode: 'Garden Formal',
   dressCodeNote: 'We would love for you to celebrate with us in attire that feels elegant and true to your style.',
@@ -93,6 +93,8 @@ export default function RSVPPage() {
   const venueAddress = venue ? venue.address : ''
 
   const accent = s.accentColor || '#4a7a44'
+  const sage = s.secondaryColor || sage
+  const bg = s.bgColor || '#111714'
   const accentLight = accent + '18'
 
   const openEnvelope = () => {
@@ -145,7 +147,7 @@ export default function RSVPPage() {
     </div>
   )
 
-  const bg = 'linear-gradient(160deg, #0d1a0c 0%, #111714 50%)'
+  // bg defined in parent scope
   const cardStyle = { background:'#1a2419', borderRadius:24, boxShadow:'0 30px 80px rgba(0,0,0,0.6)', border:'1px solid #2a3829' }
 
   return (
@@ -206,7 +208,7 @@ export default function RSVPPage() {
             {/* Nav buttons */}
             <div style={{ padding:'0 20px 24px', display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8 }}>
               {[{ label:'Details', p:'details' as Page }, { label:'Our Story', p:'story' as Page }, { label:'RSVP', p:'rsvp-search' as Page }].map(({ label, p }) => (
-                <button key={label} onClick={() => setPage(p)} style={{ padding:'10px 0', borderRadius:12, fontSize:13, fontWeight:600, border:'none', cursor:'pointer', background: p==='rsvp-search' ? accent : accentLight, color: p==='rsvp-search' ? '#e8f0e6' : '#8fb882', letterSpacing:'0.05em' }}>
+                <button key={label} onClick={() => setPage(p)} style={{ padding:'10px 0', borderRadius:12, fontSize:13, fontWeight:600, border:'none', cursor:'pointer', background: p==='rsvp-search' ? accent : accentLight, color: p==='rsvp-search' ? '#e8f0e6' : sage, letterSpacing:'0.05em' }}>
                   {label}
                 </button>
               ))}
@@ -251,7 +253,7 @@ export default function RSVPPage() {
 
               {/* Dress code */}
               <div style={{ marginTop:20, textAlign:'center', borderTop:'1px solid #1e2e1c', paddingTop:18 }}>
-                <p style={{ fontFamily:'Palatino,serif', fontStyle:'italic', fontSize:16, color:'#8fb882', marginBottom:6 }}>Dress Code</p>
+                <p style={{ fontFamily:'Palatino,serif', fontStyle:'italic', fontSize:16, color:sage, marginBottom:6 }}>Dress Code</p>
                 <p style={{ fontSize:13, fontWeight:700, letterSpacing:'0.15em', textTransform:'uppercase', color:'#cde0ca', marginBottom:8 }}>{s.dressCode}</p>
                 <p style={{ fontSize:12, color:'#3a5038', lineHeight:1.6 }}>{s.dressCodeNote}</p>
               </div>
@@ -348,7 +350,7 @@ export default function RSVPPage() {
             </div>
             <h2 style={{ fontFamily:'Palatino,serif', fontSize:24, color:'#e8f0e6', marginBottom:8 }}>Name not found</h2>
             <p style={{ fontSize:14, color:'#3a5038', lineHeight:1.6, marginBottom:24 }}>We couldn&apos;t find &ldquo;{nameInput}&rdquo; on the guest list. Please try your full name{s.contactEmail ? ` or contact us at ${s.contactEmail}` : ''}.</p>
-            <button onClick={() => { setPage('rsvp-search'); setNameInput('') }} style={{ width:'100%', padding:'13px', borderRadius:14, background:'#1e2e1c', color:'#8fb882', border:'1px solid #2a3829', fontSize:14, fontWeight:600, cursor:'pointer' }}>
+            <button onClick={() => { setPage('rsvp-search'); setNameInput('') }} style={{ width:'100%', padding:'13px', borderRadius:14, background:'#1e2e1c', color:sage, border:'1px solid #2a3829', fontSize:14, fontWeight:600, cursor:'pointer' }}>
               Try again
             </button>
           </div>
@@ -363,9 +365,9 @@ export default function RSVPPage() {
             <div style={{ padding:'28px 28px 24px' }}>
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
                 <h2 style={{ fontFamily:'Palatino,serif', fontSize:28, fontWeight:300, color:'#e8f0e6' }}>Hi, {guest.name.split(' ')[0]}!</h2>
-                <button onClick={startEdit} style={{ display:'flex', alignItems:'center', gap:6, fontSize:14, color:'#8fb882', background:'none', border:'none', cursor:'pointer' }}><Edit3 size={15}/>Edit</button>
+                <button onClick={startEdit} style={{ display:'flex', alignItems:'center', gap:6, fontSize:14, color:sage, background:'none', border:'none', cursor:'pointer' }}><Edit3 size={15}/>Edit</button>
               </div>
-              <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'8px 16px', borderRadius:20, fontSize:14, fontWeight:600, marginBottom:20, background: guest.rsvp_status==='attending' ? accent+'20' : '#7f202020', color: guest.rsvp_status==='attending' ? '#8fb882' : '#f87171' }}>
+              <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'8px 16px', borderRadius:20, fontSize:14, fontWeight:600, marginBottom:20, background: guest.rsvp_status==='attending' ? accent+'20' : '#7f202020', color: guest.rsvp_status==='attending' ? sage : '#f87171' }}>
                 <Check size={14}/> {guest.rsvp_status==='attending' ? 'Attending 🎉' : 'Unable to attend'}
               </div>
               {[
@@ -444,7 +446,7 @@ export default function RSVPPage() {
 function Nav({ onBack }: { onBack: () => void }) {
   return (
     <button onClick={onBack} style={{ alignSelf:'flex-start', display:'flex', alignItems:'center', gap:6, fontSize:14, color:'#3a5038', background:'none', border:'none', cursor:'pointer', marginBottom:4 }}
-      onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color='#8fb882'}
+      onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color=sage}
       onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color='#3a5038'}>
       <ArrowLeft size={15}/> Back
     </button>
@@ -464,7 +466,7 @@ function RSVPForm({ attending, setAttending, dietary, setDietary, plusOneName, s
       <div>
         <p style={lbl}>Will you be joining us?</p>
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
-          <button onClick={() => setAttending(true)} style={{ padding:'12px', borderRadius:12, fontSize:14, fontWeight:600, border:`2px solid ${attending===true ? accent : '#2a3829'}`, background: attending===true ? accent+'20' : 'transparent', color: attending===true ? '#8fb882' : '#3a5038', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
+          <button onClick={() => setAttending(true)} style={{ padding:'12px', borderRadius:12, fontSize:14, fontWeight:600, border:`2px solid ${attending===true ? accent : '#2a3829'}`, background: attending===true ? accent+'20' : 'transparent', color: attending===true ? sage : '#3a5038', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
             <Heart size={14} style={attending===true ? {fill:accent,color:accent} : {}} /> {attendingLabel}
           </button>
           <button onClick={() => setAttending(false)} style={{ padding:'12px', borderRadius:12, fontSize:14, fontWeight:600, border:`2px solid ${attending===false ? '#7f2020' : '#2a3829'}`, background: attending===false ? '#7f202020' : 'transparent', color: attending===false ? '#f87171' : '#3a5038', cursor:'pointer' }}>
