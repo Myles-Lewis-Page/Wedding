@@ -74,24 +74,23 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
   const [colorSaved, setColorSaved] = useState(false)
 
   useEffect(() => {
-    Promise.all([$get('guest-stats'), $get('venues')]).then(([s, vs]) => {
+    Promise.all([$get('guest-stats'), $get('venues'), $get('rsvp-settings')]).then(([s, vs, rs]) => {
       setStats(s)
       setVenue(Array.isArray(vs) ? (vs.find((v: {isSelected:boolean;name:string;address:string}) => v.isSelected) ?? null) : null)
+      if (rs && !rs.error) {
+        if (rs.accentColor) { setAccentColor(rs.accentColor); document.documentElement.style.setProperty('--accent', rs.accentColor) }
+        if (rs.secondaryColor) { setSecondaryColor(rs.secondaryColor); document.documentElement.style.setProperty('--sage', rs.secondaryColor) }
+      }
       setLoading(false)
     }).catch(() => setLoading(false))
-    // Load saved colors
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('dashColors') : null
-    if (saved) { try { const c = JSON.parse(saved); setAccentColor(c.accent||'#4a7a44'); setSecondaryColor(c.secondary||'#8fb882') } catch {} }
   }, [])
 
   const saveColors = async () => {
-    localStorage.setItem('dashColors', JSON.stringify({ accent: accentColor, secondary: secondaryColor }))
-    // Save accent to rsvp-settings so RSVP page picks it up
-    await $patch('rsvp-settings', { id: 'main', accentColor: accentColor })
+    await $patch('rsvp-settings', { id: 'main', accentColor, secondaryColor })
     setColorSaved(true)
     setTimeout(() => setColorSaved(false), 2000)
-    // Apply CSS vars live
     document.documentElement.style.setProperty('--sage', secondaryColor)
+    document.documentElement.style.setProperty('--accent', accentColor)
   }
 
   const rate = stats.total ? Math.round(((stats.attending + stats.declined) / stats.total) * 100) : 0
@@ -1040,51 +1039,17 @@ function TabRSVP() {
           </Btn>
         </div>
 
-        <div className="p-7 grid grid-cols-2 gap-x-8 gap-y-1">
-          {/* Left column */}
+        <div className="p-7" style={{maxWidth: 520}}>
           <div className="space-y-4">
-            <p className="text-base font-bold text-[#5a7057] uppercase tracking-wider pb-1 border-b border-[#202e1f]">Envelope & Invite</p>
-            <SF label="Couple names (shown on envelope)" field="coupleNames" />
-            <SF label="Heading (invite card)" field="heading" />
-            <SF label="Subheading" field="subheading" />
-            <SF label="Date text" field="dateText" />
-            <SF label="Venue & time text" field="venueText" />
+            <p className="text-base font-bold text-[#5a7057] uppercase tracking-wider pb-1 border-b border-[#202e1f]">Photos</p>
             <SF label="Hero image URL" field="heroImage" />
             {settings.heroImage && <div className="h-24 rounded-3xl overflow-hidden bg-[#1f2b1e]"><img src={settings.heroImage} alt="" className="w-full h-full object-cover"/></div>}
-
-            <p className="text-base font-bold text-[#5a7057] uppercase tracking-wider pt-2 pb-1 border-b border-[#202e1f]">Photos</p>
             <SF label="Photo 1 URL (invite card + story)" field="photo1" />
             {settings.photo1 && <div className="h-20 rounded-3xl overflow-hidden bg-[#1f2b1e]"><img src={settings.photo1} alt="" className="w-full h-full object-cover"/></div>}
             <SF label="Photo 2 URL (story polaroid)" field="photo2" />
             {settings.photo2 && <div className="h-20 rounded-3xl overflow-hidden bg-[#1f2b1e]"><img src={settings.photo2} alt="" className="w-full h-full object-cover"/></div>}
-
-            <p className="text-base font-bold text-[#5a7057] uppercase tracking-wider pt-2 pb-1 border-b border-[#202e1f]">Colors</p>
-            <Field label="Accent color">
-              <div className="flex gap-5 items-center">
-                <input type="color" value={settings.accentColor} onChange={e => setSettings(s=>({...s,accentColor:e.target.value}))} className="w-10 h-10 rounded-lg border border-[#2a3829] cursor-pointer p-0.5" />
-                <Input value={settings.accentColor} onChange={e => setSettings(s=>({...s,accentColor:e.target.value}))} className="flex-1" />
-              </div>
-            </Field>
-          </div>
-
-          {/* Right column */}
-          <div className="space-y-4">
-            <p className="text-base font-bold text-[#5a7057] uppercase tracking-wider pb-1 border-b border-[#202e1f]">Details page</p>
-            <SF label="Ceremony time" field="ceremonyTime" />
-            <SF label="Reception time" field="receptionTime" />
-            <SF label="Dress code" field="dressCode" />
-            <SF label="Dress code note" field="dressCodeNote" rows={2} />
-
-            <p className="text-base font-bold text-[#5a7057] uppercase tracking-wider pt-2 pb-1 border-b border-[#202e1f]">Our story</p>
-            <SF label="Story text (use blank line for paragraphs)" field="ourStory" rows={6} />
-
-            <p className="text-base font-bold text-[#5a7057] uppercase tracking-wider pt-2 pb-1 border-b border-[#202e1f]">RSVP form text</p>
-            <SF label="Search prompt" field="searchLabel" />
-            <SF label="Attending button text" field="attendingLabel" />
-            <SF label="Decline button text" field="declineLabel" />
-            <SF label="Confirmed message" field="confirmedMessage" rows={2} />
-            <SF label="Declined message" field="declinedMessage" rows={2} />
-            <SF label="Contact email (shown if not found)" field="contactEmail" />
+            <SF label="Photo 3 URL" field="photo3" />
+            {settings.photo3 && <div className="h-20 rounded-3xl overflow-hidden bg-[#1f2b1e]"><img src={settings.photo3} alt="" className="w-full h-full object-cover"/></div>}
           </div>
         </div>
       </div>
