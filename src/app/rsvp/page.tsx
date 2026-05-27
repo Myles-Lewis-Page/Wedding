@@ -1,156 +1,492 @@
 'use client'
+
 import { useState, useEffect } from 'react'
-import { Loader2, Search, Check, X, ChevronRight } from 'lucide-react'
+import { Search, Heart, Check, ChevronRight, Loader2, Edit3, X, ArrowLeft } from 'lucide-react'
 
-interface Settings { heading: string; subheading: string; heroImage: string; photo1: string; accentColor: string; secondaryColor: string; searchLabel: string; attendingLabel: string; declineLabel: string; confirmedMessage: string; declinedMessage: string; contactEmail: string; weddingDate: string }
-interface GuestData { id: string; name: string; has_plus_one: boolean; already_rsvpd: boolean; rsvp_status: string; dietary: string | null; email: string | null; plus_one_name: string | null; plus_one_dietary: string | null }
+interface Settings {
+  heading: string; subheading: string; heroImage: string; accentColor: string
+  searchLabel: string; attendingLabel: string; declineLabel: string
+  confirmedMessage: string; declinedMessage: string; contactEmail: string
+  coupleNames: string; ourStory: string; photo1: string; photo2: string
+  dressCode: string; dressCodeNote: string; weddingDate: string
+}
 
-const DEFAULT: Settings = { heading:'Jennifer & Myles', subheading:'Together with their families', heroImage:'', photo1:'', accentColor:'#4a7a44', secondaryColor:'#8fb882', searchLabel:'Enter your name as it appears on your invitation', attendingLabel:"Yes, I'll be there!", declineLabel:'Regretfully no', confirmedMessage:"We can't wait to celebrate with you!", declinedMessage:"Thank you for letting us know. We'll be thinking of you!", contactEmail:'', weddingDate:'' }
+interface Venue { name: string; address: string; isSelected: boolean }
+interface TimelineItem { id: string; time: string; title: string; desc: string; who: string; order: number }
 
-const DIETARY = ['','Vegetarian','Vegan','Gluten-free','Nut allergy','Halal','Kosher','Other']
+interface GuestData {
+  id: string; name: string; has_plus_one: boolean; already_rsvpd: boolean
+  rsvp_status: string; dietary: string | null; email: string | null
+  plus_one_name: string | null; plus_one_dietary: string | null
+}
+
+type Page = 'envelope' | 'invite' | 'details' | 'story' | 'rsvp-search' | 'rsvp-form' | 'rsvp-multiple' | 'rsvp-not-found' | 'rsvp-details' | 'rsvp-editing' | 'rsvp-done'
+const DIETARY = ['', 'Vegetarian', 'Vegan', 'Gluten-free', 'Nut allergy', 'Halal', 'Kosher', 'Other']
+
+const DEFAULT: Settings = {
+  heading: 'Jennifer & Myles', subheading: 'Together with their families',
+  heroImage: '', accentColor: '#4a7a44',
+  searchLabel: 'Enter your name as it appears on your invitation',
+  attendingLabel: "Yes, I'll be there!", declineLabel: 'Regretfully no',
+  confirmedMessage: "We can't wait to celebrate with you!",
+  declinedMessage: "Thank you for letting us know. We'll be thinking of you!",
+  contactEmail: '', coupleNames: 'Jennifer & Myles',
+  ourStory: "We didn't expect our story to begin the way it did, but from the very first moment something just felt right.\n\nWhat started with simple conversations quickly turned into something deeper, and little by little we realised we had found someone truly special.\n\nSince then, we've shared so many memories — the quiet moments, the big laughs, the small adventures that somehow become the ones you cherish most.",
+  photo1: '', photo2: '', dressCode: 'Garden Formal',
+  dressCodeNote: 'We would love for you to celebrate with us in attire that feels elegant and true to your style.',
+  weddingDate: '',
+}
+
+const TIMELINE_ICONS: Record<string, string> = {
+  'ceremony': '⛪', 'i do': '⛪', 'cocktail': '🥂', 'toast': '🥂',
+  'dinner': '🍽️', 'cake': '🎂', 'dance': '💃', 'dancing': '💃',
+  'photo': '📸', 'cheese': '📸', 'arrive': '🌿', 'reception': '✨',
+  'send': '🎇', 'exit': '🎇',
+}
+const getIcon = (title: string) => {
+  const t = title.toLowerCase()
+  for (const [key, icon] of Object.entries(TIMELINE_ICONS)) {
+    if (t.includes(key)) return icon
+  }
+  return '✨'
+}
 
 export default function RSVPPage() {
+  const [page, setPage] = useState<Page>('envelope')
+  const [envelopeOpen, setEnvelopeOpen] = useState(false)
   const [s, setS] = useState<Settings>(DEFAULT)
+  const [venue, setVenue] = useState<Venue | null>(null)
+  const [timeline, setTimeline] = useState<TimelineItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [name, setName] = useState('')
+
+  // RSVP state
+  const [nameInput, setNameInput] = useState('')
   const [searching, setSearching] = useState(false)
-  const [guest, setGuest] = useState<GuestData | null>(null)
   const [matches, setMatches] = useState<GuestData[]>([])
-  const [page, setPage] = useState<'search'|'multiple'|'form'|'done'|'notfound'>('search')
-  const [attending, setAttending] = useState<boolean|null>(null)
+  const [guest, setGuest] = useState<GuestData | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [attending, setAttending] = useState<boolean | null>(null)
   const [dietary, setDietary] = useState('')
   const [plusOneName, setPlusOneName] = useState('')
   const [plusOneDietary, setPlusOneDietary] = useState('')
   const [email, setEmail] = useState('')
-  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    fetch('/api/db?t=rsvp-settings').then(r=>r.json()).then(d=>{ if(d&&!d.error) setS({...DEFAULT,...d}); setLoading(false) }).catch(()=>setLoading(false))
+    Promise.all([
+      fetch('/api/db?t=rsvp-settings').then(r => r.json()),
+      fetch('/api/db?t=venues').then(r => r.json()),
+      fetch('/api/db?t=timeline').then(r => r.json()),
+    ]).then(([rs, vs, tl]) => {
+      if (rs && !rs.error) setS({ ...DEFAULT, ...rs })
+      if (Array.isArray(vs)) setVenue(vs.find((v: Venue) => v.isSelected) ?? null)
+      if (Array.isArray(tl)) setTimeline(tl)
+      setLoading(false)
+    }).catch(() => setLoading(false))
   }, [])
 
+  // Derive date and venue from live data
+  const weddingDateFmt = s.weddingDate || (typeof window !== 'undefined' ? localStorage.getItem('weddingDate') : null)
+  const dateDisplay = weddingDateFmt
+    ? new Date(weddingDateFmt + 'T12:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' })
+    : 'Date TBD'
+  const venueDisplay = venue ? venue.name : 'Venue TBD'
+  const venueAddress = venue ? venue.address : ''
+
   const accent = s.accentColor || '#4a7a44'
+  const accentLight = accent + '18'
 
-  const search = async () => {
-    if (!name.trim()) return
+  const openEnvelope = () => {
+    setEnvelopeOpen(true)
+    setTimeout(() => setPage('invite'), 800)
+  }
+
+  const searchGuest = async () => {
+    if (!nameInput.trim()) return
     setSearching(true)
-    const res = await fetch(`/api/rsvp?name=${encodeURIComponent(name)}`).then(r=>r.json())
-    setSearching(false)
-    if (!res.found) { setPage('notfound'); return }
-    if (res.guests.length === 1) { setGuest(res.guests[0]); setPage('form') }
-    else { setMatches(res.guests); setPage('multiple') }
+    try {
+      const res = await fetch(`/api/rsvp?name=${encodeURIComponent(nameInput)}`)
+      const data = await res.json()
+      if (data.found && data.guests?.length > 0) {
+        setMatches(data.guests)
+        if (data.guests.length === 1) pickGuest(data.guests[0])
+        else setPage('rsvp-multiple')
+      } else setPage('rsvp-not-found')
+    } finally { setSearching(false) }
   }
 
-  const submit = async () => {
-    if (!guest || attending===null) return
+  const pickGuest = (g: GuestData) => { setGuest(g); setPage(g.already_rsvpd ? 'rsvp-details' : 'rsvp-form') }
+
+  const startEdit = () => {
+    if (!guest) return
+    setAttending(guest.rsvp_status === 'attending')
+    setDietary(guest.dietary || ''); setPlusOneName(guest.plus_one_name || '')
+    setPlusOneDietary(guest.plus_one_dietary || ''); setEmail(guest.email || '')
+    setPage('rsvp-editing')
+  }
+
+  const submit = async (isEdit = false) => {
+    if (!guest || attending === null) return
     setSubmitting(true)
-    await fetch('/api/rsvp', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ guest_id:guest.id, attending, plus_one_name:plusOneName||null, dietary:dietary||null, plus_one_dietary:plusOneDietary||null, email:email||null }) })
-    setSubmitting(false)
-    setPage('done')
+    try {
+      const res = await fetch('/api/rsvp', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guest_id: guest.id, attending, plus_one_name: plusOneName||null, dietary: dietary||null, plus_one_dietary: plusOneDietary||null, email: email||null }),
+      })
+      if (res.ok) {
+        setGuest(g => g ? { ...g, rsvp_status: attending?'attending':'declined', already_rsvpd:true, dietary:dietary||null, email:email||null, plus_one_name:plusOneName||null, plus_one_dietary:plusOneDietary||null } : g)
+        setPage(isEdit ? 'rsvp-details' : 'rsvp-done')
+      }
+    } finally { setSubmitting(false) }
   }
 
-  if (loading) return <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#0d1a0c'}}><Loader2 size={24} style={{color:'#8fb882',animation:'spin 1s linear infinite'}} /></div>
+  if (loading) return (
+    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#0f180e' }}>
+      <Loader2 size={28} style={{ color:'#3a5038', animation:'spin 1s linear infinite' }} />
+    </div>
+  )
 
-  const bg = 'linear-gradient(160deg,#0a150a 0%,#111714 100%)'
+  const bg = 'linear-gradient(160deg, #0d1a0c 0%, #111714 50%)'
+  const cardStyle = { background:'#1a2419', borderRadius:24, boxShadow:'0 30px 80px rgba(0,0,0,0.6)', border:'1px solid #2a3829' }
 
   return (
-    <div style={{minHeight:'100vh',background:bg,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'24px 16px',fontFamily:'var(--font-body)'}}>
-      <div style={{width:'100%',maxWidth:460}}>
-        {/* Hero */}
-        {s.heroImage && <div style={{height:200,borderRadius:20,overflow:'hidden',marginBottom:24}}><img src={s.heroImage} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}} /></div>}
-        <div style={{textAlign:'center',marginBottom:32}}>
-          <h1 style={{fontFamily:'var(--font-display)',fontSize:'clamp(28px,6vw,42px)',fontWeight:300,color:'#e8f0e6',lineHeight:1.1}}>{s.heading}</h1>
-          <p style={{fontSize:14,color:'#4a6448',marginTop:8,letterSpacing:'0.05em'}}>{s.subheading}</p>
+    <div style={{ minHeight:'100vh', fontFamily:'Georgia, serif', background: bg }}>
+
+      {/* ── ENVELOPE ──────────────────────────────────────────────────── */}
+      {page === 'envelope' && (
+        <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'48px 24px' }}>
+          <p style={{ fontSize:12, letterSpacing:'0.25em', textTransform:'uppercase', color:'#3a5038', marginBottom:8 }}>You&apos;ve got mail from</p>
+          <h1 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:42, fontWeight:300, color:'#e8f0e6', marginBottom:48 }}>{s.coupleNames}</h1>
+
+          <div style={{ position:'relative', width:320, height:210, cursor:'pointer' }} onClick={openEnvelope}>
+            {/* Body */}
+            <div style={{ position:'absolute', inset:0, borderRadius:16, background:'linear-gradient(135deg, #1a0a0f 0%, #2d1018 100%)', boxShadow:'0 20px 60px rgba(0,0,0,0.7)' }}/>
+            {/* Side folds */}
+            <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom right, transparent 49.5%, rgba(0,0,0,0.2) 50%)', borderRadius:16 }}/>
+            <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom left, transparent 49.5%, rgba(255,255,255,0.04) 50%)', borderRadius:16 }}/>
+            {/* Flap */}
+            <div style={{ position:'absolute', left:0, right:0, top:0, height:'50%', transformOrigin:'top center', transform: envelopeOpen ? 'rotateX(180deg)' : 'rotateX(0deg)', transition:'transform 0.7s cubic-bezier(0.4,0,0.2,1)', background:'linear-gradient(135deg, #150508 0%, #260c13 100%)', clipPath:'polygon(0 0, 100% 0, 50% 100%)', borderRadius:'16px 16px 0 0' }}/>
+            {/* Wax seal — heart */}
+            <div style={{ position:'absolute', bottom:16, left:'50%', transform:'translateX(-50%)', width:52, height:52, borderRadius:'50%', background:'linear-gradient(135deg, #c8956a, #a87040)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 16px rgba(0,0,0,0.5)' }}>
+              <Heart size={22} fill="#fff" style={{ color:'#fff' }} />
+            </div>
+          </div>
+
+          <button onClick={openEnvelope} style={{ marginTop:40, padding:'12px 36px', borderRadius:50, background:accent, color:'#e8f0e6', border:'none', fontSize:15, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', cursor:'pointer' }}>
+            Open
+          </button>
+          <p style={{ fontSize:13, color:'#2a3828', marginTop:12 }}>Tap to open your invitation</p>
         </div>
+      )}
 
-        <div style={{background:'#1a2419',borderRadius:20,border:'1px solid #2a3829',overflow:'hidden',boxShadow:'0 20px 60px rgba(0,0,0,0.5)'}}>
-
-          {page === 'search' && (
-            <div style={{padding:32}}>
-              <p style={{fontSize:14,color:'#5a7057',marginBottom:16,lineHeight:1.6}}>{s.searchLabel}</p>
-              <input value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&search()} placeholder="Your full name" autoFocus
-                style={{width:'100%',padding:'14px 16px',borderRadius:12,border:'1px solid #2a3829',background:'#141c13',color:'#e8f0e6',fontSize:16,outline:'none',marginBottom:12,boxSizing:'border-box'}} />
-              <button onClick={search} disabled={searching||!name.trim()} style={{width:'100%',padding:14,borderRadius:12,background:accent,color:'#e8f0e6',border:'none',fontSize:15,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,opacity:searching||!name.trim()?0.5:1}}>
-                {searching ? <><Loader2 size={17} style={{animation:'spin 1s linear infinite'}}/>Searching…</> : <><Search size={17}/>Find my invitation</>}
-              </button>
-            </div>
-          )}
-
-          {page === 'notfound' && (
-            <div style={{padding:32,textAlign:'center'}}>
-              <X size={40} style={{color:'#f87171',margin:'0 auto 16px'}} />
-              <h3 style={{color:'#e8f0e6',marginBottom:8,fontFamily:'var(--font-display)',fontSize:22,fontWeight:300}}>Name not found</h3>
-              <p style={{color:'#5a7057',fontSize:14,lineHeight:1.6,marginBottom:20}}>We couldn't find "{name}" on our guest list. Try a different spelling or your full name.{s.contactEmail ? ` Questions? ${s.contactEmail}` : ''}</p>
-              <button onClick={()=>{setPage('search');setName('')}} style={{padding:'12px 24px',borderRadius:10,background:'#1f2b1e',color:'#8fb882',border:'1px solid #2a3829',cursor:'pointer',fontSize:14}}>Try again</button>
-            </div>
-          )}
-
-          {page === 'multiple' && (
-            <div style={{padding:32}}>
-              <h3 style={{color:'#e8f0e6',marginBottom:4,fontFamily:'var(--font-display)',fontSize:22,fontWeight:300}}>Which one are you?</h3>
-              <p style={{color:'#5a7057',fontSize:14,marginBottom:20}}>We found a few people named "{name}"</p>
-              <div style={{display:'flex',flexDirection:'column',gap:8}}>
-                {matches.map(g=>(
-                  <button key={g.id} onClick={()=>{setGuest(g);setPage('form')}} style={{padding:'14px 16px',borderRadius:12,background:'#141c13',border:'1px solid #2a3829',color:'#e8f0e6',textAlign:'left',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                    <span style={{fontWeight:500}}>{g.name}</span>
-                    <ChevronRight size={17} style={{color:'#5a7057'}} />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {page === 'form' && guest && (
-            <div style={{padding:32}}>
-              <p style={{color:'#5a7057',fontSize:13,marginBottom:4}}>RSVP for</p>
-              <h3 style={{fontFamily:'var(--font-display)',fontSize:24,fontWeight:300,color:'#e8f0e6',marginBottom:24}}>{guest.name}</h3>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:20}}>
-                {[true,false].map(a=>(
-                  <button key={String(a)} onClick={()=>setAttending(a)} style={{padding:'16px 12px',borderRadius:12,border:`2px solid ${attending===a?accent:'#2a3829'}`,background:attending===a?accent+'20':'#141c13',color:attending===a?'#e8f0e6':'#5a7057',cursor:'pointer',fontSize:14,fontWeight:600,transition:'all 0.15s'}}>
-                    {a ? s.attendingLabel : s.declineLabel}
-                  </button>
-                ))}
-              </div>
-              {attending && <>
-                <div style={{marginBottom:12}}>
-                  <label style={{fontSize:12,color:'#5a7057',textTransform:'uppercase',letterSpacing:'0.08em',display:'block',marginBottom:6}}>Dietary requirements</label>
-                  <select value={dietary} onChange={e=>setDietary(e.target.value)} style={{width:'100%',padding:'12px 16px',borderRadius:10,border:'1px solid #2a3829',background:'#141c13',color:'#e8f0e6',fontSize:15,outline:'none'}}>
-                    {DIETARY.map(d=><option key={d} value={d}>{d||'None'}</option>)}
-                  </select>
+      {/* ── INVITE CARD ───────────────────────────────────────────────── */}
+      {page === 'invite' && (
+        <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', padding:'32px 20px' }}>
+          <Nav onBack={() => setPage('envelope')} />
+          <div style={{ width:'100%', maxWidth:380, ...cardStyle, overflow:'hidden', marginTop:12 }}>
+            {/* Hero */}
+            <div style={{ position:'relative', height:220, background: s.heroImage ? undefined : 'linear-gradient(135deg, #1a2419, #0f180e)' }}>
+              {s.heroImage && <img src={s.heroImage} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />}
+              <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%)' }}/>
+              {s.photo1 && (
+                <div style={{ position:'absolute', bottom:12, right:12, background:'#fff', padding:6, boxShadow:'0 8px 24px rgba(0,0,0,0.5)', transform:'rotate(2deg)' }}>
+                  <img src={s.photo1} alt="" style={{ width:72, height:56, objectFit:'cover' }} />
+                  <p style={{ textAlign:'center', fontSize:9, color:'#888', marginTop:4, fontStyle:'italic' }}>a new adventure</p>
                 </div>
-                <div style={{marginBottom:12}}>
-                  <label style={{fontSize:12,color:'#5a7057',textTransform:'uppercase',letterSpacing:'0.08em',display:'block',marginBottom:6}}>Email (for confirmation)</label>
-                  <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="your@email.com" style={{width:'100%',padding:'12px 16px',borderRadius:10,border:'1px solid #2a3829',background:'#141c13',color:'#e8f0e6',fontSize:15,outline:'none',boxSizing:'border-box'}} />
-                </div>
-                {guest.has_plus_one && <>
-                  <div style={{marginBottom:12}}>
-                    <label style={{fontSize:12,color:'#5a7057',textTransform:'uppercase',letterSpacing:'0.08em',display:'block',marginBottom:6}}>Plus one name</label>
-                    <input value={plusOneName} onChange={e=>setPlusOneName(e.target.value)} style={{width:'100%',padding:'12px 16px',borderRadius:10,border:'1px solid #2a3829',background:'#141c13',color:'#e8f0e6',fontSize:15,outline:'none',boxSizing:'border-box'}} />
+              )}
+            </div>
+            {/* Content */}
+            <div style={{ padding:'28px 32px', textAlign:'center' }}>
+              <p style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'#4a7a44', marginBottom:6 }}>{s.subheading}</p>
+              <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:32, fontWeight:300, color:'#e8f0e6', marginBottom:12 }}>{s.coupleNames}</h2>
+              <div style={{ width:40, height:1, background:'#2a3829', margin:'0 auto 16px' }}/>
+              <p style={{ fontSize:11, fontWeight:700, letterSpacing:'0.2em', textTransform:'uppercase', color:'#4a6448', marginBottom:6 }}>DATE</p>
+              <p style={{ fontFamily:'Palatino,serif', fontSize:18, color:'#cde0ca', marginBottom:12 }}>{dateDisplay}</p>
+              <p style={{ fontSize:13, color:'#3a5038' }}>{venueDisplay}{venueAddress ? ` · ${venueAddress}` : ''}</p>
+            </div>
+            {/* Nav buttons */}
+            <div style={{ padding:'0 20px 24px', display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8 }}>
+              {[{ label:'Details', p:'details' as Page }, { label:'Our Story', p:'story' as Page }, { label:'RSVP', p:'rsvp-search' as Page }].map(({ label, p }) => (
+                <button key={label} onClick={() => setPage(p)} style={{ padding:'10px 0', borderRadius:12, fontSize:13, fontWeight:600, border:'none', cursor:'pointer', background: p==='rsvp-search' ? accent : accentLight, color: p==='rsvp-search' ? '#e8f0e6' : '#8fb882', letterSpacing:'0.05em' }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DETAILS ───────────────────────────────────────────────────── */}
+      {page === 'details' && (
+        <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', padding:'32px 20px' }}>
+          <Nav onBack={() => setPage('invite')} />
+          <div style={{ width:'100%', maxWidth:380, ...cardStyle, overflow:'hidden', marginTop:12 }}>
+            <div style={{ padding:'28px 28px 12px', textAlign:'center' }}>
+              <p style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'#4a7a44', marginBottom:4 }}>Date &</p>
+              <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:30, fontWeight:300, color:'#e8f0e6', marginBottom:16 }}>Location</h2>
+              <div style={{ width:32, height:1, background:'#2a3829', margin:'0 auto 16px' }}/>
+              <p style={{ fontSize:11, fontWeight:700, letterSpacing:'0.2em', textTransform:'uppercase', color:'#3a5038', marginBottom:4 }}>DATE</p>
+              <p style={{ fontFamily:'Palatino,serif', fontSize:19, color:'#cde0ca', marginBottom:6 }}>{dateDisplay}</p>
+              {venueAddress && <p style={{ fontSize:13, color:'#3a5038', marginBottom:4 }}>{venueDisplay}</p>}
+              {venueAddress && <p style={{ fontSize:12, color:'#2a3828' }}>{venueAddress}</p>}
+            </div>
+
+            {/* Timeline grid — from DB */}
+            <div style={{ padding:'16px 20px 20px' }}>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:10 }}>
+                {(timeline.length > 0 ? timeline : [
+                  {id:'a',time:'4:00 PM',title:'I Do',desc:'',who:'',order:1},
+                  {id:'b',time:'5:00 PM',title:'Say Cheese',desc:'',who:'',order:2},
+                  {id:'c',time:'6:00 PM',title:'Toast',desc:'',who:'',order:3},
+                  {id:'d',time:'7:00 PM',title:'Dinner',desc:'',who:'',order:4},
+                  {id:'e',time:'9:00 PM',title:'Cake',desc:'',who:'',order:5},
+                  {id:'f',time:'10:00 PM',title:'Dance',desc:'',who:'',order:6},
+                ]).slice(0, 6).map(item => (
+                  <div key={item.id} style={{ textAlign:'center', padding:'14px 8px', border:'1px solid #1e2e1c', borderRadius:14, background:'#141c13' }}>
+                    <div style={{ fontSize:28, marginBottom:6 }}>{getIcon(item.title)}</div>
+                    <p style={{ fontSize:12, fontWeight:600, color:'#6a9068' }}>{item.time}</p>
+                    <p style={{ fontSize:11, letterSpacing:'0.1em', textTransform:'uppercase', color:'#4a6448', marginTop:2 }}>{item.title}</p>
                   </div>
-                  {plusOneName && <div style={{marginBottom:12}}>
-                    <label style={{fontSize:12,color:'#5a7057',textTransform:'uppercase',letterSpacing:'0.08em',display:'block',marginBottom:6}}>Plus one dietary</label>
-                    <select value={plusOneDietary} onChange={e=>setPlusOneDietary(e.target.value)} style={{width:'100%',padding:'12px 16px',borderRadius:10,border:'1px solid #2a3829',background:'#141c13',color:'#e8f0e6',fontSize:15,outline:'none'}}>
-                      {DIETARY.map(d=><option key={d} value={d}>{d||'None'}</option>)}
-                    </select>
-                  </div>}
-                </>}
-              </>}
-              <button onClick={submit} disabled={submitting||attending===null} style={{width:'100%',padding:14,borderRadius:12,background:accent,color:'#e8f0e6',border:'none',fontSize:15,fontWeight:600,cursor:'pointer',marginTop:8,opacity:submitting||attending===null?0.5:1,display:'flex',alignItems:'center',justifyContent:'center',gap:8}}>
-                {submitting ? <><Loader2 size={17} style={{animation:'spin 1s linear infinite'}}/>Saving…</> : <><Check size={17}/>Submit RSVP</>}
-              </button>
-            </div>
-          )}
-
-          {page === 'done' && (
-            <div style={{padding:40,textAlign:'center'}}>
-              <div style={{width:60,height:60,borderRadius:'50%',background:accent+'20',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 20px'}}>
-                <Check size={28} style={{color:accent}} />
+                ))}
               </div>
-              <h3 style={{fontFamily:'var(--font-display)',fontSize:26,fontWeight:300,color:'#e8f0e6',marginBottom:8}}>{attending ? 'See you there!' : 'We understand'}</h3>
-              <p style={{color:'#5a7057',fontSize:15,lineHeight:1.6}}>{attending ? s.confirmedMessage : s.declinedMessage}</p>
+
+              {/* Dress code */}
+              <div style={{ marginTop:20, textAlign:'center', borderTop:'1px solid #1e2e1c', paddingTop:18 }}>
+                <p style={{ fontFamily:'Palatino,serif', fontStyle:'italic', fontSize:16, color:'#8fb882', marginBottom:6 }}>Dress Code</p>
+                <p style={{ fontSize:13, fontWeight:700, letterSpacing:'0.15em', textTransform:'uppercase', color:'#cde0ca', marginBottom:8 }}>{s.dressCode}</p>
+                <p style={{ fontSize:12, color:'#3a5038', lineHeight:1.6 }}>{s.dressCodeNote}</p>
+              </div>
             </div>
-          )}
+          </div>
+          <button onClick={() => setPage('rsvp-search')} style={{ marginTop:16, width:'100%', maxWidth:380, padding:'14px', borderRadius:14, background:accent, color:'#e8f0e6', border:'none', fontSize:15, fontWeight:600, cursor:'pointer' }}>
+            RSVP now
+          </button>
+        </div>
+      )}
+
+      {/* ── OUR STORY ─────────────────────────────────────────────────── */}
+      {page === 'story' && (
+        <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', padding:'32px 20px' }}>
+          <Nav onBack={() => setPage('invite')} />
+          <div style={{ width:'100%', maxWidth:380, marginTop:12 }}>
+            <div style={{ ...cardStyle, padding:'24px', textAlign:'center', marginBottom:12, borderStyle:'solid', borderWidth:8, borderColor:'#1e2e1c' }}>
+              <p style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:'#4a7a44', marginBottom:4 }}>Our</p>
+              <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontStyle:'italic', fontSize:30, fontWeight:300, color:'#e8f0e6', marginBottom:16 }}>Love Story</h2>
+              {(s.photo2 || s.photo1) && (
+                <div style={{ display:'inline-block', background:'#fff', padding:8, boxShadow:'0 12px 32px rgba(0,0,0,0.5)', transform:'rotate(-1deg)', marginBottom:12 }}>
+                  <img src={s.photo2||s.photo1} alt="" style={{ width:180, height:130, objectFit:'cover' }} />
+                  <p style={{ textAlign:'center', fontSize:10, color:'#aaa', marginTop:6, fontStyle:'italic' }}>a new adventure will begin</p>
+                </div>
+              )}
+            </div>
+            <div style={{ ...cardStyle, padding:'28px 28px' }}>
+              {s.ourStory.split('\n\n').map((para, i) => (
+                <p key={i} style={{ fontFamily:'Palatino,Georgia,serif', fontStyle:'italic', fontSize:14, color:'#8fa88c', lineHeight:1.9, marginBottom:i < s.ourStory.split('\n\n').length-1 ? 16 : 0, textAlign:'center' }}>{para}</p>
+              ))}
+            </div>
+          </div>
+          <button onClick={() => setPage('rsvp-search')} style={{ marginTop:16, width:'100%', maxWidth:380, padding:'14px', borderRadius:14, background:accent, color:'#e8f0e6', border:'none', fontSize:15, fontWeight:600, cursor:'pointer' }}>
+            RSVP now
+          </button>
+        </div>
+      )}
+
+      {/* ── RSVP SEARCH ───────────────────────────────────────────────── */}
+      {page === 'rsvp-search' && (
+        <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', padding:'32px 20px' }}>
+          <Nav onBack={() => setPage('invite')} />
+          <div style={{ width:'100%', maxWidth:380, ...cardStyle, padding:'32px', marginTop:12 }}>
+            <div style={{ textAlign:'center', marginBottom:24 }}>
+              <Heart size={22} fill={accent} style={{ color:accent, margin:'0 auto 12px' }} />
+              <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:30, fontWeight:300, color:'#e8f0e6', marginBottom:6 }}>RSVP</h2>
+              <p style={{ fontSize:14, color:'#3a5038' }}>{s.searchLabel}</p>
+            </div>
+            <div style={{ position:'relative', marginBottom:12 }}>
+              <input type="text" value={nameInput} onChange={e => setNameInput(e.target.value)}
+                onKeyDown={e => e.key==='Enter' && searchGuest()} placeholder="Your full name" autoFocus
+                style={{ width:'100%', padding:'14px 48px 14px 18px', borderRadius:14, border:'1px solid #2a3829', fontSize:16, background:'#141c13', color:'#e8f0e6', outline:'none', boxSizing:'border-box' }}
+                onFocus={e=>{e.target.style.borderColor=accent;e.target.style.boxShadow=`0 0 0 3px ${accent}25`}}
+                onBlur={e=>{e.target.style.borderColor='#2a3829';e.target.style.boxShadow='none'}} />
+              <Search size={17} style={{ position:'absolute', right:16, top:'50%', transform:'translateY(-50%)', color:'#2a3828' }} />
+            </div>
+            <button onClick={searchGuest} disabled={searching || !nameInput.trim()}
+              style={{ width:'100%', padding:'14px', borderRadius:14, background: searching||!nameInput.trim() ? '#1e2e1c' : accent, color:'#e8f0e6', border:'none', fontSize:15, fontWeight:600, cursor: searching||!nameInput.trim() ? 'not-allowed' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
+              {searching ? <><Loader2 size={17} style={{animation:'spin 1s linear infinite'}} />Searching…</> : <>Find my invitation <ChevronRight size={17}/></>}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── MULTIPLE MATCHES ──────────────────────────────────────────── */}
+      {page === 'rsvp-multiple' && (
+        <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', padding:'32px 20px' }}>
+          <Nav onBack={() => setPage('rsvp-search')} />
+          <div style={{ width:'100%', maxWidth:380, ...cardStyle, padding:'32px', marginTop:12 }}>
+            <h2 style={{ fontFamily:'Palatino,serif', fontSize:26, fontWeight:300, color:'#e8f0e6', marginBottom:6 }}>A few matches</h2>
+            <p style={{ fontSize:14, color:'#3a5038', marginBottom:20 }}>Select your name below</p>
+            <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+              {matches.map(g => (
+                <button key={g.id} onClick={() => pickGuest(g)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', borderRadius:14, border:'1px solid #2a3829', background:'#141c13', color:'#cde0ca', cursor:'pointer', textAlign:'left', fontSize:15, fontWeight:500 }}>
+                  {g.name}
+                  <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                    {g.already_rsvpd && <span style={{ fontSize:12, padding:'2px 8px', borderRadius:20, background:accentLight, color:accent }}>RSVPd</span>}
+                    <ChevronRight size={17} style={{ color:'#2a3828' }} />
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── NOT FOUND ─────────────────────────────────────────────────── */}
+      {page === 'rsvp-not-found' && (
+        <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', padding:'32px 20px' }}>
+          <Nav onBack={() => setPage('rsvp-search')} />
+          <div style={{ width:'100%', maxWidth:380, ...cardStyle, padding:'36px', marginTop:12, textAlign:'center' }}>
+            <div style={{ width:56, height:56, borderRadius:'50%', background:'#2a1a08', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
+              <Search size={24} style={{ color:'#d97706' }} />
+            </div>
+            <h2 style={{ fontFamily:'Palatino,serif', fontSize:24, color:'#e8f0e6', marginBottom:8 }}>Name not found</h2>
+            <p style={{ fontSize:14, color:'#3a5038', lineHeight:1.6, marginBottom:24 }}>We couldn&apos;t find &ldquo;{nameInput}&rdquo; on the guest list. Please try your full name{s.contactEmail ? ` or contact us at ${s.contactEmail}` : ''}.</p>
+            <button onClick={() => { setPage('rsvp-search'); setNameInput('') }} style={{ width:'100%', padding:'13px', borderRadius:14, background:'#1e2e1c', color:'#8fb882', border:'1px solid #2a3829', fontSize:14, fontWeight:600, cursor:'pointer' }}>
+              Try again
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── DETAILS VIEW (already RSVPd) ──────────────────────────────── */}
+      {page === 'rsvp-details' && guest && (
+        <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', padding:'32px 20px' }}>
+          <Nav onBack={() => setPage('rsvp-search')} />
+          <div style={{ width:'100%', maxWidth:380, ...cardStyle, overflow:'hidden', marginTop:12 }}>
+            <div style={{ padding:'28px 28px 24px' }}>
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
+                <h2 style={{ fontFamily:'Palatino,serif', fontSize:28, fontWeight:300, color:'#e8f0e6' }}>Hi, {guest.name.split(' ')[0]}!</h2>
+                <button onClick={startEdit} style={{ display:'flex', alignItems:'center', gap:6, fontSize:14, color:'#8fb882', background:'none', border:'none', cursor:'pointer' }}><Edit3 size={15}/>Edit</button>
+              </div>
+              <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'8px 16px', borderRadius:20, fontSize:14, fontWeight:600, marginBottom:20, background: guest.rsvp_status==='attending' ? accent+'20' : '#7f202020', color: guest.rsvp_status==='attending' ? '#8fb882' : '#f87171' }}>
+                <Check size={14}/> {guest.rsvp_status==='attending' ? 'Attending 🎉' : 'Unable to attend'}
+              </div>
+              {[
+                ['Name', guest.name], ['Email', guest.email||'Not provided'], ['Dietary', guest.dietary||'None'],
+                ...(guest.has_plus_one ? [['Plus one', guest.plus_one_name||'Not bringing one']] : []),
+                ...(guest.plus_one_name ? [['Plus one dietary', guest.plus_one_dietary||'None']] : []),
+              ].map(([label, val]) => (
+                <div key={label} style={{ display:'flex', justifyContent:'space-between', padding:'10px 0', borderBottom:'1px solid #1a2419' }}>
+                  <span style={{ fontSize:12, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.08em', color:'#3a5038' }}>{label}</span>
+                  <span style={{ fontSize:14, color:'#cde0ca', textAlign:'right', maxWidth:'60%' }}>{val}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ padding:'16px 24px', borderTop:'1px solid #1a2419', background:'#141c13' }}>
+              <a href="/info" style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, width:'100%', padding:'13px', borderRadius:14, background:accent, color:'#e8f0e6', textDecoration:'none', fontSize:14, fontWeight:600 }}>
+                View wedding details <ChevronRight size={15}/>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── EDIT RSVP ─────────────────────────────────────────────────── */}
+      {page === 'rsvp-editing' && guest && (
+        <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', padding:'32px 20px' }}>
+          <Nav onBack={() => setPage('rsvp-details')} />
+          <div style={{ width:'100%', maxWidth:380, ...cardStyle, padding:'28px', marginTop:12 }}>
+            <h2 style={{ fontFamily:'Palatino,serif', fontSize:26, fontWeight:300, color:'#e8f0e6', marginBottom:20 }}>Update your RSVP</h2>
+            <RSVPForm attending={attending} setAttending={setAttending} dietary={dietary} setDietary={setDietary} plusOneName={plusOneName} setPlusOneName={setPlusOneName} plusOneDietary={plusOneDietary} setPlusOneDietary={setPlusOneDietary} email={email} setEmail={setEmail} hasPlusOne={guest.has_plus_one} attendingLabel={s.attendingLabel} declineLabel={s.declineLabel} accent={accent} />
+            <button onClick={() => submit(true)} disabled={attending===null||submitting} style={{ width:'100%', padding:'14px', borderRadius:14, background: attending===null||submitting ? '#1e2e1c' : accent, color:'#e8f0e6', border:'none', fontSize:15, fontWeight:600, cursor: attending===null||submitting ? 'not-allowed' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginTop:20 }}>
+              {submitting ? <><Loader2 size={17} style={{animation:'spin 1s linear infinite'}}/>Saving…</> : 'Save changes'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── FRESH RSVP FORM ───────────────────────────────────────────── */}
+      {page === 'rsvp-form' && guest && (
+        <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', padding:'32px 20px' }}>
+          <Nav onBack={() => setPage('rsvp-search')} />
+          <div style={{ width:'100%', maxWidth:380, ...cardStyle, padding:'28px', marginTop:12 }}>
+            <h2 style={{ fontFamily:'Palatino,serif', fontSize:28, fontWeight:300, color:'#e8f0e6', marginBottom:4 }}>Hi, {guest.name.split(' ')[0]}!</h2>
+            <p style={{ fontSize:14, color:'#3a5038', marginBottom:24 }}>We can&apos;t wait to celebrate with you.</p>
+            <RSVPForm attending={attending} setAttending={setAttending} dietary={dietary} setDietary={setDietary} plusOneName={plusOneName} setPlusOneName={setPlusOneName} plusOneDietary={plusOneDietary} setPlusOneDietary={setPlusOneDietary} email={email} setEmail={setEmail} hasPlusOne={guest.has_plus_one} attendingLabel={s.attendingLabel} declineLabel={s.declineLabel} accent={accent} />
+            <button onClick={() => submit(false)} disabled={attending===null||submitting} style={{ width:'100%', padding:'14px', borderRadius:14, background: attending===null||submitting ? '#1e2e1c' : accent, color:'#e8f0e6', border:'none', fontSize:15, fontWeight:600, cursor: attending===null||submitting ? 'not-allowed' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginTop:20 }}>
+              {submitting ? <><Loader2 size={17} style={{animation:'spin 1s linear infinite'}}/>Submitting…</> : 'Submit RSVP'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── DONE ──────────────────────────────────────────────────────── */}
+      {page === 'rsvp-done' && (
+        <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'32px 20px' }}>
+          <div style={{ width:'100%', maxWidth:380, ...cardStyle, padding:'40px', textAlign:'center' }}>
+            <div style={{ width:64, height:64, borderRadius:'50%', background:accentLight, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 24px' }}>
+              {attending ? <Heart size={28} fill={accent} style={{ color:accent }} /> : <Check size={28} style={{ color:accent }} />}
+            </div>
+            <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:32, fontWeight:300, color:'#e8f0e6', marginBottom:12 }}>
+              {attending ? "We'll see you there! 🌿" : "We'll miss you!"}
+            </h2>
+            <p style={{ fontSize:14, color:'#3a5038', lineHeight:1.7, marginBottom:28 }}>
+              {attending ? s.confirmedMessage : s.declinedMessage}
+            </p>
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              {attending && <a href="/info" style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'13px', borderRadius:14, background:accent, color:'#e8f0e6', textDecoration:'none', fontSize:14, fontWeight:600 }}>View wedding details <ChevronRight size={15}/></a>}
+              <button onClick={() => setPage('rsvp-details')} style={{ padding:'13px', borderRadius:14, background:'transparent', color:'#4a6448', border:'1px solid #1e2e1c', fontSize:14, cursor:'pointer', fontWeight:500 }}>View my RSVP</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function Nav({ onBack }: { onBack: () => void }) {
+  return (
+    <button onClick={onBack} style={{ alignSelf:'flex-start', display:'flex', alignItems:'center', gap:6, fontSize:14, color:'#3a5038', background:'none', border:'none', cursor:'pointer', marginBottom:4 }}
+      onMouseEnter={e=>(e.currentTarget as HTMLElement).style.color='#8fb882'}
+      onMouseLeave={e=>(e.currentTarget as HTMLElement).style.color='#3a5038'}>
+      <ArrowLeft size={15}/> Back
+    </button>
+  )
+}
+
+function RSVPForm({ attending, setAttending, dietary, setDietary, plusOneName, setPlusOneName, plusOneDietary, setPlusOneDietary, email, setEmail, hasPlusOne, attendingLabel, declineLabel, accent }: {
+  attending: boolean|null; setAttending:(v:boolean)=>void; dietary:string; setDietary:(v:string)=>void
+  plusOneName:string; setPlusOneName:(v:string)=>void; plusOneDietary:string; setPlusOneDietary:(v:string)=>void
+  email:string; setEmail:(v:string)=>void; hasPlusOne:boolean; attendingLabel:string; declineLabel:string; accent:string
+}) {
+  const inp = { width:'100%', padding:'12px 16px', borderRadius:12, border:'1px solid #2a3829', fontSize:15, background:'#141c13', color:'#e8f0e6', outline:'none', boxSizing:'border-box' as const }
+  const lbl = { display:'block' as const, fontSize:12, fontWeight:700 as const, color:'#4a6448', textTransform:'uppercase' as const, letterSpacing:'0.08em', marginBottom:8 }
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:18 }}>
+      <div>
+        <p style={lbl}>Will you be joining us?</p>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+          <button onClick={() => setAttending(true)} style={{ padding:'12px', borderRadius:12, fontSize:14, fontWeight:600, border:`2px solid ${attending===true ? accent : '#2a3829'}`, background: attending===true ? accent+'20' : 'transparent', color: attending===true ? '#8fb882' : '#3a5038', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
+            <Heart size={14} style={attending===true ? {fill:accent,color:accent} : {}} /> {attendingLabel}
+          </button>
+          <button onClick={() => setAttending(false)} style={{ padding:'12px', borderRadius:12, fontSize:14, fontWeight:600, border:`2px solid ${attending===false ? '#7f2020' : '#2a3829'}`, background: attending===false ? '#7f202020' : 'transparent', color: attending===false ? '#f87171' : '#3a5038', cursor:'pointer' }}>
+            {declineLabel}
+          </button>
         </div>
       </div>
+      {attending===true && (<>
+        {hasPlusOne && <div>
+          <p style={lbl}>Plus one <span style={{ textTransform:'none', fontWeight:400, color:'#2a3828' }}>(optional)</span></p>
+          <input style={inp} value={plusOneName} onChange={e=>setPlusOneName(e.target.value)} placeholder="Full name" />
+          {plusOneName && <select style={{ ...inp, marginTop:8, cursor:'pointer' }} value={plusOneDietary} onChange={e=>setPlusOneDietary(e.target.value)}>{DIETARY.map(o=><option key={o} value={o}>{o||'No dietary restrictions'}</option>)}</select>}
+        </div>}
+        <div>
+          <p style={lbl}>Dietary requirements</p>
+          <select style={{ ...inp, cursor:'pointer' }} value={dietary} onChange={e=>setDietary(e.target.value)}>{DIETARY.map(o=><option key={o} value={o}>{o||'No restrictions'}</option>)}</select>
+        </div>
+      </>)}
+      {attending!==null && <div>
+        <p style={lbl}>Email {attending ? 'for confirmation' : ''}</p>
+        <input style={inp} type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="your@email.com" />
+      </div>}
     </div>
   )
 }
