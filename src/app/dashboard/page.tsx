@@ -72,6 +72,7 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
   const [accentColor, setAccentColor] = useState('#4a7a44')
   const [secondaryColor, setSecondaryColor] = useState('#8fb882')
   const [bgColor, setBgColor] = useState('#111714')
+  const [tertiaryColor, setTertiaryColor] = useState('#1a2419')
   const [colorSaved, setColorSaved] = useState(false)
 
   useEffect(() => {
@@ -83,6 +84,7 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
         if (c.accent) { setAccentColor(c.accent); document.documentElement.style.setProperty('--accent', c.accent) }
         if (c.sage) { setSecondaryColor(c.sage); document.documentElement.style.setProperty('--sage', c.sage) }
         if (c.bg) { setBgColor(c.bg); document.documentElement.style.setProperty('--bg', c.bg); document.documentElement.style.setProperty('--bg2', c.bg); }
+        if (c.tertiary) { setTertiaryColor(c.tertiary); document.documentElement.style.setProperty('--bg3', c.tertiary); }
       } catch {}
     }
     Promise.all([$get('guest-stats'), $get('venues'), $get('rsvp-settings')]).then(([s, vs, rs]) => {
@@ -97,10 +99,13 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
         document.documentElement.style.setProperty('--accent', accent)
         document.documentElement.style.setProperty('--sage', sage)
         const bg = rs.bgColor || '#111714'
+        const tertiary = rs.tertiaryColor || '#1a2419'
         setBgColor(bg)
+        setTertiaryColor(tertiary)
         document.documentElement.style.setProperty('--bg', bg)
         document.documentElement.style.setProperty('--bg2', bg)
-        localStorage.setItem('weddingColors', JSON.stringify({ accent, sage, bg }))
+        document.documentElement.style.setProperty('--bg3', tertiary)
+        localStorage.setItem('weddingColors', JSON.stringify({ accent, sage, bg, tertiary }))
       }
       setLoading(false)
     }).catch(() => setLoading(false))
@@ -108,12 +113,13 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
 
   const saveColors = async () => {
     // Save to localStorage for instant cross-page apply
-    localStorage.setItem('weddingColors', JSON.stringify({ accent: accentColor, sage: secondaryColor, bg: bgColor }))
+    localStorage.setItem('weddingColors', JSON.stringify({ accent: accentColor, sage: secondaryColor, bg: bgColor, tertiary: tertiaryColor }))
     document.documentElement.style.setProperty('--accent', accentColor)
     document.documentElement.style.setProperty('--sage', secondaryColor)
     document.documentElement.style.setProperty('--bg', bgColor)
     document.documentElement.style.setProperty('--bg2', bgColor)
-    await $patch('rsvp-settings', { id: 'main', accentColor, secondaryColor, bgColor })
+    document.documentElement.style.setProperty('--bg3', tertiaryColor)
+    await $patch('rsvp-settings', { id: 'main', accentColor, secondaryColor, bgColor, tertiaryColor })
     setColorSaved(true)
     setTimeout(() => setColorSaved(false), 2000)
   }
@@ -184,9 +190,10 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
         </div>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:20}}>
           {[
-            { label:'Primary / buttons', val: accentColor, set: setAccentColor, desc:'Used for buttons, selected states' },
-            { label:'Secondary / highlights', val: secondaryColor, set: setSecondaryColor, desc:'Used for icons, tags, accents' },
-            { label:'Background color', val: bgColor, set: setBgColor, desc:'Main app background' },
+            { label:'Primary / buttons', val: accentColor, set: setAccentColor, desc:'Buttons, RSVP button, selected states' },
+            { label:'Secondary / highlights', val: secondaryColor, set: setSecondaryColor, desc:'Icons, tags, nav highlights' },
+            { label:'Background color', val: bgColor, set: setBgColor, desc:'Main app & RSVP background' },
+            { label:'Card / surface color', val: tertiaryColor, set: setTertiaryColor, desc:'Cards, RSVP card & bubbles' },
           ].map(({ label, val, set, desc }) => (
             <div key={label}>
               <p style={{fontSize:13,fontWeight:600,color:'#6a9068',marginBottom:6}}>{label}</p>

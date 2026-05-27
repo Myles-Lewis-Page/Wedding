@@ -16,7 +16,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
 }
 
-const colorScript = `(function(){try{var c=localStorage.getItem('weddingColors');if(c){var p=JSON.parse(c);if(p.accent)document.documentElement.style.setProperty('--accent',p.accent);if(p.sage)document.documentElement.style.setProperty('--sage',p.sage);if(p.bg){document.documentElement.style.setProperty('--bg',p.bg);document.documentElement.style.setProperty('--bg2',p.bg);}}}catch(e){}})();`
+const colorScript = `(function(){try{var c=localStorage.getItem('weddingColors');if(c){var p=JSON.parse(c);if(p.accent)document.documentElement.style.setProperty('--accent',p.accent);if(p.sage)document.documentElement.style.setProperty('--sage',p.sage);if(p.bg){document.documentElement.style.setProperty('--bg',p.bg);document.documentElement.style.setProperty('--bg2',p.bg);}if(p.tertiary)document.documentElement.style.setProperty('--bg3',p.tertiary);}}catch(e){}})();`
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
