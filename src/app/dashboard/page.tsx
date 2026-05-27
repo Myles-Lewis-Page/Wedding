@@ -142,9 +142,9 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:16,marginBottom:24}}>
         {[
           { label:'Total guests', val:stats.total, sub:'on the list', color:'var(--sage)' },
-          { label:'Attending', val:stats.attending, sub:`${rate}% responded`, color:'#5dca8a' },
-          { label:'Pending RSVP', val:stats.pending, sub:'no reply yet', color:'#d97706' },
-          { label:'Declined', val:stats.declined, sub:'unable to come', color:'#f87171' },
+          { label:'Attending', val:stats.attending, sub:`${rate}% responded`, color:'#00ff00' },
+          { label:'Pending RSVP', val:stats.pending, sub:'no reply yet', color:'#f0b429' },
+          { label:'Declined', val:stats.declined, sub:'unable to come', color:'#ff0000' },
         ].map(({ label, val, sub, color }) => (
           <div key={label} style={{background:'#1a2419',borderRadius:16,padding:'22px 24px',border:'1px solid #202e1f'}}>
             <p style={{fontSize:12,color:'#3a5038',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>{label}</p>
@@ -162,7 +162,7 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
         </div>
         <div style={{height:10,background:'#141c13',borderRadius:5,overflow:'hidden',display:'flex'}}>
           <div style={{height:'100%',background:'var(--accent)',borderRadius:5,transition:'width 0.5s',width:`${stats.total?(stats.attending/stats.total)*100:0}%`}}/>
-          <div style={{height:'100%',background:'#7f2020',transition:'width 0.5s',width:`${stats.total?(stats.declined/stats.total)*100:0}%`}}/>
+          <div style={{height:'100%',background:'#ff0000',transition:'width 0.5s',width:`${stats.total?(stats.declined/stats.total)*100:0}%`}}/>
         </div>
         <div style={{display:'flex',gap:24,marginTop:12,fontSize:13,color:'#3a5038'}}>
           <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'var(--accent)',display:'inline-block'}}/> Attending</span>
@@ -237,7 +237,7 @@ function TabGuests() {
   const stats = { all: guests.length, attending: guests.filter(g => g.rsvpStatus === 'attending').length, declined: guests.filter(g => g.rsvpStatus === 'declined').length, pending: guests.filter(g => g.rsvpStatus === 'pending').length }
   const filtered = guests.filter(g => (filter === 'all' || g.rsvpStatus === filter) && (g.name.toLowerCase().includes(search.toLowerCase()) || g.email?.toLowerCase().includes(search.toLowerCase())))
 
-  const STATUS: Record<string, [string, string]> = { attending: ['Attending', '#059669'], declined: ['Declined', '#dc2626'], pending: ['Pending', '#d97706'] }
+  const STATUS: Record<string, [string, string]> = { attending: ['Attending', '#00ff00'], declined: ['Declined', '#ff0000'], pending: ['Pending', '#f0b429'] }
 
   const exportCSV = () => {
     const csv = [['Name','Email','Side','RSVP','Plus One','Dietary'], ...guests.map(g => [g.name, g.email||'', g.side, g.rsvpStatus, g.plusOneName||'', g.dietary||''])].map(r => r.map(c => `"${c}"`).join(',')).join('\n')
@@ -966,9 +966,9 @@ function TabRSVP() {
   const [savingSettings, setSavingSettings] = useState(false)
   const [settingsSaved, setSettingsSaved] = useState(false)
   const STATUS_COLORS: Record<string, [string, string]> = {
-    attending: ['#059669', '#d1fae5'],
-    declined: ['#dc2626', '#fee2e2'],
-    pending: ['#d97706', '#fef3c7'],
+    attending: ['#00ff00', '#00330022'],
+    declined: ['#ff0000', '#33000022'],
+    pending: ['#f0b429', '#2a200022'],
   }
 
   useEffect(() => {
@@ -1038,7 +1038,7 @@ function TabRSVP() {
             const total = guests.length
             return (
               <div className="space-y-3">
-                {[['Attending',attending,'#059669'],['Declined',declined,'#dc2626'],['Pending',pending,'#d97706']].map(([l,v,c])=>(
+                {[['Attending',attending,'#00ff00'],['Declined',declined,'#ff0000'],['Pending',pending,'#f0b429']].map(([l,v,c])=>(
                   <div key={String(l)} className="flex items-center gap-5">
                     <div className="flex-1 h-2 bg-[#1f2b1e] rounded-full overflow-hidden">
                       <div className="h-full rounded-full" style={{width:`${total?((v as number)/total)*100:0}%`,background:String(c)}}/>
