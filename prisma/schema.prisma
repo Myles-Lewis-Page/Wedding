@@ -130,7 +130,7 @@ model RsvpSettings {
   photo1           String @default("")
   photo2           String @default("")
   photo3           String @default("")
-  accentColor      String @default("#7A9C6E")
+  accentColor      String @default("#4a7a44")
   secondaryColor   String @default("#8fb882")
   searchLabel      String @default("Enter your name as it appears on your invitation")
   attendingLabel   String @default("Yes, I'll be there!")
