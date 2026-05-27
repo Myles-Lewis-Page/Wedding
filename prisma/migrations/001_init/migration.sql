@@ -115,3 +115,6 @@ INSERT INTO "timeline_items" ("id","time","title","desc","who","order") VALUES
   ('t5','6:30 PM','First dances & toasts','','Couple, Best man, MOH',5), ('t6','7:00 PM','Dinner service','','Catering',6),
   ('t7','9:00 PM','Cake cutting','','Couple',7), ('t8','11:30 PM','Last dance & send-off','Sparkler exit','Everyone',8)
 ON CONFLICT DO NOTHING;
+
+-- Add tertiaryColor column (card/surface color)
+ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "tertiaryColor" TEXT NOT NULL DEFAULT '#1a2419';
