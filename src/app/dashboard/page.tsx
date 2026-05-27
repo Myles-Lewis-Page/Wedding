@@ -43,8 +43,8 @@ const Select = (props: React.SelectHTMLAttributes<HTMLSelectElement> & { childre
 const Btn = ({ children, variant = 'primary', ...p }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'ghost' | 'danger' }) => {
   const base: React.CSSProperties = { display:'flex', alignItems:'center', gap:8, padding:'11px 22px', borderRadius:10, fontSize:15, fontWeight:600, cursor:'pointer', transition:'all 0.15s', border:'none', whiteSpace:'nowrap', opacity: p.disabled ? 0.4 : 1 }
   const styles: Record<string, React.CSSProperties> = {
-    primary: { ...base, background:'#4a7a44', color:'#e8f0e6', ...p.style },
-    ghost:   { ...base, background:'transparent', color:'#8fb882', border:'1px solid #2a3829', ...p.style },
+    primary: { ...base, background:'var(--accent)', color:'#e8f0e6', ...p.style },
+    ghost:   { ...base, background:'transparent', color:'var(--sage)', border:'1px solid #2a3829', ...p.style },
     danger:  { ...base, background:'transparent', color:'#f87171', ...p.style },
   }
   return <button {...p} style={styles[variant]}>{children}</button>
@@ -78,8 +78,12 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
       setStats(s)
       setVenue(Array.isArray(vs) ? (vs.find((v: {isSelected:boolean;name:string;address:string}) => v.isSelected) ?? null) : null)
       if (rs && !rs.error) {
-        if (rs.accentColor) { setAccentColor(rs.accentColor); document.documentElement.style.setProperty('--accent', rs.accentColor) }
-        if (rs.secondaryColor) { setSecondaryColor(rs.secondaryColor); document.documentElement.style.setProperty('--sage', rs.secondaryColor) }
+        const accent = rs.accentColor || '#4a7a44'
+        const secondary = rs.secondaryColor || '#8fb882'
+        setAccentColor(accent)
+        setSecondaryColor(secondary)
+        document.documentElement.style.setProperty('--accent', accent)
+        document.documentElement.style.setProperty('--sage', secondary)
       }
       setLoading(false)
     }).catch(() => setLoading(false))
@@ -87,10 +91,10 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
 
   const saveColors = async () => {
     await $patch('rsvp-settings', { id: 'main', accentColor, secondaryColor })
+    document.documentElement.style.setProperty('--accent', accentColor)
+    document.documentElement.style.setProperty('--sage', secondaryColor)
     setColorSaved(true)
     setTimeout(() => setColorSaved(false), 2000)
-    document.documentElement.style.setProperty('--sage', secondaryColor)
-    document.documentElement.style.setProperty('--accent', accentColor)
   }
 
   const rate = stats.total ? Math.round(((stats.attending + stats.declined) / stats.total) * 100) : 0
