@@ -74,25 +74,40 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
   const [colorSaved, setColorSaved] = useState(false)
 
   useEffect(() => {
+    // Apply colors from localStorage immediately (no flash)
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('weddingColors') : null
+    if (saved) {
+      try {
+        const c = JSON.parse(saved)
+        if (c.accent) { setAccentColor(c.accent); document.documentElement.style.setProperty('--accent', c.accent) }
+        if (c.sage) { setSecondaryColor(c.sage); document.documentElement.style.setProperty('--sage', c.sage) }
+      } catch {}
+    }
     Promise.all([$get('guest-stats'), $get('venues'), $get('rsvp-settings')]).then(([s, vs, rs]) => {
       setStats(s)
       setVenue(Array.isArray(vs) ? (vs.find((v: {isSelected:boolean;name:string;address:string}) => v.isSelected) ?? null) : null)
+      // DB is source of truth — overwrite localStorage if DB has colors
       if (rs && !rs.error) {
         const accent = rs.accentColor || '#4a7a44'
-        const secondary = rs.secondaryColor || '#8fb882'
+        const sage = rs.secondaryColor || '#8fb882'
         setAccentColor(accent)
-        setSecondaryColor(secondary)
+        setSecondaryColor(sage)
         document.documentElement.style.setProperty('--accent', accent)
-        document.documentElement.style.setProperty('--sage', secondary)
+        document.documentElement.style.setProperty('--sage', sage)
+        localStorage.setItem('weddingColors', JSON.stringify({ accent, sage }))
       }
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])
 
   const saveColors = async () => {
-    await $patch('rsvp-settings', { id: 'main', accentColor, secondaryColor })
+    // Save to localStorage for instant cross-page apply
+    localStorage.setItem('weddingColors', JSON.stringify({ accent: accentColor, sage: secondaryColor }))
+    // Apply CSS vars immediately everywhere
     document.documentElement.style.setProperty('--accent', accentColor)
     document.documentElement.style.setProperty('--sage', secondaryColor)
+    // Persist to DB so it survives clearing localStorage
+    await $patch('rsvp-settings', { id: 'main', accentColor, secondaryColor })
     setColorSaved(true)
     setTimeout(() => setColorSaved(false), 2000)
   }
@@ -109,7 +124,7 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
         <button onClick={() => onTab?.('venues')} style={{width:'100%',marginBottom:24,background:'#1e3a1e',borderRadius:16,padding:'14px 18px',display:'flex',alignItems:'center',gap:12,border:'none',cursor:'pointer',textAlign:'left',transition:'background 0.2s'}}
           onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background='#243d24'}
           onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background='#1e3a1e'}>
-          <MapPin size={17} style={{color:'#8fb882',flexShrink:0}} />
+          <MapPin size={17} style={{color:'var(--sage)',flexShrink:0}} />
           <div style={{flex:1,minWidth:0}}>
             <p style={{fontSize:11,color:'#4a7a44',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.1em'}}>Selected venue</p>
             <p style={{fontSize:15,fontWeight:600,color:'#b8d4b4',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{venue.name}{venue.address ? ` · ${venue.address}` : ''}</p>
@@ -120,7 +135,7 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
 
       <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:16,marginBottom:24}}>
         {[
-          { label:'Total guests', val:stats.total, sub:'on the list', color:'#8fb882' },
+          { label:'Total guests', val:stats.total, sub:'on the list', color:'var(--sage)' },
           { label:'Attending', val:stats.attending, sub:`${rate}% responded`, color:'#5dca8a' },
           { label:'Pending RSVP', val:stats.pending, sub:'no reply yet', color:'#d97706' },
           { label:'Declined', val:stats.declined, sub:'unable to come', color:'#f87171' },
@@ -140,11 +155,11 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
           <span style={{color:'#3a5038'}}>{stats.attending + stats.declined} / {stats.total}</span>
         </div>
         <div style={{height:10,background:'#141c13',borderRadius:5,overflow:'hidden',display:'flex'}}>
-          <div style={{height:'100%',background:'#4a7a44',borderRadius:5,transition:'width 0.5s',width:`${stats.total?(stats.attending/stats.total)*100:0}%`}}/>
+          <div style={{height:'100%',background:'var(--accent)',borderRadius:5,transition:'width 0.5s',width:`${stats.total?(stats.attending/stats.total)*100:0}%`}}/>
           <div style={{height:'100%',background:'#7f2020',transition:'width 0.5s',width:`${stats.total?(stats.declined/stats.total)*100:0}%`}}/>
         </div>
         <div style={{display:'flex',gap:24,marginTop:12,fontSize:13,color:'#3a5038'}}>
-          <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'#4a7a44',display:'inline-block'}}/> Attending</span>
+          <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'var(--accent)',display:'inline-block'}}/> Attending</span>
           <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'#7f2020',display:'inline-block'}}/> Declined</span>
           <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'#1e2e1c',display:'inline-block'}}/> Pending</span>
         </div>
@@ -157,7 +172,7 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
             <p style={{fontSize:15,fontWeight:600,color:'#cde0ca',marginBottom:3}}>Theme colors</p>
             <p style={{fontSize:13,color:'#3a5038'}}>Applied across dashboard and RSVP page</p>
           </div>
-          <Btn onClick={saveColors} style={{background: colorSaved ? '#2d6b40' : '#4a7a44'}}>
+          <Btn onClick={saveColors} style={{background: colorSaved ? 'var(--accent)' : '#4a7a44'}}>
             {colorSaved ? <><Check size={17}/>Saved!</> : 'Save colors'}
           </Btn>
         </div>
@@ -229,7 +244,7 @@ function TabGuests() {
 
       <div className="flex gap-5 mb-4 flex-wrap">
         {(['all','attending','declined','pending'] as const).map(f => (
-          <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-full text-base font-medium transition-all capitalize ${filter === f ? 'bg-[#5a8a52] text-white' : 'bg-[#1f2b1e] text-[#7a9878] hover:bg-[#243022]'}`}>
+          <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-full text-base font-medium transition-all capitalize ${filter === f ? 'bg-[var(--accent)] text-white' : 'bg-[#1f2b1e] text-[#7a9878] hover:bg-[#243022]'}`}>
             {f === 'all' ? `All (${stats.all})` : `${f.charAt(0).toUpperCase() + f.slice(1)} (${stats[f]})`}
           </button>
         ))}
@@ -256,7 +271,7 @@ function TabGuests() {
                     <tr key={g.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#141c13] transition-colors">
                       <td className="px-6 py-3.5.5">
                         <div className="flex items-center gap-5.5">
-                          <div className="w-8 h-8 rounded-full bg-[#1e3a1e] flex items-center justify-center text-base font-semibold text-[#8fb882] shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-[var(--sage-light,#1e3a1e)] flex items-center justify-center text-base font-semibold text-[var(--sage)] shrink-0">
                             {g.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase()}
                           </div>
                           <div>
@@ -271,7 +286,7 @@ function TabGuests() {
                       </td>
                       <td className="px-6 py-3.5.5 text-[#7a9878] text-base capitalize">{g.side}</td>
                       <td className="px-6 py-3.5.5"><Tag color={color}>{label}</Tag></td>
-                      <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.hasPlusOne ? (g.plusOneName || <span className="text-[#8fb882]">✓ allowed</span>) : '—'}</td>
+                      <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.hasPlusOne ? (g.plusOneName || <span className="text-[var(--sage)]">✓ allowed</span>) : '—'}</td>
                       <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.dietary || '—'}</td>
                       <td className="px-6 py-3.5.5"><Tag color={g.tableId ? '#2563eb' : '#78716c'}>{g.tableId ? 'Assigned' : 'Unassigned'}</Tag></td>
                       <td className="px-6 py-3.5.5"><button onClick={() => del(g.id)} className="text-[#3a5038] hover:text-red-400 transition-colors"><Trash2 size={17} /></button></td>
@@ -295,7 +310,7 @@ function TabGuests() {
           </div>
           <div className="flex items-center justify-between py-1 px-1">
             <div><p className="text-base font-medium text-[#cde0ca]">Plus one allowed</p><p className="text-base text-[#5a7057]">Can bring a guest</p></div>
-            <button onClick={() => setForm(f => ({...f, hasPlusOne: !f.hasPlusOne}))} className={`w-11 h-6 rounded-full transition-colors relative ${form.hasPlusOne ? 'bg-[#5a8a52]' : 'bg-[#243022]'}`}>
+            <button onClick={() => setForm(f => ({...f, hasPlusOne: !f.hasPlusOne}))} className={`w-11 h-6 rounded-full transition-colors relative ${form.hasPlusOne ? 'bg-[var(--accent)]' : 'bg-[#243022]'}`}>
               <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-[#1a2419] shadow transition-transform ${form.hasPlusOne ? 'translate-x-5' : 'translate-x-0.5'}`} />
             </button>
           </div>
@@ -396,7 +411,7 @@ function TabVenues() {
         <p className="text-base text-[#5a7057] mb-3">{fmtDate || 'Pick your date — it shows across the whole app'}</p>
         <div className="flex gap-5">
           <Input type="date" value={weddingDate} onChange={e => { setWeddingDate(e.target.value); setDateSaved(false) }} className="flex-1" />
-          <Btn onClick={saveDate} disabled={!weddingDate} style={{ background: dateSaved ? '#5DCAA5' : '#7A9C6E' }}>
+          <Btn onClick={saveDate} disabled={!weddingDate} style={{ background: dateSaved ? 'var(--sage)' : 'var(--accent)' }}>
             {dateSaved ? <><Check size={17} />Saved!</> : 'Save date'}
           </Btn>
         </div>
@@ -408,7 +423,7 @@ function TabVenues() {
           <div className="relative h-24 bg-stone-300">
             {selected.imageUrl && <img src={selected.imageUrl} alt="" className="w-full h-full object-cover" />}
             <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/20 flex items-center px-5 gap-5">
-              <div className="w-8 h-8 rounded-full bg-[#5a8a52] flex items-center justify-center shrink-0"><Check size={26} className="text-white" /></div>
+              <div className="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center shrink-0"><Check size={26} className="text-white" /></div>
               <div className="flex-1 min-w-0">
                 <p className="text-base text-white/70 uppercase tracking-wider">Our venue</p>
                 <p className="text-white font-medium truncate">{selected.name}</p>
@@ -430,22 +445,22 @@ function TabVenues() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
           {venues.map(v => (
-            <button key={v.id} onClick={() => setDetail(v)} className="group bg-[#1a2419] rounded-3xl border border-[#2a3829] hover:border-[#8fb882] hover:shadow-md transition-all text-left overflow-hidden">
+            <button key={v.id} onClick={() => setDetail(v)} className="group bg-[#1a2419] rounded-3xl border border-[#2a3829] hover:border-[var(--sage)] hover:shadow-md transition-all text-left overflow-hidden">
               <div className="relative h-44 bg-[#1f2b1e]">
                 {v.imageUrl ? <img src={v.imageUrl} alt={v.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-full flex items-center justify-center"><MapPin size={30} className="text-[#3a5038]" /></div>}
-                {v.isSelected && <div className="absolute top-2 left-2 bg-[#5a8a52] text-white text-base px-2.5 py-1 rounded-full flex items-center gap-1"><Check size={10} />Selected</div>}
+                {v.isSelected && <div className="absolute top-2 left-2 bg-[var(--accent)] text-white text-base px-2.5 py-1 rounded-full flex items-center gap-1"><Check size={10} />Selected</div>}
               </div>
               <div className="p-7">
                 <p className="font-semibold text-[#e8f0e6] mb-1" style={{ fontFamily: 'var(--font-display)' }}>{v.name}</p>
                 {v.address && <p className="text-base text-[#5a7057] flex items-center gap-1 mb-3"><MapPin size={10} />{v.address}</p>}
                 <div className="flex items-center justify-between">
-                  <span className="text-base font-semibold text-[#8fb882] bg-[#1e3a1e] px-3 py-1 rounded-full">{fmt$(v.cost)}</span>
+                  <span className="text-base font-semibold text-[var(--sage)] bg-[var(--sage-light,#1e3a1e)] px-3 py-1 rounded-full">{fmt$(v.cost)}</span>
                   {v.capacity && <span className="text-base text-[#5a7057] flex items-center gap-1"><Users size={10} />{v.capacity}</span>}
                 </div>
               </div>
             </button>
           ))}
-          <button onClick={() => setShowAdd(true)} className="h-56 rounded-3xl border-2 border-dashed border-[#2a3829] hover:border-[#8fb882] hover:bg-[#1e3a1e]/30 flex flex-col items-center justify-center gap-5 text-[#5a7057] hover:text-[#8fb882] transition-all">
+          <button onClick={() => setShowAdd(true)} className="h-56 rounded-3xl border-2 border-dashed border-[#2a3829] hover:border-[var(--sage)] hover:bg-[var(--sage-light,#1e3a1e)]/30 flex flex-col items-center justify-center gap-5 text-[#5a7057] hover:text-[var(--sage)] transition-all">
             <Plus size={26} /><span className="text-base">Add venue</span>
           </button>
         </div>
@@ -484,7 +499,7 @@ function TabVenues() {
                 <Field label="Phone"><Input value={form.phone} onChange={e => setForm(f=>({...f,phone:e.target.value}))} /></Field>
                 <Field label="Email"><Input value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} /></Field>
               </div>
-              <Field label="Description"><textarea value={form.description} onChange={e => setForm(f=>({...f,description:e.target.value}))} rows={2} className="w-full px-6 py-3.5.5 rounded-3xl border border-[#2a3829] text-base focus:outline-none focus:border-[#8fb882] resize-none" /></Field>
+              <Field label="Description"><textarea value={form.description} onChange={e => setForm(f=>({...f,description:e.target.value}))} rows={2} className="w-full px-6 py-3.5.5 rounded-3xl border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)] resize-none" /></Field>
               <Field label="Image URL"><Input value={form.imageUrl} onChange={e => setForm(f=>({...f,imageUrl:e.target.value}))} placeholder="https://..." /></Field>
               <Field label="Amenities (comma separated)"><Input value={form.amenities} onChange={e => setForm(f=>({...f,amenities:e.target.value}))} placeholder="Parking, Bridal suite, Kitchen…" /></Field>
             </div>
@@ -506,10 +521,10 @@ function TabVenues() {
             <Field label="Phone"><Input value={editVenue.phone} onChange={e=>setEditVenue(f=>({...f,phone:e.target.value}))} /></Field>
             <Field label="Email"><Input value={editVenue.email} onChange={e=>setEditVenue(f=>({...f,email:e.target.value}))} /></Field>
           </div>
-          <Field label="Description"><textarea value={editVenue.description} onChange={e=>setEditVenue(f=>({...f,description:e.target.value}))} rows={3} className="w-full px-6 py-3.5.5 rounded-3xl border border-[#2a3829] text-base focus:outline-none focus:border-[#8fb882] resize-none" /></Field>
+          <Field label="Description"><textarea value={editVenue.description} onChange={e=>setEditVenue(f=>({...f,description:e.target.value}))} rows={3} className="w-full px-6 py-3.5.5 rounded-3xl border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)] resize-none" /></Field>
           <Field label="Image URL"><Input value={editVenue.imageUrl} onChange={e=>setEditVenue(f=>({...f,imageUrl:e.target.value}))} placeholder="https://..." /></Field>
           <Field label="Amenities (comma separated)"><Input value={editVenue.amenities} onChange={e=>setEditVenue(f=>({...f,amenities:e.target.value}))} placeholder="Parking, Bridal suite…" /></Field>
-          <Field label="Notes"><textarea value={editVenue.notes} onChange={e=>setEditVenue(f=>({...f,notes:e.target.value}))} rows={2} className="w-full px-6 py-3.5.5 rounded-3xl border border-[#2a3829] text-base focus:outline-none focus:border-[#8fb882] resize-none" /></Field>
+          <Field label="Notes"><textarea value={editVenue.notes} onChange={e=>setEditVenue(f=>({...f,notes:e.target.value}))} rows={2} className="w-full px-6 py-3.5.5 rounded-3xl border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)] resize-none" /></Field>
         </Modal>
       )}
 
@@ -521,7 +536,7 @@ function TabVenues() {
               {detail.imageUrl && <img src={detail.imageUrl} alt={detail.name} className="w-full h-full object-cover" />}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <button onClick={() => setDetail(null)} className="absolute top-7 right-4 w-8 h-8 rounded-full bg-[#1a2419]/90 flex items-center justify-center"><X size={26} /></button>
-              {detail.isSelected && <div className="absolute top-7 left-4 bg-[#5a8a52] text-white text-base px-3 py-1 rounded-full flex items-center gap-1"><Check size={11} />Selected venue</div>}
+              {detail.isSelected && <div className="absolute top-7 left-4 bg-[var(--accent)] text-white text-base px-3 py-1 rounded-full flex items-center gap-1"><Check size={11} />Selected venue</div>}
               <div className="absolute bottom-4 left-5 right-5">
                 <h2 className="text-2xl font-light text-white" style={{ fontFamily: 'var(--font-display)' }}>{detail.name}</h2>
                 {detail.address && <p className="text-white/70 text-base flex items-center gap-1.5 mt-0.5"><MapPin size={11} />{detail.address}</p>}
@@ -529,15 +544,15 @@ function TabVenues() {
             </div>
             <div className="p-7 space-y-5 flex-1">
               <div className="grid grid-cols-3 gap-5">
-                <div className="bg-[#1e3a1e] rounded-3xl p-3 text-center"><p className="text-lg font-semibold text-[#8fb882]">{fmt$(detail.cost)}</p><p className="text-base text-[#8fb882]">Rental</p></div>
+                <div className="bg-[var(--sage-light,#1e3a1e)] rounded-3xl p-3 text-center"><p className="text-lg font-semibold text-[var(--sage)]">{fmt$(detail.cost)}</p><p className="text-base text-[var(--sage)]">Rental</p></div>
                 <div className="bg-[#141c13] rounded-3xl p-3 text-center"><p className="text-lg font-semibold text-[#cde0ca]">{detail.capacity ?? '—'}</p><p className="text-base text-[#5a7057]">Capacity</p></div>
-                <a href={detail.website} target="_blank" rel="noreferrer" className="bg-[#141c13] rounded-3xl p-3 flex flex-col items-center justify-center gap-1 text-[#7a9878] hover:text-[#8fb882] transition-colors"><ExternalLink size={26} /><span className="text-base">Website</span></a>
+                <a href={detail.website} target="_blank" rel="noreferrer" className="bg-[#141c13] rounded-3xl p-3 flex flex-col items-center justify-center gap-1 text-[#7a9878] hover:text-[var(--sage)] transition-colors"><ExternalLink size={26} /><span className="text-base">Website</span></a>
               </div>
               {detail.description && <div><p className="text-base font-semibold text-[#7a9878] uppercase tracking-wider mb-2">About</p><p className="text-base text-[#a8c4a4] leading-relaxed">{detail.description}</p></div>}
               {(detail.phone || detail.email) && (
                 <div><p className="text-base font-semibold text-[#7a9878] uppercase tracking-wider mb-2">Contact</p>
-                  {detail.phone && <a href={`tel:${detail.phone}`} className="flex items-center gap-5 text-base text-[#7a9878] hover:text-[#8fb882] mb-1"><Phone size={19}/>{detail.phone}</a>}
-                  {detail.email && <a href={`mailto:${detail.email}`} className="flex items-center gap-5 text-base text-[#7a9878] hover:text-[#8fb882]"><Mail size={19}/>{detail.email}</a>}
+                  {detail.phone && <a href={`tel:${detail.phone}`} className="flex items-center gap-5 text-base text-[#7a9878] hover:text-[var(--sage)] mb-1"><Phone size={19}/>{detail.phone}</a>}
+                  {detail.email && <a href={`mailto:${detail.email}`} className="flex items-center gap-5 text-base text-[#7a9878] hover:text-[var(--sage)]"><Mail size={19}/>{detail.email}</a>}
                 </div>
               )}
               {detail.amenities?.length > 0 && (
@@ -580,7 +595,7 @@ function TabBudget() {
   const [total, setTotal] = useState(45000)
   const [addName, setAddName] = useState('')
   const [showAdd, setShowAdd] = useState(false)
-  const COLORS = ['#8FAF7A','#5DCAA5','#378ADD','#EF9F27','#D85A30','#D4537E','#7F77DD','#888780']
+  const COLORS = ['#8FAF7A','var(--sage)','#378ADD','#EF9F27','#D85A30','#D4537E','#7F77DD','#888780']
 
   useEffect(() => { $get('budget').then(d => { setCats(Array.isArray(d) ? d : []); setLoading(false) }) }, [])
 
@@ -655,8 +670,8 @@ function TabBudget() {
                 return (
                   <tr key={c.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#141c13] group">
                     <td className="px-6 py-3.5.5"><div className="flex items-center gap-5.5"><div className="w-3 h-3 rounded-full" style={{ background: c.color }}/><span className="font-medium text-[#e8f0e6]">{c.name}</span></div></td>
-                    <td className="px-6 py-3.5.5.5"><div className="relative"><span className="absolute left-2 top-1.5 text-[#5a7057] text-base">$</span><input type="number" defaultValue={c.budgeted} onBlur={e => update(c.id,'budgeted',+e.target.value)} className="w-28 pl-5 pr-2 py-1.5 rounded-lg border border-transparent hover:border-[#2a3829] focus:border-[#8fb882] focus:outline-none text-base bg-transparent focus:bg-[#1a2419]" /></div></td>
-                    <td className="px-6 py-3.5.5.5"><div className="relative"><span className="absolute left-2 top-1.5 text-[#5a7057] text-base">$</span><input type="number" defaultValue={c.paid} onBlur={e => update(c.id,'paid',+e.target.value)} className="w-28 pl-5 pr-2 py-1.5 rounded-lg border border-transparent hover:border-[#2a3829] focus:border-[#8fb882] focus:outline-none text-base bg-transparent focus:bg-[#1a2419]" /></div></td>
+                    <td className="px-6 py-3.5.5.5"><div className="relative"><span className="absolute left-2 top-1.5 text-[#5a7057] text-base">$</span><input type="number" defaultValue={c.budgeted} onBlur={e => update(c.id,'budgeted',+e.target.value)} className="w-28 pl-5 pr-2 py-1.5 rounded-lg border border-transparent hover:border-[#2a3829] focus:border-[var(--sage)] focus:outline-none text-base bg-transparent focus:bg-[#1a2419]" /></div></td>
+                    <td className="px-6 py-3.5.5.5"><div className="relative"><span className="absolute left-2 top-1.5 text-[#5a7057] text-base">$</span><input type="number" defaultValue={c.paid} onBlur={e => update(c.id,'paid',+e.target.value)} className="w-28 pl-5 pr-2 py-1.5 rounded-lg border border-transparent hover:border-[#2a3829] focus:border-[var(--sage)] focus:outline-none text-base bg-transparent focus:bg-[#1a2419]" /></div></td>
                     <td className="px-6 py-3.5.5.5 text-base font-medium" style={{ color: rem < 0 ? '#dc2626' : '#1c1917' }}>{fmt$(rem)}</td>
                     <td className="px-6 py-3.5.5.5"><div className="flex items-center gap-5"><div className="flex-1 h-1.5 bg-[#1f2b1e] rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width:`${pct}%`, background: c.color }}/></div><span className="text-base text-[#5a7057] w-8 text-right">{pct}%</span></div></td>
                     <td className="px-6 py-3.5.5.5"><button onClick={() => del(c.id)} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={19}/></button></td>
@@ -723,7 +738,7 @@ function TabVendors() {
         action={<Btn onClick={() => setShowAdd(true)}><Plus size={17}/>Add vendor</Btn>} />
 
       <div className="flex gap-5 mb-5 flex-wrap">
-        {cats.map(c => <button key={c} onClick={() => setFilter(c)} className={`px-3 py-1.5 rounded-full text-base font-medium transition-all ${filter===c?'bg-[#5a8a52] text-white':'bg-[#1f2b1e] text-[#7a9878] hover:bg-[#243022]'}`}>{c}</button>)}
+        {cats.map(c => <button key={c} onClick={() => setFilter(c)} className={`px-3 py-1.5 rounded-full text-base font-medium transition-all ${filter===c?'bg-[var(--accent)] text-white':'bg-[#1f2b1e] text-[#7a9878] hover:bg-[#243022]'}`}>{c}</button>)}
       </div>
 
       {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div> : (
@@ -740,9 +755,9 @@ function TabVendors() {
                     </div>
                     {v.contactName && <p className="text-base text-[#5a7057] mb-1">{v.contactName}</p>}
                     <div className="flex flex-wrap gap-5">
-                      {v.phone && <a href={`tel:${v.phone}`} className="flex items-center gap-1 text-base text-[#5a7057] hover:text-[#8fb882]"><Phone size={11}/>{v.phone}</a>}
-                      {v.email && <a href={`mailto:${v.email}`} className="flex items-center gap-1 text-base text-[#5a7057] hover:text-[#8fb882]"><Mail size={11}/>{v.email}</a>}
-                      {v.website && <a href={v.website} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-base text-[#5a7057] hover:text-[#8fb882]"><ExternalLink size={11}/>Website</a>}
+                      {v.phone && <a href={`tel:${v.phone}`} className="flex items-center gap-1 text-base text-[#5a7057] hover:text-[var(--sage)]"><Phone size={11}/>{v.phone}</a>}
+                      {v.email && <a href={`mailto:${v.email}`} className="flex items-center gap-1 text-base text-[#5a7057] hover:text-[var(--sage)]"><Mail size={11}/>{v.email}</a>}
+                      {v.website && <a href={v.website} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-base text-[#5a7057] hover:text-[var(--sage)]"><ExternalLink size={11}/>Website</a>}
                     </div>
                     {v.notes && <p className="text-base text-[#5a7057] mt-1.5 italic">{v.notes}</p>}
                   </div>
@@ -770,7 +785,7 @@ function TabVendors() {
             <Field label="Website"><Input value={form.website} onChange={e=>setForm(f=>({...f,website:e.target.value}))} placeholder="https://..." /></Field>
             <Field label="Total cost ($)"><Input type="number" value={form.cost} onChange={e=>setForm(f=>({...f,cost:e.target.value}))} /></Field>
           </div>
-          <Field label="Notes"><textarea value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} rows={2} className="w-full px-6 py-3.5.5 rounded-3xl border border-[#2a3829] text-base focus:outline-none focus:border-[#8fb882] resize-none" /></Field>
+          <Field label="Notes"><textarea value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} rows={2} className="w-full px-6 py-3.5.5 rounded-3xl border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)] resize-none" /></Field>
         </Modal>
       )}
     </div>
@@ -818,11 +833,11 @@ function TabTasks() {
 
       <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 mb-5">
         <div className="flex justify-between text-base text-[#5a7057] mb-1.5"><span>Progress</span><span>{tasks.length ? Math.round(done/tasks.length*100) : 0}%</span></div>
-        <div className="h-2 bg-[#1f2b1e] rounded-full overflow-hidden"><div className="h-full bg-[#5a8a52] rounded-full transition-all" style={{ width: `${tasks.length ? done/tasks.length*100 : 0}%` }}/></div>
+        <div className="h-2 bg-[#1f2b1e] rounded-full overflow-hidden"><div className="h-full bg-[var(--accent)] rounded-full transition-all" style={{ width: `${tasks.length ? done/tasks.length*100 : 0}%` }}/></div>
       </div>
 
       <div className="flex gap-5 mb-4">
-        {(['pending','all','done'] as const).map(f => <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-full text-base font-medium transition-all ${filter===f?'bg-[#5a8a52] text-white':'bg-[#1f2b1e] text-[#7a9878] hover:bg-[#243022]'}`}>{f==='pending'?`To do (${tasks.filter(t=>!t.completed).length})`:f==='done'?`Done (${done})`:`All (${tasks.length})`}</button>)}
+        {(['pending','all','done'] as const).map(f => <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-full text-base font-medium transition-all ${filter===f?'bg-[var(--accent)] text-white':'bg-[#1f2b1e] text-[#7a9878] hover:bg-[#243022]'}`}>{f==='pending'?`To do (${tasks.filter(t=>!t.completed).length})`:f==='done'?`Done (${done})`:`All (${tasks.length})`}</button>)}
       </div>
 
       {loading ? <div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div> : (
@@ -830,7 +845,7 @@ function TabTasks() {
           {shown.length === 0 ? <div className="text-center py-12 text-[#5a7057]">{filter==='done'?'No completed tasks':'All caught up! 🎉'}</div> :
             shown.map(t => (
               <div key={t.id} className={`bg-[#1a2419] rounded-3xl border border-[#2a3829] p-3.5 flex items-center gap-5 group transition-colors hover:border-stone-300 ${t.completed?'opacity-60':''}`}>
-                <button onClick={() => toggle(t)} className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${t.completed?'border-[#8fb882] bg-[#5a8a52]':'border-stone-300 hover:border-[#8fb882]'}`}>
+                <button onClick={() => toggle(t)} className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${t.completed?'border-[var(--sage)] bg-[var(--accent)]':'border-stone-300 hover:border-[var(--sage)]'}`}>
                   {t.completed && <Check size={11} className="text-white"/>}
                 </button>
                 <div className="flex-1 min-w-0">
@@ -882,7 +897,7 @@ function TabChecklist() {
     <div>
       <PageHeader title="Checklist" sub={`${done.size} of ${total} complete`} />
       <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 mb-5">
-        <div className="h-2 bg-[#1f2b1e] rounded-full overflow-hidden"><div className="h-full bg-[#5a8a52] rounded-full transition-all" style={{ width:`${(done.size/total)*100}%` }}/></div>
+        <div className="h-2 bg-[#1f2b1e] rounded-full overflow-hidden"><div className="h-full bg-[var(--accent)] rounded-full transition-all" style={{ width:`${(done.size/total)*100}%` }}/></div>
         <p className="text-base text-[#5a7057] text-right mt-1">{Math.round(done.size/total*100)}%</p>
       </div>
       <div className="space-y-4">
@@ -895,7 +910,7 @@ function TabChecklist() {
             <div className="p-2">
               {items.map(item => { const k=`${section}-${item}`; const checked=done.has(k); return (
                 <button key={item} onClick={() => toggle(k)} className={`w-full flex items-center gap-5 px-6 py-3.5.5 rounded-3xl text-left transition-colors hover:bg-[#141c13] ${checked?'opacity-60':''}`}>
-                  <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${checked?'border-[#8fb882] bg-[#5a8a52]':'border-stone-300'}`}>{checked&&<Check size={11} className="text-white"/>}</div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${checked?'border-[var(--sage)] bg-[var(--accent)]':'border-stone-300'}`}>{checked&&<Check size={11} className="text-white"/>}</div>
                   <span className={`text-base ${checked?'line-through text-[#5a7057]':'text-[#cde0ca]'}`}>{item}</span>
                 </button>
               )})}
@@ -924,7 +939,7 @@ function TabRSVP() {
     dateText: 'September 24, 2026',
     venueText: '4:00 PM · The Glass House Garden, Austin TX',
     heroImage: '',
-    accentColor: '#7A9C6E',
+    accentColor: 'var(--accent)',
     searchLabel: 'Enter your name as it appears on your invitation',
     attendingLabel: "Yes, I'll be there!",
     declineLabel: 'Regretfully no',
@@ -983,7 +998,7 @@ function TabRSVP() {
   const SF = ({ label, field, type = 'text', rows }: { label: string; field: keyof typeof settings; type?: string; rows?: number }) => (
     <Field label={label}>
       {rows
-        ? <textarea value={String(settings[field])} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))} rows={rows} className="w-full px-6 py-3.5.5 rounded-3xl border border-[#2a3829] text-base focus:outline-none focus:border-[#8fb882] resize-none" />
+        ? <textarea value={String(settings[field])} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))} rows={rows} className="w-full px-6 py-3.5.5 rounded-3xl border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)] resize-none" />
         : <Input type={type} value={String(settings[field])} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))} />}
     </Field>
   )
@@ -1038,7 +1053,7 @@ function TabRSVP() {
             <p className="font-semibold text-[#e8f0e6]">Customize RSVP page</p>
             <p className="text-base text-[#5a7057] mt-0.5">Changes appear live at your RSVP link</p>
           </div>
-          <Btn onClick={saveSettings} disabled={savingSettings} style={{ background: settingsSaved ? '#5DCAA5' : '#7A9C6E' }}>
+          <Btn onClick={saveSettings} disabled={savingSettings} style={{ background: settingsSaved ? 'var(--sage)' : 'var(--accent)' }}>
             {savingSettings ? <><Loader2 size={17} className="animate-spin"/>Saving…</> : settingsSaved ? <><Check size={17}/>Saved!</> : <><Check size={17}/>Save changes</>}
           </Btn>
         </div>
@@ -1077,8 +1092,8 @@ function TabRSVP() {
                       <td className="px-6 py-3.5.5"><span className="text-base px-2.5 py-1 rounded-full font-medium capitalize" style={{color,background:bg}}>{g.rsvpStatus}</span></td>
                       <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.email||'—'}</td>
                       <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.dietary||'—'}</td>
-                      <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.plusOneName||(g.hasPlusOne?<span className="text-[#8fb882]">allowed</span>:'—')}</td>
-                      <td className="px-6 py-3.5.5"><button onClick={()=>openEdit(g)} className="text-base text-[#5a7057] hover:text-[#8fb882] flex items-center gap-1"><Edit3 size={26}/>Edit</button></td>
+                      <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.plusOneName||(g.hasPlusOne?<span className="text-[var(--sage)]">allowed</span>:'—')}</td>
+                      <td className="px-6 py-3.5.5"><button onClick={()=>openEdit(g)} className="text-base text-[#5a7057] hover:text-[var(--sage)] flex items-center gap-1"><Edit3 size={26}/>Edit</button></td>
                     </tr>
                   )
                 })}
@@ -1098,7 +1113,7 @@ function TabRSVP() {
           </Select></Field>
           <div className="flex items-center justify-between py-1">
             <p className="text-base font-medium text-[#cde0ca]">Plus one allowed</p>
-            <button onClick={()=>setEditForm(f=>({...f,hasPlusOne:!f.hasPlusOne}))} className={`w-11 h-6 rounded-full transition-colors relative ${editForm.hasPlusOne?'bg-[#5a8a52]':'bg-[#243022]'}`}><div className={`absolute top-0.5 w-5 h-5 rounded-full bg-[#1a2419] shadow transition-transform ${editForm.hasPlusOne?'translate-x-5':'translate-x-0.5'}`}/></button>
+            <button onClick={()=>setEditForm(f=>({...f,hasPlusOne:!f.hasPlusOne}))} className={`w-11 h-6 rounded-full transition-colors relative ${editForm.hasPlusOne?'bg-[var(--accent)]':'bg-[#243022]'}`}><div className={`absolute top-0.5 w-5 h-5 rounded-full bg-[#1a2419] shadow transition-transform ${editForm.hasPlusOne?'translate-x-5':'translate-x-0.5'}`}/></button>
           </div>
           {editForm.hasPlusOne && <>
             <Field label="Plus one name"><Input value={editForm.plusOneName} onChange={e=>setEditForm(f=>({...f,plusOneName:e.target.value}))} /></Field>
@@ -1161,7 +1176,7 @@ function TabMenu() {
       <PageHeader title="Menu & drinks" />
       <div className="grid grid-cols-2 gap-7">
         <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7">
-          <div className="flex items-center gap-5 mb-4"><UtensilsCrossed size={26} className="text-[#8fb882]"/><h3 className="font-medium text-[#e8f0e6]">Menu</h3></div>
+          <div className="flex items-center gap-5 mb-4"><UtensilsCrossed size={26} className="text-[var(--sage)]"/><h3 className="font-medium text-[#e8f0e6]">Menu</h3></div>
           {menu.map((c,i) => (
             <div key={i} className="border-b border-[#1a2419] pb-3 mb-3 last:border-0 last:mb-0">
               <p className="text-base font-semibold text-[#5a7057] uppercase tracking-wider mb-1">{c.course}</p>
@@ -1170,7 +1185,7 @@ function TabMenu() {
           ))}
         </div>
         <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7">
-          <div className="flex items-center gap-5 mb-4"><Wine size={26} className="text-[#8fb882]"/><h3 className="font-medium text-[#e8f0e6]">Drink calculator</h3></div>
+          <div className="flex items-center gap-5 mb-4"><Wine size={26} className="text-[var(--sage)]"/><h3 className="font-medium text-[#e8f0e6]">Drink calculator</h3></div>
           <div className="space-y-3 mb-5">
             <div><label className="text-base text-[#7a9878] mb-1 block">Guests: <strong>{guests}</strong></label><input type="range" min={20} max={500} step={5} value={guests} onChange={e=>setGuests(+e.target.value)} className="w-full"/></div>
             <div><label className="text-base text-[#7a9878] mb-1 block">Open bar hours: <strong>{hours}h</strong></label><input type="range" min={1} max={8} step={0.5} value={hours} onChange={e=>setHours(+e.target.value)} className="w-full"/></div>
@@ -1178,7 +1193,7 @@ function TabMenu() {
           {[['Wine',drinks.wine,'bottles'],['Beer',drinks.beer,'cans'],['Champagne',drinks.champagne,'bottles'],['Water',drinks.water,'cases']].map(([l,v,u])=>(
             <div key={String(l)} className="flex justify-between py-2.5 border-b border-[#1a2419] last:border-0">
               <span className="text-base text-[#cde0ca]">{l}</span>
-              <div className="text-right"><span className="text-lg font-light text-[#8fb882]" style={{fontFamily:'var(--font-display)'}}>{v}</span><span className="text-base text-[#5a7057] ml-1">{u}</span></div>
+              <div className="text-right"><span className="text-lg font-light text-[var(--sage)]" style={{fontFamily:'var(--font-display)'}}>{v}</span><span className="text-base text-[#5a7057] ml-1">{u}</span></div>
             </div>
           ))}
         </div>
@@ -1214,14 +1229,14 @@ function TabParty() {
                   <div key={m.id} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 group">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-5">
-                        <div className="w-9 h-9 rounded-full bg-[#1e3a1e] flex items-center justify-center text-base font-semibold text-[#8fb882]">{m.name.split(' ').map((w:string)=>w[0]).join('').slice(0,2).toUpperCase()}</div>
-                        <div><p className="font-medium text-[#e8f0e6]">{m.name}</p><p className="text-base text-[#8fb882]">{m.role}</p></div>
+                        <div className="w-9 h-9 rounded-full bg-[var(--sage-light,#1e3a1e)] flex items-center justify-center text-base font-semibold text-[var(--sage)]">{m.name.split(' ').map((w:string)=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+                        <div><p className="font-medium text-[#e8f0e6]">{m.name}</p><p className="text-base text-[var(--sage)]">{m.role}</p></div>
                       </div>
                       <button onClick={()=>setMembers(p=>p.filter(x=>x.id!==m.id))} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={19}/></button>
                     </div>
                     <div className="mt-2 flex flex-wrap gap-5">
-                      {m.phone&&<a href={`tel:${m.phone}`} className="flex items-center gap-1 text-base text-[#5a7057] hover:text-[#8fb882]"><Phone size={11}/>{m.phone}</a>}
-                      {m.email&&<a href={`mailto:${m.email}`} className="flex items-center gap-1 text-base text-[#5a7057] hover:text-[#8fb882]"><Mail size={11}/>{m.email}</a>}
+                      {m.phone&&<a href={`tel:${m.phone}`} className="flex items-center gap-1 text-base text-[#5a7057] hover:text-[var(--sage)]"><Phone size={11}/>{m.phone}</a>}
+                      {m.email&&<a href={`mailto:${m.email}`} className="flex items-center gap-1 text-base text-[#5a7057] hover:text-[var(--sage)]"><Mail size={11}/>{m.email}</a>}
                     </div>
                     {m.attire&&<p className="text-base text-[#5a7057] mt-1.5">Attire: {m.attire}</p>}
                   </div>
@@ -1286,10 +1301,10 @@ function TabTimeline() {
               <div style={{width:64,textAlign:'right',flexShrink:0,paddingTop:14}}>
                 {editing===item.id
                   ? <input value={item.time} onChange={e=>update(item.id,'time',e.target.value)}
-                      style={{width:'100%',textAlign:'right',fontSize:13,fontWeight:600,border:'1px solid #2a3829',borderRadius:8,padding:'4px 8px',background:'#141c13',color:'#8fb882',outline:'none'}} placeholder="4:00 PM"/>
+                      style={{width:'100%',textAlign:'right',fontSize:13,fontWeight:600,border:'1px solid #2a3829',borderRadius:8,padding:'4px 8px',background:'#141c13',color:'var(--sage)',outline:'none'}} placeholder="4:00 PM"/>
                   : <span style={{fontSize:13,fontWeight:600,color:'#6a9068'}}>{item.time||'—'}</span>}
               </div>
-              <div style={{width:12,height:12,borderRadius:'50%',background:'#4a7a44',border:'2px solid #111714',flexShrink:0,marginTop:14,position:'relative',zIndex:1}}/>
+              <div style={{width:12,height:12,borderRadius:'50%',background:'var(--accent)',border:'2px solid #111714',flexShrink:0,marginTop:14,position:'relative',zIndex:1}}/>
               <div
                 style={{flex:1,background:'#1a2419',borderRadius:14,padding:16,cursor:'pointer',border:`1px solid ${editing===item.id?'#4a7a44':'#202e1f'}`,transition:'border-color 0.2s'}}
                 onClick={()=>setEditing(editing===item.id?null:item.id)}>
@@ -1302,7 +1317,7 @@ function TabTimeline() {
                     <input value={item.who} onChange={e=>update(item.id,'who',e.target.value)}
                       style={{fontSize:13,border:'none',background:'transparent',color:'#4a7a44',outline:'none',width:'100%'}} placeholder="Who's involved"/>
                     <div style={{display:'flex',gap:8,marginTop:4}}>
-                      <button onClick={()=>setEditing(null)} style={{fontSize:13,padding:'6px 14px',borderRadius:8,background:'#4a7a44',color:'#e8f0e6',border:'none',cursor:'pointer'}}>Done</button>
+                      <button onClick={()=>setEditing(null)} style={{fontSize:13,padding:'6px 14px',borderRadius:8,background:'var(--accent)',color:'#e8f0e6',border:'none',cursor:'pointer'}}>Done</button>
                       <button onClick={()=>del(item.id)} style={{fontSize:13,padding:'6px 14px',borderRadius:8,background:'transparent',color:'#f87171',border:'1px solid #3a1a1a',cursor:'pointer'}}>Delete</button>
                     </div>
                   </div>
@@ -1338,7 +1353,7 @@ function TabDecor() {
         {items.length===0?<div className="text-center py-16 text-[#5a7057]">Track florals, centrepieces, lighting and décor items here</div>:
           items.map(i=>(
             <div key={i.id} className={`bg-[#1a2419] rounded-3xl border border-[#2a3829] p-3.5 flex items-center gap-5 group ${i.done?'opacity-60':''}`}>
-              <button onClick={()=>setItems(p=>p.map(x=>x.id===i.id?{...x,done:!x.done}:x))} className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${i.done?'border-[#8fb882] bg-[#5a8a52]':'border-stone-300'}`}>{i.done&&<Check size={11} className="text-white"/>}</button>
+              <button onClick={()=>setItems(p=>p.map(x=>x.id===i.id?{...x,done:!x.done}:x))} className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${i.done?'border-[var(--sage)] bg-[var(--accent)]':'border-stone-300'}`}>{i.done&&<Check size={11} className="text-white"/>}</button>
               <div className="flex-1"><p className={`text-base font-medium ${i.done?'line-through text-[#5a7057]':'text-[#e8f0e6]'}`}>{i.desc}</p><p className="text-base text-[#5a7057]">{i.area}{i.vendor?` · ${i.vendor}`:''}{i.cost?` · $${i.cost}`:''}</p></div>
               <button onClick={()=>setItems(p=>p.filter(x=>x.id!==i.id))} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={19}/></button>
             </div>
@@ -1426,9 +1441,9 @@ function TabPhotoshoot() {
             <div className="p-2">
               {gs.map(s=>(
                 <div key={s.id} className={`flex items-center gap-5 px-6 py-3.5.5 rounded-3xl group hover:bg-[#141c13] ${s.done?'opacity-60':''}`}>
-                  <button onClick={()=>setShots(p=>p.map(x=>x.id===s.id?{...x,done:!x.done}:x))} className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${s.done?'border-[#8fb882] bg-[#5a8a52]':'border-stone-300'}`}>{s.done&&<Check size={11} className="text-white"/>}</button>
+                  <button onClick={()=>setShots(p=>p.map(x=>x.id===s.id?{...x,done:!x.done}:x))} className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${s.done?'border-[var(--sage)] bg-[var(--accent)]':'border-stone-300'}`}>{s.done&&<Check size={11} className="text-white"/>}</button>
                   <span className={`text-base flex-1 ${s.done?'line-through text-[#5a7057]':'text-[#cde0ca]'}`}>{s.desc}</span>
-                  {s.mustHave&&<span className="text-base px-2 py-0.5 bg-[#1e3a1e] text-[#8fb882] rounded-full">Must have</span>}
+                  {s.mustHave&&<span className="text-base px-2 py-0.5 bg-[var(--sage-light,#1e3a1e)] text-[var(--sage)] rounded-full">Must have</span>}
                   <button onClick={()=>setShots(p=>p.filter(x=>x.id!==s.id))} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={19}/></button>
                 </div>
               ))}
@@ -1442,7 +1457,7 @@ function TabPhotoshoot() {
           <Field label="Description *"><Input value={form.desc} onChange={e=>setForm(f=>({...f,desc:e.target.value}))} placeholder="Describe the shot" autoFocus /></Field>
           <div className="flex items-center justify-between py-1">
             <p className="text-base text-[#cde0ca]">Must-have</p>
-            <button onClick={()=>setForm(f=>({...f,mustHave:!f.mustHave}))} className={`w-11 h-6 rounded-full transition-colors relative ${form.mustHave?'bg-[#5a8a52]':'bg-[#243022]'}`}><div className={`absolute top-0.5 w-5 h-5 rounded-full bg-[#1a2419] shadow transition-transform ${form.mustHave?'translate-x-5':'translate-x-0.5'}`}/></button>
+            <button onClick={()=>setForm(f=>({...f,mustHave:!f.mustHave}))} className={`w-11 h-6 rounded-full transition-colors relative ${form.mustHave?'bg-[var(--accent)]':'bg-[#243022]'}`}><div className={`absolute top-0.5 w-5 h-5 rounded-full bg-[#1a2419] shadow transition-transform ${form.mustHave?'translate-x-5':'translate-x-0.5'}`}/></button>
           </div>
         </Modal>
       )}
@@ -1479,10 +1494,10 @@ function TabPlaylist() {
               <div className="p-2">
                 {adding===sec&&(
                   <div className="flex gap-5 p-2 bg-[#141c13] rounded-3xl mb-2">
-                    <input value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&add(sec)} className="flex-1 px-2 py-1.5 rounded-lg border border-[#2a3829] text-base focus:outline-none focus:border-[#8fb882]" placeholder="Song title" autoFocus/>
-                    <input value={form.artist} onChange={e=>setForm(f=>({...f,artist:e.target.value}))} className="w-32 px-2 py-1.5 rounded-lg border border-[#2a3829] text-base focus:outline-none focus:border-[#8fb882]" placeholder="Artist"/>
-                    <input value={form.note} onChange={e=>setForm(f=>({...f,note:e.target.value}))} className="w-24 px-2 py-1.5 rounded-lg border border-[#2a3829] text-base focus:outline-none focus:border-[#8fb882]" placeholder="Note"/>
-                    <button onClick={()=>add(sec)} className="px-3 py-1.5 rounded-lg text-white text-base font-medium" style={{background:'#7A9C6E'}}>Add</button>
+                    <input value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&add(sec)} className="flex-1 px-2 py-1.5 rounded-lg border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)]" placeholder="Song title" autoFocus/>
+                    <input value={form.artist} onChange={e=>setForm(f=>({...f,artist:e.target.value}))} className="w-32 px-2 py-1.5 rounded-lg border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)]" placeholder="Artist"/>
+                    <input value={form.note} onChange={e=>setForm(f=>({...f,note:e.target.value}))} className="w-24 px-2 py-1.5 rounded-lg border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)]" placeholder="Note"/>
+                    <button onClick={()=>add(sec)} className="px-3 py-1.5 rounded-lg text-white text-base font-medium" style={{background:'var(--accent)'}}>Add</button>
                     <button onClick={()=>setAdding(null)} className="text-[#5a7057]"><X size={26}/></button>
                   </div>
                 )}
@@ -1577,7 +1592,7 @@ function TabSeating() {
   const dragging = useRef<string|null>(null)
   const dragOffset = useRef({ x:0, y:0 })
   const COLORS: Record<string,string> = { round:'#E1F5EE', rectangular:'#E6F1FB', oval:'#FAEEDA' }
-  const BORDERS: Record<string,string> = { round:'#5DCAA5', rectangular:'#378ADD', oval:'#EF9F27' }
+  const BORDERS: Record<string,string> = { round:'var(--sage)', rectangular:'#378ADD', oval:'#EF9F27' }
   const DIMS: Record<string,{ w:number;h:number;r:number }> = { round:{w:72,h:72,r:36}, rectangular:{w:100,h:55,r:8}, oval:{w:108,h:62,r:40} }
 
   useEffect(() => {
@@ -1647,7 +1662,7 @@ function TabSeating() {
               <p className="text-base font-semibold text-[#5a7057] uppercase tracking-wider mb-3">Unassigned ({unassigned.length})</p>
               {unassigned.length===0 ? <p className="text-base text-[#5a7057]">Everyone seated 🎉</p> :
                 unassigned.map(g => <div key={g.id} className="flex items-center gap-5 py-1.5 border-b border-[#1a2419] last:border-0">
-                  <div className="w-5 h-5 rounded-full bg-[#1e3a1e] flex items-center justify-center text-[10px] font-semibold text-[#8fb882] shrink-0">{g.name[0]}</div>
+                  <div className="w-5 h-5 rounded-full bg-[var(--sage-light,#1e3a1e)] flex items-center justify-center text-[10px] font-semibold text-[var(--sage)] shrink-0">{g.name[0]}</div>
                   <span className="text-base text-[#a8c4a4] truncate">{g.name}</span>
                 </div>)}
             </div>
@@ -1672,7 +1687,7 @@ function TabSeating() {
           <Field label="Table name"><Input value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Table 1, Head Table…" autoFocus /></Field>
           <Field label="Shape">
             <div className="grid grid-cols-3 gap-5">
-              {['round','rectangular','oval'].map(s=><button key={s} onClick={()=>setForm(f=>({...f,shape:s}))} className={`py-2 rounded-3xl text-base font-medium capitalize border-2 transition-all ${form.shape===s?'border-[#8fb882] bg-[#1e3a1e] text-[#8fb882]':'border-[#2a3829] text-[#7a9878]'}`}>{s}</button>)}
+              {['round','rectangular','oval'].map(s=><button key={s} onClick={()=>setForm(f=>({...f,shape:s}))} className={`py-2 rounded-3xl text-base font-medium capitalize border-2 transition-all ${form.shape===s?'border-[var(--sage)] bg-[var(--sage-light,#1e3a1e)] text-[var(--sage)]':'border-[#2a3829] text-[#7a9878]'}`}>{s}</button>)}
             </div>
           </Field>
           <Field label={`Seats: ${form.seats}`}><input type="range" min={2} max={20} value={form.seats} onChange={e=>setForm(f=>({...f,seats:+e.target.value}))} className="w-full"/></Field>
@@ -1691,9 +1706,9 @@ function TabSeating() {
             {unassigned.length > 0 && <>
               <p className="text-base font-semibold text-[#5a7057] uppercase tracking-wider pt-2 pb-1">Add guest</p>
               {unassigned.map(g=>(
-                <div key={g.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-[#1e3a1e] cursor-pointer" onClick={()=>assignGuest(g.id,assignTarget)}>
+                <div key={g.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-[var(--sage-light,#1e3a1e)] cursor-pointer" onClick={()=>assignGuest(g.id,assignTarget)}>
                   <span className="text-base text-[#cde0ca]">{g.name}</span>
-                  <Plus size={19} className="text-[#8fb882]"/>
+                  <Plus size={19} className="text-[var(--sage)]"/>
                 </div>
               ))}
             </>}
