@@ -18,9 +18,26 @@ export const metadata: Metadata = {
   description: 'Plan your perfect day',
 }
 
+// Runs before paint — reads saved colors from localStorage and applies CSS vars
+const colorScript = `
+(function() {
+  try {
+    var c = localStorage.getItem('weddingColors');
+    if (c) {
+      var colors = JSON.parse(c);
+      if (colors.accent) document.documentElement.style.setProperty('--accent', colors.accent);
+      if (colors.sage) document.documentElement.style.setProperty('--sage', colors.sage);
+    }
+  } catch(e) {}
+})();
+`
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${cormorant.variable} ${dmSans.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: colorScript }} />
+      </head>
       <body className="bg-stone-50 text-stone-900 antialiased">{children}</body>
     </html>
   )
