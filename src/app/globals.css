@@ -3,6 +3,7 @@
 :root {
   --font-display: 'Cormorant Garamond', serif;
   --font-body: 'DM Sans', sans-serif;
+  --accent: #4a7a44;
   --sage: #8fb882;
   --sage-light: #1e3a1e;
   --sage-dark: #b8d4b4;
