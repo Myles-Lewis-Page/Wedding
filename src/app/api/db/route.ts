@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
       case 'tasks':    return ok(await prisma.task.findMany({ orderBy: { createdAt: 'desc' } }))
       case 'tables':   return ok(await prisma.seatingTable.findMany({ orderBy: { createdAt: 'asc' } }))
       case 'gifts':    return ok(await prisma.gift.findMany({ orderBy: { createdAt: 'desc' } }))
+      case 'timeline':   return ok(await prisma.timelineItem.findMany({ orderBy: { order: 'asc' } }))
       case 'rsvp-settings': {
         let s = await prisma.rsvpSettings.findUnique({ where: { id: 'main' } })
         if (!s) s = await prisma.rsvpSettings.create({ data: { id: 'main' } })
@@ -91,6 +92,8 @@ export async function POST(req: NextRequest) {
           value: body.value || null, thankYouSent: false,
           receivedAt: body.receivedAt ? new Date(body.receivedAt) : null,
         }}))
+      case 'timeline-item':
+        return ok(await prisma.timelineItem.create({ data: { title: body.title, time: body.time||'', desc: body.desc||'', who: body.who||'', order: body.order||0 } }))
       case 'scrape': {
         const { url } = body
         const html = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(8000) }).then(r => r.text())
@@ -135,6 +138,7 @@ export async function PATCH(req: NextRequest) {
       case 'task':    return ok(await prisma.task.update({ where: { id }, data }))
       case 'table':   return ok(await prisma.seatingTable.update({ where: { id }, data }))
       case 'gift':    return ok(await prisma.gift.update({ where: { id }, data }))
+      case 'timeline-item': return ok(await prisma.timelineItem.update({ where: { id }, data }))
       case 'rsvp-settings': return ok(await prisma.rsvpSettings.upsert({ where: { id: 'main' }, update: { ...body }, create: { id: 'main', ...body } }))
       default: return err('unknown type')
     }
@@ -153,6 +157,7 @@ export async function DELETE(req: NextRequest) {
       case 'task':    await prisma.task.delete({ where: { id } }); break
       case 'table':   await prisma.seatingTable.delete({ where: { id } }); break
       case 'gift':    await prisma.gift.delete({ where: { id } }); break
+      case 'timeline-item': await prisma.timelineItem.delete({ where: { id } }); break
       default: return err('unknown type')
     }
     return ok({ ok: true })

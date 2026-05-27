@@ -69,69 +69,118 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
   const [stats, setStats] = useState({ total: 0, attending: 0, declined: 0, pending: 0 })
   const [venue, setVenue] = useState<{ name: string; address: string } | null>(null)
   const [loading, setLoading] = useState(true)
+  const [accentColor, setAccentColor] = useState('#4a7a44')
+  const [secondaryColor, setSecondaryColor] = useState('#8fb882')
+  const [colorSaved, setColorSaved] = useState(false)
 
   useEffect(() => {
     Promise.all([$get('guest-stats'), $get('venues')]).then(([s, vs]) => {
       setStats(s)
-      setVenue(Array.isArray(vs) ? (vs.find((v: { isSelected: boolean }) => v.isSelected) ?? null) : null)
+      setVenue(Array.isArray(vs) ? (vs.find((v: {isSelected:boolean;name:string;address:string}) => v.isSelected) ?? null) : null)
       setLoading(false)
     }).catch(() => setLoading(false))
+    // Load saved colors
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('dashColors') : null
+    if (saved) { try { const c = JSON.parse(saved); setAccentColor(c.accent||'#4a7a44'); setSecondaryColor(c.secondary||'#8fb882') } catch {} }
   }, [])
+
+  const saveColors = async () => {
+    localStorage.setItem('dashColors', JSON.stringify({ accent: accentColor, secondary: secondaryColor }))
+    // Save accent to rsvp-settings so RSVP page picks it up
+    await $patch('rsvp-settings', { id: 'main', accentColor: accentColor })
+    setColorSaved(true)
+    setTimeout(() => setColorSaved(false), 2000)
+    // Apply CSS vars live
+    document.documentElement.style.setProperty('--sage', secondaryColor)
+  }
 
   const rate = stats.total ? Math.round(((stats.attending + stats.declined) / stats.total) * 100) : 0
 
-  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="animate-spin text-[#3a5038]" size={30} /></div>
+  if (loading) return <div style={{display:'flex',justifyContent:'center',paddingTop:80}}><Loader2 size={24} className="animate-spin" style={{color:'#3a5038'}} /></div>
 
   return (
-    <div className="max-w-3xl">
+    <div style={{maxWidth:800}}>
       <PageHeader title="Good morning 🌿" sub="Here's where your wedding planning stands." />
 
       {venue && (
-        <button onClick={() => onTab?.('venues')} className="w-full mb-6 bg-[#1e3a1e] rounded-3xl p-7 flex items-center gap-5 hover:bg-[#1e3a1e] transition-colors text-left">
-          <MapPin size={19} className="text-[#8fb882] shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-base text-[#8fb882] font-medium uppercase tracking-wider">Selected venue</p>
-            <p className="text-base font-medium text-[#8fb882] truncate">{venue.name}{venue.address ? ` · ${venue.address}` : ''}</p>
+        <button onClick={() => onTab?.('venues')} style={{width:'100%',marginBottom:24,background:'#1e3a1e',borderRadius:16,padding:'14px 18px',display:'flex',alignItems:'center',gap:12,border:'none',cursor:'pointer',textAlign:'left',transition:'background 0.2s'}}
+          onMouseEnter={e=>(e.currentTarget as HTMLElement).style.background='#243d24'}
+          onMouseLeave={e=>(e.currentTarget as HTMLElement).style.background='#1e3a1e'}>
+          <MapPin size={17} style={{color:'#8fb882',flexShrink:0}} />
+          <div style={{flex:1,minWidth:0}}>
+            <p style={{fontSize:11,color:'#4a7a44',fontWeight:700,textTransform:'uppercase',letterSpacing:'0.1em'}}>Selected venue</p>
+            <p style={{fontSize:15,fontWeight:600,color:'#b8d4b4',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{venue.name}{venue.address ? ` · ${venue.address}` : ''}</p>
           </div>
-          <ChevronRight size={17} className="text-[#8fb882] shrink-0" />
+          <ChevronRight size={17} style={{color:'#4a7a44',flexShrink:0}} />
         </button>
       )}
 
-      <div className="grid grid-cols-2 gap-7 mb-6">
+      <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:16,marginBottom:24}}>
         {[
-          { label: 'Total guests', val: stats.total, sub: 'on the list', color: '#7A9C6E' },
-          { label: 'Attending', val: stats.attending, sub: `${rate}% responded`, color: '#5DCAA5' },
-          { label: 'Pending RSVP', val: stats.pending, sub: 'no reply yet', color: '#EF9F27' },
-          { label: 'Declined', val: stats.declined, sub: 'unable to come', color: '#D85A30' },
+          { label:'Total guests', val:stats.total, sub:'on the list', color:'#8fb882' },
+          { label:'Attending', val:stats.attending, sub:`${rate}% responded`, color:'#5dca8a' },
+          { label:'Pending RSVP', val:stats.pending, sub:'no reply yet', color:'#d97706' },
+          { label:'Declined', val:stats.declined, sub:'unable to come', color:'#f87171' },
         ].map(({ label, val, sub, color }) => (
-          <div key={label} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7">
-            <p className="text-base text-[#5a7057] uppercase tracking-wider mb-2">{label}</p>
-            <p className="text-3xl font-light mb-0.5" style={{ fontFamily: 'var(--font-display)', color }}>{val}</p>
-            <p className="text-base text-[#5a7057]">{sub}</p>
+          <div key={label} style={{background:'#1a2419',borderRadius:16,padding:'22px 24px',border:'1px solid #202e1f'}}>
+            <p style={{fontSize:12,color:'#3a5038',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>{label}</p>
+            <p style={{fontFamily:'var(--font-display)',fontSize:40,fontWeight:300,color,lineHeight:1,marginBottom:4}}>{val}</p>
+            <p style={{fontSize:13,color:'#3a5038'}}>{sub}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7">
-        <div className="flex justify-between text-base mb-3">
-          <span className="font-medium text-[#cde0ca]">RSVP progress</span>
-          <span className="text-[#5a7057]">{stats.attending + stats.declined} / {stats.total}</span>
+      {/* RSVP progress */}
+      <div style={{background:'#1a2419',borderRadius:16,padding:'22px 24px',border:'1px solid #202e1f',marginBottom:24}}>
+        <div style={{display:'flex',justifyContent:'space-between',fontSize:15,marginBottom:14}}>
+          <span style={{fontWeight:600,color:'#cde0ca'}}>RSVP progress</span>
+          <span style={{color:'#3a5038'}}>{stats.attending + stats.declined} / {stats.total}</span>
         </div>
-        <div className="h-3 bg-[#1f2b1e] rounded-full overflow-hidden flex">
-          <div className="h-full bg-[#5a8a52] rounded-full transition-all" style={{ width: `${stats.total ? (stats.attending / stats.total) * 100 : 0}%` }} />
-          <div className="h-full bg-red-300 transition-all" style={{ width: `${stats.total ? (stats.declined / stats.total) * 100 : 0}%` }} />
+        <div style={{height:10,background:'#141c13',borderRadius:5,overflow:'hidden',display:'flex'}}>
+          <div style={{height:'100%',background:'#4a7a44',borderRadius:5,transition:'width 0.5s',width:`${stats.total?(stats.attending/stats.total)*100:0}%`}}/>
+          <div style={{height:'100%',background:'#7f2020',transition:'width 0.5s',width:`${stats.total?(stats.declined/stats.total)*100:0}%`}}/>
         </div>
-        <div className="flex gap-7 mt-3 text-base text-[#5a7057]">
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#5a8a52] inline-block" />Attending</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-300 inline-block" />Declined</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#243022] inline-block" />Pending</span>
+        <div style={{display:'flex',gap:24,marginTop:12,fontSize:13,color:'#3a5038'}}>
+          <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'#4a7a44',display:'inline-block'}}/> Attending</span>
+          <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'#7f2020',display:'inline-block'}}/> Declined</span>
+          <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'#1e2e1c',display:'inline-block'}}/> Pending</span>
+        </div>
+      </div>
+
+      {/* Color customization */}
+      <div style={{background:'#1a2419',borderRadius:16,padding:'22px 24px',border:'1px solid #202e1f'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:18}}>
+          <div>
+            <p style={{fontSize:15,fontWeight:600,color:'#cde0ca',marginBottom:3}}>Theme colors</p>
+            <p style={{fontSize:13,color:'#3a5038'}}>Applied across dashboard and RSVP page</p>
+          </div>
+          <Btn onClick={saveColors} style={{background: colorSaved ? '#2d6b40' : '#4a7a44'}}>
+            {colorSaved ? <><Check size={17}/>Saved!</> : 'Save colors'}
+          </Btn>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
+          {[
+            { label:'Primary / buttons', val: accentColor, set: setAccentColor, desc:'Used for buttons, selected states' },
+            { label:'Secondary / highlights', val: secondaryColor, set: setSecondaryColor, desc:'Used for icons, tags, accents' },
+          ].map(({ label, val, set, desc }) => (
+            <div key={label}>
+              <p style={{fontSize:13,fontWeight:600,color:'#6a9068',marginBottom:6}}>{label}</p>
+              <p style={{fontSize:12,color:'#3a5038',marginBottom:10}}>{desc}</p>
+              <div style={{display:'flex',gap:10,alignItems:'center'}}>
+                <input type="color" value={val} onChange={e => set(e.target.value)}
+                  style={{width:44,height:44,borderRadius:10,border:'1px solid #2a3829',cursor:'pointer',padding:2,background:'#141c13'}} />
+                <input type="text" value={val} onChange={e => set(e.target.value)}
+                  style={{flex:1,padding:'10px 14px',borderRadius:10,border:'1px solid #2a3829',fontSize:14,background:'#141c13',color:'#e8f0e6',outline:'none'}} />
+              </div>
+              <div style={{marginTop:10,height:8,borderRadius:4,background:val}}/>
+            </div>
+          ))}
         </div>
       </div>
     </div>
   )
 }
 
-// ─── GUESTS ────────────────────────────────────────────────────────────────
 interface Guest { id: string; name: string; email: string | null; side: string; hasPlusOne: boolean; plusOneName: string | null; plusOneDietary: string | null; dietary: string | null; rsvpStatus: string; tableId: string | null; isInvitee: boolean; notes: string | null }
 
 function TabGuests() {
@@ -322,9 +371,11 @@ function TabVenues() {
     await $del('venue', id); setVenues(p => p.filter(v => v.id !== id)); setDetail(null)
   }
 
-  const saveDate = () => {
+  const saveDate = async () => {
     if (!weddingDate) return
     localStorage.setItem('weddingDate', weddingDate)
+    // Sync to rsvp-settings so the public RSVP page shows the right date
+    await $patch('rsvp-settings', { id: 'main', weddingDate })
     setDateSaved(true); setTimeout(() => setDateSaved(false), 2000)
   }
 
@@ -1228,48 +1279,72 @@ function TabParty() {
 
 // ─── TIMELINE ────────────────────────────────────────────────────────────────
 function TabTimeline() {
-  const [items, setItems] = useState([
-    {id:'1',time:'3:30 PM',title:'Guests arrive',who:'Ushers',desc:''},
-    {id:'2',time:'4:00 PM',title:'Ceremony begins',who:'Everyone',desc:'Processional starts'},
-    {id:'3',time:'4:45 PM',title:'Cocktail hour',who:'Guests',desc:'Couple does portraits'},
-    {id:'4',time:'6:00 PM',title:'Reception opens',who:'Everyone',desc:''},
-    {id:'5',time:'6:30 PM',title:'First dances & toasts',who:'Couple, Best man, MOH',desc:''},
-    {id:'6',time:'7:00 PM',title:'Dinner service',who:'Catering',desc:''},
-    {id:'7',time:'9:00 PM',title:'Cake cutting',who:'Couple',desc:''},
-    {id:'8',time:'11:30 PM',title:'Last dance & send-off',who:'Everyone',desc:'Sparkler exit'},
-  ])
+  const [items, setItems] = useState<{id:string;time:string;title:string;desc:string;who:string;order:number}[]>([])
+  const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState<string|null>(null)
-  const update = (id:string,field:string,val:string) => setItems(p=>p.map(i=>i.id===id?{...i,[field]:val}:i))
-  const add = () => { const id=Date.now().toString(); setItems(p=>[...p,{id,time:'',title:'New event',who:'',desc:''}]); setEditing(id) }
+
+  useEffect(() => { $get('timeline').then(d => { setItems(Array.isArray(d)?d:[]); setLoading(false) }) }, [])
+
+  const update = async (id:string, field:string, val:string) => {
+    setItems(p => p.map(i => i.id===id ? {...i,[field]:val} : i))
+    await $patch('timeline-item', { id, [field]: val })
+  }
+
+  const add = async () => {
+    const res = await $post('timeline-item', { title:'New event', time:'', desc:'', who:'', order: items.length })
+    setItems(p => [...p, res])
+    setEditing(res.id)
+  }
+
+  const del = async (id:string) => {
+    await $del('timeline-item', id)
+    setItems(p => p.filter(i => i.id !== id))
+  }
+
+  if (loading) return <div style={{display:'flex',justifyContent:'center',paddingTop:80}}><Loader2 size={24} className="animate-spin" style={{color:'#3a5038'}} /></div>
+
   return (
     <div>
-      <PageHeader title="Day-of timeline" action={<div className="flex gap-5"><Btn variant="ghost" onClick={()=>window.print()}>Print</Btn><Btn onClick={add}><Plus size={17}/>Add event</Btn></div>} />
-      <div className="relative">
-        <div className="absolute left-[72px] top-0 bottom-0 w-px bg-[#243022]"/>
-        <div className="space-y-2">
-          {items.map(item=>(
-            <div key={item.id} className="flex gap-7 group items-start">
-              <div className="w-16 text-right shrink-0 pt-3">
+      <PageHeader title="Day-of timeline" action={<div style={{display:'flex',gap:12}}>
+        <Btn variant="ghost" onClick={()=>window.print()}>Print</Btn>
+        <Btn onClick={add}><Plus size={17}/>Add event</Btn>
+      </div>} />
+      <div style={{position:'relative'}}>
+        <div style={{position:'absolute',left:72,top:0,bottom:0,width:1,background:'#1e2e1c'}}/>
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+          {items.map(item => (
+            <div key={item.id} style={{display:'flex',gap:18,alignItems:'flex-start'}}>
+              <div style={{width:64,textAlign:'right',flexShrink:0,paddingTop:14}}>
                 {editing===item.id
-                  ?<input value={item.time} onChange={e=>update(item.id,'time',e.target.value)} className="w-full text-right text-base font-medium border border-[#2a3829] rounded-lg px-1.5 py-1 focus:outline-none focus:border-[#8fb882]" placeholder="4:00 PM"/>
-                  :<span className="text-base font-semibold text-[#7a9878]">{item.time||'—'}</span>}
+                  ? <input value={item.time} onChange={e=>update(item.id,'time',e.target.value)}
+                      style={{width:'100%',textAlign:'right',fontSize:13,fontWeight:600,border:'1px solid #2a3829',borderRadius:8,padding:'4px 8px',background:'#141c13',color:'#8fb882',outline:'none'}} placeholder="4:00 PM"/>
+                  : <span style={{fontSize:13,fontWeight:600,color:'#6a9068'}}>{item.time||'—'}</span>}
               </div>
-              <div className="w-3 h-3 rounded-full bg-[#5a8a52] border-2 border-white shadow shrink-0 mt-3.5 relative z-10"/>
-              <div className={`flex-1 bg-[#1a2419] rounded-3xl border p-3.5 cursor-pointer transition-colors ${editing===item.id?'border-[#8fb882]':'border-[#2a3829] hover:border-stone-300'}`} onClick={()=>setEditing(editing===item.id?null:item.id)}>
-                {editing===item.id?(
-                  <div className="space-y-2" onClick={e=>e.stopPropagation()}>
-                    <input value={item.title} onChange={e=>update(item.id,'title',e.target.value)} className="w-full font-medium text-base border-0 focus:outline-none bg-transparent"/>
-                    <input value={item.desc} onChange={e=>update(item.id,'desc',e.target.value)} className="w-full text-base text-[#5a7057] border-0 focus:outline-none bg-transparent" placeholder="Description"/>
-                    <input value={item.who} onChange={e=>update(item.id,'who',e.target.value)} className="w-full text-base text-[#8fb882] border-0 focus:outline-none bg-transparent" placeholder="Who's involved"/>
-                    <div className="flex gap-5 pt-1">
-                      <button onClick={()=>setEditing(null)} className="text-base px-3 py-1 rounded-lg bg-[#5a8a52] text-white">Done</button>
-                      <button onClick={()=>setItems(p=>p.filter(i=>i.id!==item.id))} className="text-base px-3 py-1 rounded-lg text-red-400 border border-red-200">Delete</button>
+              <div style={{width:12,height:12,borderRadius:'50%',background:'#4a7a44',border:'2px solid #111714',flexShrink:0,marginTop:14,position:'relative',zIndex:1}}/>
+              <div
+                style={{flex:1,background:'#1a2419',borderRadius:14,padding:16,cursor:'pointer',border:`1px solid ${editing===item.id?'#4a7a44':'#202e1f'}`,transition:'border-color 0.2s'}}
+                onClick={()=>setEditing(editing===item.id?null:item.id)}>
+                {editing===item.id ? (
+                  <div style={{display:'flex',flexDirection:'column',gap:8}} onClick={e=>e.stopPropagation()}>
+                    <input value={item.title} onChange={e=>update(item.id,'title',e.target.value)}
+                      style={{fontSize:15,fontWeight:600,border:'none',background:'transparent',color:'#e8f0e6',outline:'none',width:'100%'}}/>
+                    <input value={item.desc} onChange={e=>update(item.id,'desc',e.target.value)}
+                      style={{fontSize:13,border:'none',background:'transparent',color:'#6a9068',outline:'none',width:'100%'}} placeholder="Description"/>
+                    <input value={item.who} onChange={e=>update(item.id,'who',e.target.value)}
+                      style={{fontSize:13,border:'none',background:'transparent',color:'#4a7a44',outline:'none',width:'100%'}} placeholder="Who's involved"/>
+                    <div style={{display:'flex',gap:8,marginTop:4}}>
+                      <button onClick={()=>setEditing(null)} style={{fontSize:13,padding:'6px 14px',borderRadius:8,background:'#4a7a44',color:'#e8f0e6',border:'none',cursor:'pointer'}}>Done</button>
+                      <button onClick={()=>del(item.id)} style={{fontSize:13,padding:'6px 14px',borderRadius:8,background:'transparent',color:'#f87171',border:'1px solid #3a1a1a',cursor:'pointer'}}>Delete</button>
                     </div>
                   </div>
-                ):(
-                  <div className="flex items-center justify-between">
-                    <div><p className="text-base font-medium text-[#e8f0e6]">{item.title}</p>{item.desc&&<p className="text-base text-[#5a7057] mt-0.5">{item.desc}</p>}{item.who&&<p className="text-base text-[#8fb882] mt-0.5">{item.who}</p>}</div>
-                    <span className="text-base text-[#3a5038] opacity-0 group-hover:opacity-100">click to edit</span>
+                ) : (
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                    <div>
+                      <p style={{fontSize:15,fontWeight:600,color:'#e8f0e6'}}>{item.title}</p>
+                      {item.desc&&<p style={{fontSize:13,color:'#5a7057',marginTop:2}}>{item.desc}</p>}
+                      {item.who&&<p style={{fontSize:13,color:'#4a7a44',marginTop:1}}>{item.who}</p>}
+                    </div>
+                    <span style={{fontSize:12,color:'#2a3828'}}>click to edit</span>
                   </div>
                 )}
               </div>
@@ -1281,7 +1356,6 @@ function TabTimeline() {
   )
 }
 
-// ─── DECOR ───────────────────────────────────────────────────────────────────
 function TabDecor() {
   const AREAS = ['Ceremony arch','Aisle','Head table','Guest tables','Cocktail hour','Entrance','Cake table','Outdoor','Lighting','Other']
   const [items, setItems] = useState<{id:string;area:string;desc:string;vendor:string;cost:string;done:boolean}[]>([])
