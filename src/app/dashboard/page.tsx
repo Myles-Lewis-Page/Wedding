@@ -125,7 +125,7 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
 }
 
 // ─── GUESTS ────────────────────────────────────────────────────────────────
-interface Guest { id: string; name: string; email: string | null; side: string; hasPlusOne: boolean; plusOneName: string | null; dietary: string | null; rsvpStatus: string; tableId: string | null; isInvitee: boolean; notes: string | null }
+interface Guest { id: string; name: string; email: string | null; side: string; hasPlusOne: boolean; plusOneName: string | null; plusOneDietary: string | null; dietary: string | null; rsvpStatus: string; tableId: string | null; isInvitee: boolean; notes: string | null }
 
 function TabGuests() {
   const [guests, setGuests] = useState<Guest[]>([])
@@ -848,6 +848,50 @@ function TabChecklist() {
 
 function TabRSVP() {
   const RSVP_URL = 'https://wedding-production-7483.up.railway.app/rsvp'
+  const [guests, setGuests] = useState<Guest[]>([])
+  const [loadingGuests, setLoadingGuests] = useState(true)
+  const [editTarget, setEditTarget] = useState<Guest | null>(null)
+  const [editForm, setEditForm] = useState({ rsvpStatus: 'pending', dietary: '', email: '', plusOneName: '', plusOneDietary: '', hasPlusOne: false })
+  const [savingEdit, setSavingEdit] = useState(false)
+
+  useEffect(() => {
+    $get('guests').then(d => { setGuests(Array.isArray(d) ? d : []); setLoadingGuests(false) })
+  }, [])
+
+  const openEdit = (g: Guest) => {
+    setEditTarget(g)
+    setEditForm({
+      rsvpStatus: g.rsvpStatus,
+      dietary: g.dietary || '',
+      email: g.email || '',
+      plusOneName: g.plusOneName || '',
+      plusOneDietary: g.plusOneDietary || '',
+      hasPlusOne: g.hasPlusOne,
+    })
+  }
+
+  const saveEdit = async () => {
+    if (!editTarget) return
+    setSavingEdit(true)
+    const res = await $patch('guest', {
+      id: editTarget.id,
+      rsvpStatus: editForm.rsvpStatus,
+      dietary: editForm.dietary || null,
+      email: editForm.email || null,
+      plusOneName: editForm.plusOneName || null,
+      plusOneDietary: editForm.plusOneDietary || null,
+      hasPlusOne: editForm.hasPlusOne,
+    })
+    setGuests(p => p.map(g => g.id === res.id ? res : g))
+    setEditTarget(null)
+    setSavingEdit(false)
+  }
+
+  const STATUS_COLORS: Record<string, [string, string]> = {
+    attending: ['#059669', '#d1fae5'],
+    declined: ['#dc2626', '#fee2e2'],
+    pending: ['#d97706', '#fef3c7'],
+  }
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [copied, setCopied] = useState(false)
 
@@ -912,10 +956,89 @@ function TabRSVP() {
           </div>
           <div className="bg-white rounded-2xl border border-stone-200 p-4">
             <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">Print tip</p>
-            <p className="text-sm text-stone-500">Download the QR code and add it to your invitation design. Recommended size: 1.5" × 1.5" minimum so it scans reliably.</p>
+            <p className="text-sm text-stone-500">Download the QR code and add it to your invitation design. Recommended size: 1.5&quot; × 1.5&quot; minimum so it scans reliably.</p>
           </div>
         </div>
       </div>
+
+      {/* Admin — edit guest RSVPs */}
+      <div className="mt-8">
+        <h2 className="text-xl font-light text-stone-700 mb-4" style={{ fontFamily: 'var(--font-display)' }}>
+          Guest RSVP records
+        </h2>
+        {loadingGuests ? <div className="flex justify-center py-8"><Loader2 className="animate-spin text-stone-300" size={20} /></div> : (
+          <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[520px]">
+                <thead><tr className="border-b border-stone-100 bg-stone-50 text-left text-xs text-stone-400 uppercase tracking-wider">
+                  {['Name', 'Status', 'Email', 'Dietary', 'Plus one', ''].map(h => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}
+                </tr></thead>
+                <tbody>
+                  {guests.length === 0 ? (
+                    <tr><td colSpan={6} className="text-center py-10 text-stone-400">No guests yet</td></tr>
+                  ) : guests.map(g => {
+                    const [color, bg] = STATUS_COLORS[g.rsvpStatus] ?? STATUS_COLORS.pending
+                    return (
+                      <tr key={g.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50 transition-colors">
+                        <td className="px-4 py-3 font-medium text-stone-800">{g.name}</td>
+                        <td className="px-4 py-3">
+                          <span className="text-xs px-2.5 py-1 rounded-full font-medium capitalize" style={{ color, background: bg }}>
+                            {g.rsvpStatus}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-xs text-stone-500">{g.email || '—'}</td>
+                        <td className="px-4 py-3 text-xs text-stone-500">{g.dietary || '—'}</td>
+                        <td className="px-4 py-3 text-xs text-stone-500">{g.plusOneName || (g.hasPlusOne ? <span className="text-[#7A9C6E]">allowed</span> : '—')}</td>
+                        <td className="px-4 py-3">
+                          <button onClick={() => openEdit(g)} className="text-xs text-stone-400 hover:text-[#7A9C6E] flex items-center gap-1 transition-colors">
+                            <Edit3 size={12} /> Edit
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Edit guest RSVP modal */}
+      {editTarget && (
+        <Modal title={`Edit RSVP — ${editTarget.name}`} onClose={() => setEditTarget(null)}
+          footer={<><Btn variant="ghost" onClick={() => setEditTarget(null)}>Cancel</Btn><Btn onClick={saveEdit} disabled={savingEdit}>{savingEdit ? <><Loader2 size={14} className="animate-spin" />Saving…</> : <><Check size={14} />Save</>}</Btn></>}>
+          <Field label="RSVP status">
+            <Select value={editForm.rsvpStatus} onChange={e => setEditForm(f => ({ ...f, rsvpStatus: e.target.value }))}>
+              <option value="pending">Pending</option>
+              <option value="attending">Attending</option>
+              <option value="declined">Declined</option>
+            </Select>
+          </Field>
+          <Field label="Email"><Input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} placeholder="guest@email.com" /></Field>
+          <Field label="Dietary requirements">
+            <Select value={editForm.dietary} onChange={e => setEditForm(f => ({ ...f, dietary: e.target.value }))}>
+              {['', 'Vegetarian', 'Vegan', 'Gluten-free', 'Nut allergy', 'Halal', 'Kosher', 'Other'].map(o => <option key={o} value={o}>{o || 'None'}</option>)}
+            </Select>
+          </Field>
+          <div className="flex items-center justify-between py-1">
+            <div><p className="text-sm font-medium text-stone-700">Plus one allowed</p></div>
+            <button onClick={() => setEditForm(f => ({ ...f, hasPlusOne: !f.hasPlusOne }))} className={`w-11 h-6 rounded-full transition-colors relative ${editForm.hasPlusOne ? 'bg-[#7A9C6E]' : 'bg-stone-200'}`}>
+              <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${editForm.hasPlusOne ? 'translate-x-5' : 'translate-x-0.5'}`} />
+            </button>
+          </div>
+          {editForm.hasPlusOne && (
+            <>
+              <Field label="Plus one name"><Input value={editForm.plusOneName} onChange={e => setEditForm(f => ({ ...f, plusOneName: e.target.value }))} placeholder="Full name" /></Field>
+              <Field label="Plus one dietary">
+                <Select value={editForm.plusOneDietary} onChange={e => setEditForm(f => ({ ...f, plusOneDietary: e.target.value }))}>
+                  {['', 'Vegetarian', 'Vegan', 'Gluten-free', 'Nut allergy', 'Halal', 'Kosher', 'Other'].map(o => <option key={o} value={o}>{o || 'None'}</option>)}
+                </Select>
+              </Field>
+            </>
+          )}
+        </Modal>
+      )}
     </div>
   )
 }

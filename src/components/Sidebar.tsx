@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Heart } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { Heart, LogOut } from 'lucide-react'
 
 const TABS = [
   { section: 'Overview',  links: [
@@ -70,10 +70,31 @@ export default function Sidebar({ activeTab, onTab }: { activeTab: string; onTab
         ))}
       </nav>
 
+      <div className="mx-3 mb-2 shrink-0">
+        <LogoutBtn />
+      </div>
       <div className="mx-3 mb-3 p-3 bg-[#EDF4EA] rounded-xl text-center shrink-0">
         <Countdown />
       </div>
     </aside>
+  )
+}
+
+function LogoutBtn() {
+  const router = useRouter()
+  const logout = async () => {
+    await fetch('/api/auth', { method: 'DELETE' })
+    router.push('/login')
+    router.refresh()
+  }
+  return (
+    <button
+      onClick={logout}
+      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-all"
+    >
+      <LogOut size={12} />
+      Sign out
+    </button>
   )
 }
 
