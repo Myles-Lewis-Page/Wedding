@@ -1,0 +1,153 @@
+'use client'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Heart, LogOut, Menu, X } from 'lucide-react'
+
+const TABS = [
+  { section: 'Overview', links: [
+    { tab: 'home', label: 'Dashboard' },
+    { tab: 'moodboard', label: 'Mood board' },
+  ]},
+  { section: 'Guests', links: [
+    { tab: 'guests', label: 'Guest list' },
+    { tab: 'rsvp', label: 'RSVP portal' },
+    { tab: 'seating', label: 'Seating chart' },
+  ]},
+  { section: 'Venue', links: [
+    { tab: 'venues', label: 'Venues' },
+  ]},
+  { section: 'Planning', links: [
+    { tab: 'budget', label: 'Budget' },
+    { tab: 'vendors', label: 'Vendors' },
+    { tab: 'tasks', label: 'Tasks' },
+    { tab: 'checklist', label: 'Checklist' },
+  ]},
+  { section: 'Details', links: [
+    { tab: 'party', label: 'Wedding party' },
+    { tab: 'timeline', label: 'Timeline' },
+    { tab: 'menu', label: 'Menu & drinks' },
+    { tab: 'decor', label: 'Décor' },
+    { tab: 'attire', label: 'Attire' },
+    { tab: 'photoshoot', label: 'Photoshoot' },
+    { tab: 'playlist', label: 'Playlist' },
+    { tab: 'gifts', label: 'Gifts' },
+  ]},
+]
+
+interface SidebarProps { activeTab: string; onTab: (t: string) => void }
+
+function NavContent({ activeTab, onTab, onClose }: SidebarProps & { onClose?: () => void }) {
+  const router = useRouter()
+  const logout = async () => {
+    await fetch('/api/auth', { method: 'DELETE' })
+    router.push('/login')
+    router.refresh()
+  }
+  const handleTab = (tab: string) => { onTab(tab); onClose?.() }
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', height:'100%' }}>
+      {/* Logo */}
+      <div style={{ padding:'20px 18px 16px', borderBottom:'1px solid #1e2e1c', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <Heart size={15} fill="var(--sage)" style={{ color:'var(--sage)', flexShrink:0 }} />
+          <span style={{ fontFamily:'var(--font-display)', fontSize:17, fontWeight:500, color:'#e8f0e6', letterSpacing:1 }}>Sage Planner</span>
+        </div>
+        {onClose && (
+          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'#5a7057', lineHeight:0 }}>
+            <X size={20} />
+          </button>
+        )}
+      </div>
+      <p style={{ fontSize:11, color:'#4a6448', padding:'6px 18px 0', flexShrink:0 }}>Jennifer & Myles</p>
+
+      {/* Nav */}
+      <nav style={{ flex:1, overflowY:'auto', padding:'12px 10px' }}>
+        {TABS.map(({ section, links }) => (
+          <div key={section} style={{ marginBottom:16 }}>
+            <p style={{ fontSize:10, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.15em', color:'#3a5038', padding:'0 10px', marginBottom:4 }}>{section}</p>
+            {links.map(({ tab, label }) => {
+              const active = activeTab === tab
+              return (
+                <button key={tab} onClick={() => handleTab(tab)} style={{
+                  width:'100%', textAlign:'left', padding:'9px 12px', borderRadius:10,
+                  fontSize:14, fontWeight: active ? 600 : 400,
+                  color: active ? 'var(--sage-dark, #b8d4b4)' : '#5a7857',
+                  background: active ? 'var(--sage-light, #1e3a1e)' : 'transparent',
+                  border:'none', cursor:'pointer', marginBottom:1, transition:'all 0.15s',
+                }}
+                onMouseEnter={e => { if (!active) { (e.target as HTMLElement).style.background='#161f15'; (e.target as HTMLElement).style.color='var(--sage)' } }}
+                onMouseLeave={e => { if (!active) { (e.target as HTMLElement).style.background='transparent'; (e.target as HTMLElement).style.color='#5a7857' } }}>
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+        ))}
+      </nav>
+
+      {/* Bottom */}
+      <div style={{ padding:'12px 10px', flexShrink:0, borderTop:'1px solid #1e2e1c' }}>
+        <div style={{ background:'var(--sage-light,#1e3a1e)', borderRadius:14, padding:'10px 12px', textAlign:'center', marginBottom:8 }}>
+          <Countdown />
+        </div>
+        <button onClick={logout} style={{ width:'100%', display:'flex', alignItems:'center', gap:8, padding:'8px 12px', borderRadius:10, fontSize:13, color:'#3a5038', background:'none', border:'none', cursor:'pointer' }}
+          onMouseEnter={e => { e.currentTarget.style.color='var(--sage)'; e.currentTarget.style.background='#161f15' }}
+          onMouseLeave={e => { e.currentTarget.style.color='#3a5038'; e.currentTarget.style.background='none' }}>
+          <LogOut size={14} /> Sign out
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function Countdown() {
+  const [days, setDays] = useState<number | null>(null)
+  useEffect(() => {
+    const date = localStorage.getItem('weddingDate')
+    if (date) setDays(Math.ceil((new Date(date).getTime() - Date.now()) / 86400000))
+  }, [])
+  if (days === null) return <p style={{ fontSize:11, color:'#4a6448' }}>Set date in Venues →</p>
+  return (
+    <>
+      <p style={{ fontFamily:'var(--font-display)', fontSize:26, fontWeight:400, color:'var(--sage)', lineHeight:1 }}>{days > 0 ? days : '🎉'}</p>
+      <p style={{ fontSize:11, color:'#4a6448', marginTop:2 }}>days to go</p>
+    </>
+  )
+}
+
+export default function Sidebar({ activeTab, onTab }: SidebarProps) {
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside style={{ width:220, minWidth:220, height:'100vh', background:'#0f1a0e', borderRight:'1px solid #1e2e1c', display:'flex', flexDirection:'column', overflow:'hidden' }}
+        className="hidden md:flex">
+        <NavContent activeTab={activeTab} onTab={onTab} />
+      </aside>
+
+      {/* Mobile top bar */}
+      <div style={{ position:'fixed', top:0, left:0, right:0, zIndex:40, background:'#0f1a0e', borderBottom:'1px solid #1e2e1c', padding:'12px 16px', display:'flex', alignItems:'center', justifyContent:'space-between' }}
+        className="flex md:hidden">
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <Heart size={14} fill="var(--sage)" style={{ color:'var(--sage)' }} />
+          <span style={{ fontFamily:'var(--font-display)', fontSize:16, fontWeight:500, color:'#e8f0e6' }}>Sage Planner</span>
+        </div>
+        <button onClick={() => setMobileOpen(true)} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--sage)', lineHeight:0 }}>
+          <Menu size={22} />
+        </button>
+      </div>
+
+      {/* Mobile drawer overlay */}
+      {mobileOpen && (
+        <div style={{ position:'fixed', inset:0, zIndex:50 }} className="md:hidden">
+          <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.6)' }} onClick={() => setMobileOpen(false)} />
+          <div style={{ position:'absolute', top:0, left:0, bottom:0, width:260, background:'#0f1a0e', borderRight:'1px solid #1e2e1c', overflowY:'auto' }}>
+            <NavContent activeTab={activeTab} onTab={onTab} onClose={() => setMobileOpen(false)} />
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
