@@ -46,7 +46,7 @@ export default function Sidebar({ activeTab, onTab }: { activeTab: string; onTab
       {/* Logo */}
       <div style={{ padding: '20px 18px 16px', borderBottom: '1px solid #1e2e1c', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Heart size={15} fill="#8fb882" style={{ color: '#8fb882', flexShrink: 0 }} />
+          <Heart size={15} fill="var(--sage)" style={{ color: 'var(--sage)', flexShrink: 0 }} />
           <span style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 500, color: '#e8f0e6', letterSpacing: 1 }}>
             Sage Planner
           </span>
@@ -67,12 +67,12 @@ export default function Sidebar({ activeTab, onTab }: { activeTab: string; onTab
                 <button key={tab} onClick={() => onTab(tab)} style={{
                   width: '100%', textAlign: 'left', padding: '9px 12px',
                   borderRadius: 10, fontSize: 14, fontWeight: active ? 600 : 400,
-                  color: active ? '#b8d4b4' : '#5a7857',
-                  background: active ? '#1e3a1e' : 'transparent',
+                  color: active ? 'var(--sage-dark, #b8d4b4)' : '#5a7857',
+                  background: active ? 'var(--sage-light, #1e3a1e)' : 'transparent',
                   border: 'none', cursor: 'pointer', marginBottom: 1,
                   transition: 'all 0.15s',
                 }}
-                onMouseEnter={e => { if (!active) (e.target as HTMLElement).style.background = '#161f15'; (e.target as HTMLElement).style.color = '#8fb882' }}
+                onMouseEnter={e => { if (!active) { (e.target as HTMLElement).style.background = '#161f15'; (e.target as HTMLElement).style.color = 'var(--sage)' } }}
                 onMouseLeave={e => { if (!active) { (e.target as HTMLElement).style.background = 'transparent'; (e.target as HTMLElement).style.color = '#5a7857' } }}>
                   {label}
                 </button>
@@ -84,11 +84,11 @@ export default function Sidebar({ activeTab, onTab }: { activeTab: string; onTab
 
       {/* Countdown + logout */}
       <div style={{ padding: '12px 10px', flexShrink: 0 }}>
-        <div style={{ background: '#1e3a1e', borderRadius: 14, padding: '12px', textAlign: 'center', marginBottom: 8 }}>
+        <div style={{ background: 'var(--sage-light, #1e3a1e)', borderRadius: 14, padding: '12px', textAlign: 'center', marginBottom: 8 }}>
           <Countdown />
         </div>
         <button onClick={logout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10, fontSize: 13, color: '#3a5038', background: 'none', border: 'none', cursor: 'pointer' }}
-          onMouseEnter={e => { (e.currentTarget).style.color = '#8fb882'; (e.currentTarget).style.background = '#161f15' }}
+          onMouseEnter={e => { (e.currentTarget).style.color = 'var(--sage)'; (e.currentTarget).style.background = '#161f15' }}
           onMouseLeave={e => { (e.currentTarget).style.color = '#3a5038'; (e.currentTarget).style.background = 'none' }}>
           <LogOut size={14} />
           Sign out
@@ -104,7 +104,7 @@ function Countdown() {
   const days = Math.ceil((new Date(date).getTime() - Date.now()) / 86400000)
   return (
     <>
-      <p style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 400, color: '#8fb882' }}>{days > 0 ? days : '🎉'}</p>
+      <p style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 400, color: 'var(--sage)' }}>{days > 0 ? days : '🎉'}</p>
       <p style={{ fontSize: 11, color: '#4a6448', marginTop: 2 }}>days to go</p>
     </>
   )
