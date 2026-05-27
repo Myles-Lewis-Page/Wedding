@@ -1,67 +1,79 @@
 'use client'
-import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Heart, LogOut } from 'lucide-react'
 
 const TABS = [
-  { section: 'Overview',  links: [
-    { href: '/dashboard',          label: 'Dashboard' },
-    { href: '/dashboard#moodboard',label: 'Mood board' },
+  { section: 'Overview', links: [
+    { tab: 'home',       label: 'Dashboard' },
+    { tab: 'moodboard',  label: 'Mood board' },
   ]},
   { section: 'Guests', links: [
-    { href: '/dashboard#guests',   label: 'Guest list' },
-    { href: '/dashboard#rsvp',     label: 'RSVP portal' },
-    { href: '/dashboard#seating',  label: 'Seating chart' },
+    { tab: 'guests',     label: 'Guest list' },
+    { tab: 'rsvp',       label: 'RSVP portal' },
+    { tab: 'seating',    label: 'Seating chart' },
   ]},
   { section: 'Venue', links: [
-    { href: '/dashboard#venues',   label: 'Venues' },
+    { tab: 'venues',     label: 'Venues' },
   ]},
   { section: 'Planning', links: [
-    { href: '/dashboard#budget',   label: 'Budget' },
-    { href: '/dashboard#vendors',  label: 'Vendors' },
-    { href: '/dashboard#tasks',    label: 'Tasks' },
-    { href: '/dashboard#checklist',label: 'Checklist' },
+    { tab: 'budget',     label: 'Budget' },
+    { tab: 'vendors',    label: 'Vendors' },
+    { tab: 'tasks',      label: 'Tasks' },
+    { tab: 'checklist',  label: 'Checklist' },
   ]},
   { section: 'Details', links: [
-    { href: '/dashboard#party',    label: 'Wedding party' },
-    { href: '/dashboard#timeline', label: 'Timeline' },
-    { href: '/dashboard#menu',     label: 'Menu & drinks' },
-    { href: '/dashboard#decor',    label: 'Décor' },
-    { href: '/dashboard#attire',   label: 'Attire' },
-    { href: '/dashboard#photoshoot',label: 'Photoshoot' },
-    { href: '/dashboard#playlist', label: 'Playlist' },
-    { href: '/dashboard#gifts',    label: 'Gifts' },
+    { tab: 'party',      label: 'Wedding party' },
+    { tab: 'timeline',   label: 'Timeline' },
+    { tab: 'menu',       label: 'Menu & drinks' },
+    { tab: 'decor',      label: 'Décor' },
+    { tab: 'attire',     label: 'Attire' },
+    { tab: 'photoshoot', label: 'Photoshoot' },
+    { tab: 'playlist',   label: 'Playlist' },
+    { tab: 'gifts',      label: 'Gifts' },
   ]},
 ]
 
 export default function Sidebar({ activeTab, onTab }: { activeTab: string; onTab: (t: string) => void }) {
+  const router = useRouter()
+  const logout = async () => {
+    await fetch('/api/auth', { method: 'DELETE' })
+    router.push('/login')
+    router.refresh()
+  }
+
   return (
-    <aside className="w-48 shrink-0 h-screen bg-white border-r border-stone-200 flex flex-col overflow-hidden">
-      <div className="px-4 py-4 border-b border-stone-100 shrink-0">
-        <div className="flex items-center gap-2">
-          <Heart size={13} fill="#7A9C6E" className="text-[#7A9C6E] shrink-0" />
-          <span className="text-sm font-semibold tracking-wide text-stone-800" style={{ fontFamily: 'var(--font-display)' }}>
+    <aside style={{ width: 220, minWidth: 220, height: '100vh', background: '#0f1a0e', borderRight: '1px solid #1e2e1c', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* Logo */}
+      <div style={{ padding: '20px 18px 16px', borderBottom: '1px solid #1e2e1c', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Heart size={15} fill="#8fb882" style={{ color: '#8fb882', flexShrink: 0 }} />
+          <span style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 500, color: '#e8f0e6', letterSpacing: 1 }}>
             Sage Planner
           </span>
         </div>
-        <p className="text-[11px] text-stone-400 mt-0.5 pl-5">Jennifer & Myles</p>
+        <p style={{ fontSize: 12, color: '#4a6448', marginTop: 3, paddingLeft: 23 }}>Jennifer & Myles</p>
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-3 px-2">
+      {/* Nav */}
+      <nav style={{ flex: 1, overflowY: 'auto', padding: '12px 10px' }}>
         {TABS.map(({ section, links }) => (
-          <div key={section} className="mb-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-400 px-2 mb-1">{section}</p>
-            {links.map(({ href, label }) => {
-              const tab = href.split('#')[1] || 'home'
+          <div key={section} style={{ marginBottom: 16 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#3a5038', padding: '0 10px', marginBottom: 4 }}>
+              {section}
+            </p>
+            {links.map(({ tab, label }) => {
               const active = activeTab === tab
               return (
-                <button
-                  key={href}
-                  onClick={() => onTab(tab)}
-                  className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[13px] mb-0.5 transition-all ${
-                    active ? 'bg-[#EDF4EA] text-[#3d6b2e] font-medium' : 'text-stone-500 hover:bg-stone-50 hover:text-stone-800'
-                  }`}
-                >
+                <button key={tab} onClick={() => onTab(tab)} style={{
+                  width: '100%', textAlign: 'left', padding: '9px 12px',
+                  borderRadius: 10, fontSize: 14, fontWeight: active ? 600 : 400,
+                  color: active ? '#b8d4b4' : '#5a7857',
+                  background: active ? '#1e3a1e' : 'transparent',
+                  border: 'none', cursor: 'pointer', marginBottom: 1,
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { if (!active) (e.target as HTMLElement).style.background = '#161f15'; (e.target as HTMLElement).style.color = '#8fb882' }}
+                onMouseLeave={e => { if (!active) { (e.target as HTMLElement).style.background = 'transparent'; (e.target as HTMLElement).style.color = '#5a7857' } }}>
                   {label}
                 </button>
               )
@@ -70,42 +82,30 @@ export default function Sidebar({ activeTab, onTab }: { activeTab: string; onTab
         ))}
       </nav>
 
-      <div className="mx-3 mb-2 shrink-0">
-        <LogoutBtn />
-      </div>
-      <div className="mx-3 mb-3 p-3 bg-[#EDF4EA] rounded-xl text-center shrink-0">
-        <Countdown />
+      {/* Countdown + logout */}
+      <div style={{ padding: '12px 10px', flexShrink: 0 }}>
+        <div style={{ background: '#1e3a1e', borderRadius: 14, padding: '12px', textAlign: 'center', marginBottom: 8 }}>
+          <Countdown />
+        </div>
+        <button onClick={logout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10, fontSize: 13, color: '#3a5038', background: 'none', border: 'none', cursor: 'pointer' }}
+          onMouseEnter={e => { (e.currentTarget).style.color = '#8fb882'; (e.currentTarget).style.background = '#161f15' }}
+          onMouseLeave={e => { (e.currentTarget).style.color = '#3a5038'; (e.currentTarget).style.background = 'none' }}>
+          <LogOut size={14} />
+          Sign out
+        </button>
       </div>
     </aside>
   )
 }
 
-function LogoutBtn() {
-  const router = useRouter()
-  const logout = async () => {
-    await fetch('/api/auth', { method: 'DELETE' })
-    router.push('/login')
-    router.refresh()
-  }
-  return (
-    <button
-      onClick={logout}
-      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-all"
-    >
-      <LogOut size={12} />
-      Sign out
-    </button>
-  )
-}
-
 function Countdown() {
   const date = typeof window !== 'undefined' ? localStorage.getItem('weddingDate') : null
-  if (!date) return <p className="text-xs text-[#7A9C6E]">Set your date →</p>
+  if (!date) return <p style={{ fontSize: 12, color: '#4a6448' }}>Set date in Venues →</p>
   const days = Math.ceil((new Date(date).getTime() - Date.now()) / 86400000)
   return (
     <>
-      <p className="text-2xl font-medium text-[#3d6b2e]" style={{ fontFamily: 'var(--font-display)' }}>{days > 0 ? days : '🎉'}</p>
-      <p className="text-[11px] text-[#7A9C6E]">days to go</p>
+      <p style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 400, color: '#8fb882' }}>{days > 0 ? days : '🎉'}</p>
+      <p style={{ fontSize: 11, color: '#4a6448', marginTop: 2 }}>days to go</p>
     </>
   )
 }

@@ -11,47 +11,54 @@ import {
 
 // ─── tiny shared components ────────────────────────────────────────────────
 const Modal = ({ title, onClose, children, footer }: { title: string; onClose: () => void; children: React.ReactNode; footer?: React.ReactNode }) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-    <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh]">
-      <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100 shrink-0">
-        <h2 className="text-lg font-semibold text-stone-800">{title}</h2>
-        <button onClick={onClose} className="text-stone-400 hover:text-stone-600"><X size={18} /></button>
+  <div style={{ position:'fixed', inset:0, zIndex:50, display:'flex', alignItems:'center', justifyContent:'center', padding:20, background:'rgba(0,0,0,0.75)' }}>
+    <div style={{ background:'#1a2419', borderRadius:20, width:'100%', maxWidth:580, boxShadow:'0 30px 80px rgba(0,0,0,0.6)', display:'flex', flexDirection:'column', maxHeight:'88vh', border:'1px solid #2a3829' }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'22px 30px', borderBottom:'1px solid #202e1f', flexShrink:0 }}>
+        <h2 style={{ fontSize:20, fontWeight:600, color:'#e8f0e6', fontFamily:'var(--font-display)' }}>{title}</h2>
+        <button onClick={onClose} style={{ color:'#5a7057', background:'none', border:'none', cursor:'pointer', lineHeight:0 }}><X size={20} /></button>
       </div>
-      <div className="overflow-y-auto p-6 space-y-4 flex-1">{children}</div>
-      {footer && <div className="px-6 py-4 border-t border-stone-100 bg-stone-50 rounded-b-2xl flex justify-end gap-2 shrink-0">{footer}</div>}
+      <div style={{ overflowY:'auto', padding:'24px 30px', flex:1, display:'flex', flexDirection:'column', gap:16 }}>{children}</div>
+      {footer && <div style={{ padding:'18px 30px', borderTop:'1px solid #202e1f', background:'#141c13', borderRadius:'0 0 20px 20px', display:'flex', justifyContent:'flex-end', gap:10, flexShrink:0 }}>{footer}</div>}
     </div>
   </div>
 )
 
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div><label className="block text-xs font-medium text-stone-500 mb-1">{label}</label>{children}</div>
+  <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+    <label style={{ fontSize:12, fontWeight:700, color:'#5a7857', textTransform:'uppercase', letterSpacing:'0.08em' }}>{label}</label>
+    {children}
+  </div>
 )
 
+const inputStyle: React.CSSProperties = { width:'100%', padding:'12px 16px', borderRadius:10, border:'1px solid #2a3829', fontSize:15, outline:'none', background:'#141c13', color:'#e8f0e6' }
+
 const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
-  <input {...props} className={`w-full px-3 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:border-[#7A9C6E] focus:ring-1 focus:ring-[#7A9C6E]/20 bg-white ${props.className || ''}`} />
+  <input {...props} style={{ ...inputStyle, ...(props.style||{}) }} onFocus={e=>{e.target.style.borderColor='#8fb882'; e.target.style.boxShadow='0 0 0 3px #8fb88220'}} onBlur={e=>{e.target.style.borderColor='#2a3829'; e.target.style.boxShadow='none'}} />
 )
 
 const Select = (props: React.SelectHTMLAttributes<HTMLSelectElement> & { children: React.ReactNode }) => (
-  <select {...props} className={`w-full px-3 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:border-[#7A9C6E] bg-white ${props.className || ''}`} />
+  <select {...props} style={{ ...inputStyle, cursor:'pointer', ...(props.style||{}) }} />
 )
 
-const Btn = ({ children, variant = 'primary', ...p }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'ghost' | 'danger' }) => (
-  <button {...p} className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-40 ${
-    variant === 'primary' ? 'text-white' : variant === 'danger' ? 'text-red-500 hover:bg-red-50' : 'text-stone-600 border border-stone-200 hover:bg-stone-50'
-  } ${p.className || ''}`} style={variant === 'primary' ? { background: '#7A9C6E', ...p.style } : p.style}>
-    {children}
-  </button>
-)
+const Btn = ({ children, variant = 'primary', ...p }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'ghost' | 'danger' }) => {
+  const base: React.CSSProperties = { display:'flex', alignItems:'center', gap:8, padding:'11px 22px', borderRadius:10, fontSize:15, fontWeight:600, cursor:'pointer', transition:'all 0.15s', border:'none', whiteSpace:'nowrap', opacity: p.disabled ? 0.4 : 1 }
+  const styles: Record<string, React.CSSProperties> = {
+    primary: { ...base, background:'#4a7a44', color:'#e8f0e6', ...p.style },
+    ghost:   { ...base, background:'transparent', color:'#8fb882', border:'1px solid #2a3829', ...p.style },
+    danger:  { ...base, background:'transparent', color:'#f87171', ...p.style },
+  }
+  return <button {...p} style={styles[variant]}>{children}</button>
+}
 
 const Tag = ({ color, children }: { color: string; children: React.ReactNode }) => (
-  <span className="text-xs px-2.5 py-0.5 rounded-full font-medium" style={{ background: color + '20', color }}>{children}</span>
+  <span style={{ fontSize:13, padding:'4px 12px', borderRadius:20, fontWeight:600, background: color + '25', color, display:'inline-block' }}>{children}</span>
 )
 
 const PageHeader = ({ title, sub, action }: { title: string; sub?: string; action?: React.ReactNode }) => (
-  <div className="flex items-start justify-between mb-8">
+  <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:32 }}>
     <div>
-      <h1 className="text-3xl font-light text-stone-800 mb-1" style={{ fontFamily: 'var(--font-display)' }}>{title}</h1>
-      {sub && <p className="text-sm text-stone-400">{sub}</p>}
+      <h1 style={{ fontFamily:'var(--font-display)', fontSize:36, fontWeight:300, color:'#e8f0e6', marginBottom:4 }}>{title}</h1>
+      {sub && <p style={{ fontSize:15, color:'#4a6448' }}>{sub}</p>}
     </div>
     {action}
   </div>
@@ -73,51 +80,51 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
 
   const rate = stats.total ? Math.round(((stats.attending + stats.declined) / stats.total) * 100) : 0
 
-  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="animate-spin text-stone-300" size={28} /></div>
+  if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="animate-spin text-[#3a5038]" size={30} /></div>
 
   return (
     <div className="max-w-3xl">
       <PageHeader title="Good morning 🌿" sub="Here's where your wedding planning stands." />
 
       {venue && (
-        <button onClick={() => onTab?.('venues')} className="w-full mb-6 bg-[#EDF4EA] rounded-2xl p-4 flex items-center gap-3 hover:bg-[#e0eddb] transition-colors text-left">
-          <MapPin size={16} className="text-[#7A9C6E] shrink-0" />
+        <button onClick={() => onTab?.('venues')} className="w-full mb-6 bg-[#1e3a1e] rounded-3xl p-7 flex items-center gap-5 hover:bg-[#1e3a1e] transition-colors text-left">
+          <MapPin size={19} className="text-[#8fb882] shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-[#7A9C6E] font-medium uppercase tracking-wider">Selected venue</p>
-            <p className="text-sm font-medium text-[#3d6b2e] truncate">{venue.name}{venue.address ? ` · ${venue.address}` : ''}</p>
+            <p className="text-base text-[#8fb882] font-medium uppercase tracking-wider">Selected venue</p>
+            <p className="text-base font-medium text-[#8fb882] truncate">{venue.name}{venue.address ? ` · ${venue.address}` : ''}</p>
           </div>
-          <ChevronRight size={14} className="text-[#7A9C6E] shrink-0" />
+          <ChevronRight size={17} className="text-[#8fb882] shrink-0" />
         </button>
       )}
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-2 gap-7 mb-6">
         {[
           { label: 'Total guests', val: stats.total, sub: 'on the list', color: '#7A9C6E' },
           { label: 'Attending', val: stats.attending, sub: `${rate}% responded`, color: '#5DCAA5' },
           { label: 'Pending RSVP', val: stats.pending, sub: 'no reply yet', color: '#EF9F27' },
           { label: 'Declined', val: stats.declined, sub: 'unable to come', color: '#D85A30' },
         ].map(({ label, val, sub, color }) => (
-          <div key={label} className="bg-white rounded-2xl border border-stone-200 p-5">
-            <p className="text-xs text-stone-400 uppercase tracking-wider mb-2">{label}</p>
+          <div key={label} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7">
+            <p className="text-base text-[#5a7057] uppercase tracking-wider mb-2">{label}</p>
             <p className="text-3xl font-light mb-0.5" style={{ fontFamily: 'var(--font-display)', color }}>{val}</p>
-            <p className="text-xs text-stone-400">{sub}</p>
+            <p className="text-base text-[#5a7057]">{sub}</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl border border-stone-200 p-5">
-        <div className="flex justify-between text-sm mb-3">
-          <span className="font-medium text-stone-700">RSVP progress</span>
-          <span className="text-stone-400">{stats.attending + stats.declined} / {stats.total}</span>
+      <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7">
+        <div className="flex justify-between text-base mb-3">
+          <span className="font-medium text-[#cde0ca]">RSVP progress</span>
+          <span className="text-[#5a7057]">{stats.attending + stats.declined} / {stats.total}</span>
         </div>
-        <div className="h-3 bg-stone-100 rounded-full overflow-hidden flex">
-          <div className="h-full bg-[#7A9C6E] rounded-full transition-all" style={{ width: `${stats.total ? (stats.attending / stats.total) * 100 : 0}%` }} />
+        <div className="h-3 bg-[#1f2b1e] rounded-full overflow-hidden flex">
+          <div className="h-full bg-[#5a8a52] rounded-full transition-all" style={{ width: `${stats.total ? (stats.attending / stats.total) * 100 : 0}%` }} />
           <div className="h-full bg-red-300 transition-all" style={{ width: `${stats.total ? (stats.declined / stats.total) * 100 : 0}%` }} />
         </div>
-        <div className="flex gap-5 mt-3 text-xs text-stone-400">
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#7A9C6E] inline-block" />Attending</span>
+        <div className="flex gap-7 mt-3 text-base text-[#5a7057]">
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#5a8a52] inline-block" />Attending</span>
           <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-300 inline-block" />Declined</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-stone-200 inline-block" />Pending</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#243022] inline-block" />Pending</span>
         </div>
       </div>
     </div>
@@ -166,56 +173,56 @@ function TabGuests() {
   return (
     <div>
       <PageHeader title="Guest list" sub={`${stats.all} guests · ${stats.attending} attending · ${stats.pending} pending`}
-        action={<div className="flex gap-2"><Btn variant="ghost" onClick={exportCSV}>Export CSV</Btn><Btn onClick={() => setShowAdd(true)}><Plus size={14} />Add guest</Btn></div>} />
+        action={<div className="flex gap-5"><Btn variant="ghost" onClick={exportCSV}>Export CSV</Btn><Btn onClick={() => setShowAdd(true)}><Plus size={17} />Add guest</Btn></div>} />
 
-      <div className="flex gap-2 mb-4 flex-wrap">
+      <div className="flex gap-5 mb-4 flex-wrap">
         {(['all','attending','declined','pending'] as const).map(f => (
-          <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all capitalize ${filter === f ? 'bg-[#7A9C6E] text-white' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'}`}>
+          <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-full text-base font-medium transition-all capitalize ${filter === f ? 'bg-[#5a8a52] text-white' : 'bg-[#1f2b1e] text-[#7a9878] hover:bg-[#243022]'}`}>
             {f === 'all' ? `All (${stats.all})` : `${f.charAt(0).toUpperCase() + f.slice(1)} (${stats[f]})`}
           </button>
         ))}
       </div>
 
       <div className="relative mb-4">
-        <Search size={14} className="absolute left-3 top-3 text-stone-400" />
+        <Search size={17} className="absolute left-3 top-3 text-[#5a7057]" />
         <Input placeholder="Search guests…" value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
       </div>
 
-      {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-stone-300" size={24} /></div> : (
-        <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+      {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#3a5038]" size={26} /></div> : (
+        <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[560px]">
-              <thead><tr className="border-b border-stone-100 bg-stone-50 text-left text-xs text-stone-400 uppercase tracking-wider">
-                {['Name','Side','RSVP','Plus one','Dietary','Table',''].map(h => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}
+            <table className="w-full text-base min-w-[560px]">
+              <thead><tr className="border-b border-[#202e1f] bg-[#141c13] text-left text-base text-[#5a7057] uppercase tracking-wider">
+                {['Name','Side','RSVP','Plus one','Dietary','Table',''].map(h => <th key={h} className="px-6 py-3.5.5 font-medium">{h}</th>)}
               </tr></thead>
               <tbody>
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={7} className="text-center py-16 text-stone-400">{guests.length === 0 ? 'No guests yet — add your first one.' : 'No matches found.'}</td></tr>
+                  <tr><td colSpan={7} className="text-center py-16 text-[#5a7057]">{guests.length === 0 ? 'No guests yet — add your first one.' : 'No matches found.'}</td></tr>
                 ) : filtered.map(g => {
                   const [label, color] = STATUS[g.rsvpStatus] ?? STATUS.pending
                   return (
-                    <tr key={g.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50 transition-colors">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-[#EDF4EA] flex items-center justify-center text-xs font-semibold text-[#3d6b2e] shrink-0">
+                    <tr key={g.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#141c13] transition-colors">
+                      <td className="px-6 py-3.5.5">
+                        <div className="flex items-center gap-5.5">
+                          <div className="w-8 h-8 rounded-full bg-[#1e3a1e] flex items-center justify-center text-base font-semibold text-[#8fb882] shrink-0">
                             {g.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase()}
                           </div>
                           <div>
                           <div className="flex items-center gap-1.5">
-                            <p className="font-medium text-stone-800">{g.name}</p>
-                            {g.isInvitee && <span className="text-[10px] px-1.5 py-0.5 bg-purple-50 text-purple-600 rounded-full font-medium">Invitee</span>}
+                            <p className="font-medium text-[#e8f0e6]">{g.name}</p>
+                            {g.isInvitee && <span className="text-[10px] px-1.5 py-0.5 bg-purple-950 text-purple-400 rounded-full font-medium">Invitee</span>}
                           </div>
-                          {g.email && <p className="text-xs text-stone-400">{g.email}</p>}
-                          {g.notes && <p className="text-xs text-stone-300 italic">{g.notes}</p>}
+                          {g.email && <p className="text-base text-[#5a7057]">{g.email}</p>}
+                          {g.notes && <p className="text-base text-[#3a5038] italic">{g.notes}</p>}
                         </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-stone-500 text-xs capitalize">{g.side}</td>
-                      <td className="px-4 py-3"><Tag color={color}>{label}</Tag></td>
-                      <td className="px-4 py-3 text-xs text-stone-500">{g.hasPlusOne ? (g.plusOneName || <span className="text-[#7A9C6E]">✓ allowed</span>) : '—'}</td>
-                      <td className="px-4 py-3 text-xs text-stone-500">{g.dietary || '—'}</td>
-                      <td className="px-4 py-3"><Tag color={g.tableId ? '#2563eb' : '#78716c'}>{g.tableId ? 'Assigned' : 'Unassigned'}</Tag></td>
-                      <td className="px-4 py-3"><button onClick={() => del(g.id)} className="text-stone-300 hover:text-red-400 transition-colors"><Trash2 size={14} /></button></td>
+                      <td className="px-6 py-3.5.5 text-[#7a9878] text-base capitalize">{g.side}</td>
+                      <td className="px-6 py-3.5.5"><Tag color={color}>{label}</Tag></td>
+                      <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.hasPlusOne ? (g.plusOneName || <span className="text-[#8fb882]">✓ allowed</span>) : '—'}</td>
+                      <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.dietary || '—'}</td>
+                      <td className="px-6 py-3.5.5"><Tag color={g.tableId ? '#2563eb' : '#78716c'}>{g.tableId ? 'Assigned' : 'Unassigned'}</Tag></td>
+                      <td className="px-6 py-3.5.5"><button onClick={() => del(g.id)} className="text-[#3a5038] hover:text-red-400 transition-colors"><Trash2 size={17} /></button></td>
                     </tr>
                   )
                 })}
@@ -226,18 +233,18 @@ function TabGuests() {
       )}
 
       {showAdd && (
-        <Modal title="Add guest" onClose={() => setShowAdd(false)} footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={save} disabled={saving || !form.name.trim()}>{saving ? <><Loader2 size={14} className="animate-spin" />Saving…</> : <><Plus size={14} />Add guest</>}</Btn></>}>
-          {err && <div className="flex items-center gap-2 bg-red-50 text-red-600 text-xs rounded-xl p-3"><AlertCircle size={14} />{err}</div>}
+        <Modal title="Add guest" onClose={() => setShowAdd(false)} footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={save} disabled={saving || !form.name.trim()}>{saving ? <><Loader2 size={17} className="animate-spin" />Saving…</> : <><Plus size={17} />Add guest</>}</Btn></>}>
+          {err && <div className="flex items-center gap-5 bg-red-950 text-red-400 text-base rounded-3xl p-3"><AlertCircle size={17} />{err}</div>}
           <Field label="Full name *"><Input value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} onKeyDown={e => e.key === 'Enter' && save()} placeholder="Katie Marsh" autoFocus /></Field>
           <Field label="Email"><Input type="email" value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} placeholder="katie@email.com" /></Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-5">
             <Field label="Side"><Select value={form.side} onChange={e => setForm(f => ({...f, side: e.target.value}))}><option value="bride">Bride&apos;s side</option><option value="groom">Groom&apos;s side</option><option value="both">Both</option></Select></Field>
             <Field label="Dietary"><Select value={form.dietary} onChange={e => setForm(f => ({...f, dietary: e.target.value}))}><option value="">None</option><option>Vegetarian</option><option>Vegan</option><option>Gluten-free</option><option>Nut allergy</option><option>Halal</option><option>Kosher</option></Select></Field>
           </div>
           <div className="flex items-center justify-between py-1 px-1">
-            <div><p className="text-sm font-medium text-stone-700">Plus one allowed</p><p className="text-xs text-stone-400">Can bring a guest</p></div>
-            <button onClick={() => setForm(f => ({...f, hasPlusOne: !f.hasPlusOne}))} className={`w-11 h-6 rounded-full transition-colors relative ${form.hasPlusOne ? 'bg-[#7A9C6E]' : 'bg-stone-200'}`}>
-              <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${form.hasPlusOne ? 'translate-x-5' : 'translate-x-0.5'}`} />
+            <div><p className="text-base font-medium text-[#cde0ca]">Plus one allowed</p><p className="text-base text-[#5a7057]">Can bring a guest</p></div>
+            <button onClick={() => setForm(f => ({...f, hasPlusOne: !f.hasPlusOne}))} className={`w-11 h-6 rounded-full transition-colors relative ${form.hasPlusOne ? 'bg-[#5a8a52]' : 'bg-[#243022]'}`}>
+              <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-[#1a2419] shadow transition-transform ${form.hasPlusOne ? 'translate-x-5' : 'translate-x-0.5'}`} />
             </button>
           </div>
         </Modal>
@@ -327,65 +334,65 @@ function TabVenues() {
   return (
     <div>
       <PageHeader title="Venues" sub={`${venues.length} venue${venues.length !== 1 ? 's' : ''}${selected ? ` · "${selected.name}" selected` : ''}`}
-        action={<Btn onClick={() => setShowAdd(true)}><Plus size={14} />Add venue</Btn>} />
+        action={<Btn onClick={() => setShowAdd(true)}><Plus size={17} />Add venue</Btn>} />
 
       {/* Date picker */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-5 mb-6">
-        <p className="text-sm font-medium text-stone-700 mb-1">Wedding date</p>
-        <p className="text-xs text-stone-400 mb-3">{fmtDate || 'Pick your date — it shows across the whole app'}</p>
-        <div className="flex gap-3">
+      <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 mb-6">
+        <p className="text-base font-medium text-[#cde0ca] mb-1">Wedding date</p>
+        <p className="text-base text-[#5a7057] mb-3">{fmtDate || 'Pick your date — it shows across the whole app'}</p>
+        <div className="flex gap-5">
           <Input type="date" value={weddingDate} onChange={e => { setWeddingDate(e.target.value); setDateSaved(false) }} className="flex-1" />
           <Btn onClick={saveDate} disabled={!weddingDate} style={{ background: dateSaved ? '#5DCAA5' : '#7A9C6E' }}>
-            {dateSaved ? <><Check size={14} />Saved!</> : 'Save date'}
+            {dateSaved ? <><Check size={17} />Saved!</> : 'Save date'}
           </Btn>
         </div>
       </div>
 
       {/* Selected banner */}
       {selected && (
-        <button onClick={() => setDetail(selected)} className="w-full mb-6 rounded-2xl overflow-hidden text-left hover:shadow-md transition-shadow">
+        <button onClick={() => setDetail(selected)} className="w-full mb-6 rounded-3xl overflow-hidden text-left hover:shadow-md transition-shadow">
           <div className="relative h-24 bg-stone-300">
             {selected.imageUrl && <img src={selected.imageUrl} alt="" className="w-full h-full object-cover" />}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/20 flex items-center px-5 gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#7A9C6E] flex items-center justify-center shrink-0"><Check size={15} className="text-white" /></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/20 flex items-center px-5 gap-5">
+              <div className="w-8 h-8 rounded-full bg-[#5a8a52] flex items-center justify-center shrink-0"><Check size={26} className="text-white" /></div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-white/70 uppercase tracking-wider">Our venue</p>
+                <p className="text-base text-white/70 uppercase tracking-wider">Our venue</p>
                 <p className="text-white font-medium truncate">{selected.name}</p>
-                {selected.address && <p className="text-white/60 text-xs truncate">{selected.address}</p>}
+                {selected.address && <p className="text-white/60 text-base truncate">{selected.address}</p>}
               </div>
-              <ChevronRight size={16} className="text-white/60 shrink-0" />
+              <ChevronRight size={19} className="text-white/60 shrink-0" />
             </div>
           </div>
         </button>
       )}
 
-      {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-stone-300" size={24} /></div>
+      {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#3a5038]" size={26} /></div>
       : venues.length === 0 ? (
         <div className="text-center py-20">
-          <MapPin size={36} className="text-stone-200 mx-auto mb-4" />
-          <p className="text-stone-400 mb-4">No venues yet — paste a website URL and we&apos;ll fill in the details</p>
-          <Btn onClick={() => setShowAdd(true)}><Plus size={14} />Add venue</Btn>
+          <MapPin size={36} className="text-[#2a3828] mx-auto mb-4" />
+          <p className="text-[#5a7057] mb-4">No venues yet — paste a website URL and we&apos;ll fill in the details</p>
+          <Btn onClick={() => setShowAdd(true)}><Plus size={17} />Add venue</Btn>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
           {venues.map(v => (
-            <button key={v.id} onClick={() => setDetail(v)} className="group bg-white rounded-2xl border border-stone-200 hover:border-[#7A9C6E] hover:shadow-md transition-all text-left overflow-hidden">
-              <div className="relative h-44 bg-stone-100">
-                {v.imageUrl ? <img src={v.imageUrl} alt={v.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-full flex items-center justify-center"><MapPin size={28} className="text-stone-300" /></div>}
-                {v.isSelected && <div className="absolute top-2 left-2 bg-[#7A9C6E] text-white text-xs px-2.5 py-1 rounded-full flex items-center gap-1"><Check size={10} />Selected</div>}
+            <button key={v.id} onClick={() => setDetail(v)} className="group bg-[#1a2419] rounded-3xl border border-[#2a3829] hover:border-[#8fb882] hover:shadow-md transition-all text-left overflow-hidden">
+              <div className="relative h-44 bg-[#1f2b1e]">
+                {v.imageUrl ? <img src={v.imageUrl} alt={v.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-full flex items-center justify-center"><MapPin size={30} className="text-[#3a5038]" /></div>}
+                {v.isSelected && <div className="absolute top-2 left-2 bg-[#5a8a52] text-white text-base px-2.5 py-1 rounded-full flex items-center gap-1"><Check size={10} />Selected</div>}
               </div>
-              <div className="p-4">
-                <p className="font-semibold text-stone-800 mb-1" style={{ fontFamily: 'var(--font-display)' }}>{v.name}</p>
-                {v.address && <p className="text-xs text-stone-400 flex items-center gap-1 mb-3"><MapPin size={10} />{v.address}</p>}
+              <div className="p-7">
+                <p className="font-semibold text-[#e8f0e6] mb-1" style={{ fontFamily: 'var(--font-display)' }}>{v.name}</p>
+                {v.address && <p className="text-base text-[#5a7057] flex items-center gap-1 mb-3"><MapPin size={10} />{v.address}</p>}
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-[#3d6b2e] bg-[#EDF4EA] px-3 py-1 rounded-full">{fmt$(v.cost)}</span>
-                  {v.capacity && <span className="text-xs text-stone-400 flex items-center gap-1"><Users size={10} />{v.capacity}</span>}
+                  <span className="text-base font-semibold text-[#8fb882] bg-[#1e3a1e] px-3 py-1 rounded-full">{fmt$(v.cost)}</span>
+                  {v.capacity && <span className="text-base text-[#5a7057] flex items-center gap-1"><Users size={10} />{v.capacity}</span>}
                 </div>
               </div>
             </button>
           ))}
-          <button onClick={() => setShowAdd(true)} className="h-56 rounded-2xl border-2 border-dashed border-stone-200 hover:border-[#7A9C6E] hover:bg-[#EDF4EA]/30 flex flex-col items-center justify-center gap-2 text-stone-400 hover:text-[#7A9C6E] transition-all">
-            <Plus size={24} /><span className="text-sm">Add venue</span>
+          <button onClick={() => setShowAdd(true)} className="h-56 rounded-3xl border-2 border-dashed border-[#2a3829] hover:border-[#8fb882] hover:bg-[#1e3a1e]/30 flex flex-col items-center justify-center gap-5 text-[#5a7057] hover:text-[#8fb882] transition-all">
+            <Plus size={26} /><span className="text-base">Add venue</span>
           </button>
         </div>
       )}
@@ -393,37 +400,37 @@ function TabVenues() {
       {/* Add modal */}
       {showAdd && (
         <Modal title="Add venue" onClose={() => { setShowAdd(false); setStep('url'); setUrl('') }}
-          footer={step === 'form' ? <><Btn variant="ghost" onClick={() => setStep('url')}>← Back</Btn><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={saveVenue} disabled={saving || !form.name.trim()}>{saving ? <><Loader2 size={14} className="animate-spin"/>Saving…</> : <><Plus size={14}/>Add venue</>}</Btn></> : undefined}>
+          footer={step === 'form' ? <><Btn variant="ghost" onClick={() => setStep('url')}>← Back</Btn><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={saveVenue} disabled={saving || !form.name.trim()}>{saving ? <><Loader2 size={17} className="animate-spin"/>Saving…</> : <><Plus size={17}/>Add venue</>}</Btn></> : undefined}>
           {step === 'url' ? (
             <div className="space-y-4">
               <Field label="Venue website URL">
                 <Input type="url" value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && scrape()} placeholder="https://thebarnatstonegate.com" autoFocus />
               </Field>
-              <div className="bg-stone-50 rounded-xl p-4 text-xs text-stone-500 space-y-1">
-                <p className="font-medium text-stone-700">We&apos;ll auto-fill: name, image, address, phone</p>
+              <div className="bg-[#141c13] rounded-3xl p-7 text-base text-[#7a9878] space-y-1">
+                <p className="font-medium text-[#cde0ca]">We&apos;ll auto-fill: name, image, address, phone</p>
                 <p>You enter the rental cost yourself.</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-5">
                 <Btn onClick={scrape} disabled={scraping || !url.trim()} className="flex-1 justify-center">
-                  {scraping ? <><Loader2 size={14} className="animate-spin"/>Fetching…</> : <><Globe size={14}/>Fetch info</>}
+                  {scraping ? <><Loader2 size={17} className="animate-spin"/>Fetching…</> : <><Globe size={17}/>Fetch info</>}
                 </Btn>
                 <Btn variant="ghost" onClick={() => setStep('form')}>Enter manually</Btn>
               </div>
             </div>
           ) : (
             <div className="space-y-3">
-              {form.imageUrl && <div className="h-32 rounded-xl overflow-hidden bg-stone-100"><img src={form.imageUrl} alt="" className="w-full h-full object-cover" /></div>}
+              {form.imageUrl && <div className="h-32 rounded-3xl overflow-hidden bg-[#1f2b1e]"><img src={form.imageUrl} alt="" className="w-full h-full object-cover" /></div>}
               <Field label="Venue name *"><Input value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} placeholder="The Barn at Stonegate" autoFocus /></Field>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-5">
                 <Field label="Rental cost ($)"><Input type="number" value={form.cost} onChange={e => setForm(f=>({...f,cost:e.target.value}))} placeholder="8500" /></Field>
                 <Field label="Capacity"><Input type="number" value={form.capacity} onChange={e => setForm(f=>({...f,capacity:e.target.value}))} placeholder="200" /></Field>
               </div>
               <Field label="Address"><Input value={form.address} onChange={e => setForm(f=>({...f,address:e.target.value}))} placeholder="123 Main St, Nashville, TN" /></Field>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-5">
                 <Field label="Phone"><Input value={form.phone} onChange={e => setForm(f=>({...f,phone:e.target.value}))} /></Field>
                 <Field label="Email"><Input value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} /></Field>
               </div>
-              <Field label="Description"><textarea value={form.description} onChange={e => setForm(f=>({...f,description:e.target.value}))} rows={2} className="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:border-[#7A9C6E] resize-none" /></Field>
+              <Field label="Description"><textarea value={form.description} onChange={e => setForm(f=>({...f,description:e.target.value}))} rows={2} className="w-full px-6 py-3.5.5 rounded-3xl border border-[#2a3829] text-base focus:outline-none focus:border-[#8fb882] resize-none" /></Field>
               <Field label="Image URL"><Input value={form.imageUrl} onChange={e => setForm(f=>({...f,imageUrl:e.target.value}))} placeholder="https://..." /></Field>
               <Field label="Amenities (comma separated)"><Input value={form.amenities} onChange={e => setForm(f=>({...f,amenities:e.target.value}))} placeholder="Parking, Bridal suite, Kitchen…" /></Field>
             </div>
@@ -434,61 +441,61 @@ function TabVenues() {
       {/* Edit venue modal */}
       {showEdit && detail && (
         <Modal title={`Edit — ${detail.name}`} onClose={() => setShowEdit(false)}
-          footer={<><Btn variant="ghost" onClick={() => setShowEdit(false)}>Cancel</Btn><Btn onClick={saveEdit} disabled={!editVenue.name.trim()}><Check size={14}/>Save changes</Btn></>}>
+          footer={<><Btn variant="ghost" onClick={() => setShowEdit(false)}>Cancel</Btn><Btn onClick={saveEdit} disabled={!editVenue.name.trim()}><Check size={17}/>Save changes</Btn></>}>
           <Field label="Venue name *"><Input value={editVenue.name} onChange={e=>setEditVenue(f=>({...f,name:e.target.value}))} autoFocus /></Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-5">
             <Field label="Rental cost ($)"><Input type="number" value={editVenue.cost} onChange={e=>setEditVenue(f=>({...f,cost:e.target.value}))} /></Field>
             <Field label="Capacity"><Input type="number" value={editVenue.capacity} onChange={e=>setEditVenue(f=>({...f,capacity:e.target.value}))} /></Field>
           </div>
           <Field label="Address"><Input value={editVenue.address} onChange={e=>setEditVenue(f=>({...f,address:e.target.value}))} /></Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-5">
             <Field label="Phone"><Input value={editVenue.phone} onChange={e=>setEditVenue(f=>({...f,phone:e.target.value}))} /></Field>
             <Field label="Email"><Input value={editVenue.email} onChange={e=>setEditVenue(f=>({...f,email:e.target.value}))} /></Field>
           </div>
-          <Field label="Description"><textarea value={editVenue.description} onChange={e=>setEditVenue(f=>({...f,description:e.target.value}))} rows={3} className="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:border-[#7A9C6E] resize-none" /></Field>
+          <Field label="Description"><textarea value={editVenue.description} onChange={e=>setEditVenue(f=>({...f,description:e.target.value}))} rows={3} className="w-full px-6 py-3.5.5 rounded-3xl border border-[#2a3829] text-base focus:outline-none focus:border-[#8fb882] resize-none" /></Field>
           <Field label="Image URL"><Input value={editVenue.imageUrl} onChange={e=>setEditVenue(f=>({...f,imageUrl:e.target.value}))} placeholder="https://..." /></Field>
           <Field label="Amenities (comma separated)"><Input value={editVenue.amenities} onChange={e=>setEditVenue(f=>({...f,amenities:e.target.value}))} placeholder="Parking, Bridal suite…" /></Field>
-          <Field label="Notes"><textarea value={editVenue.notes} onChange={e=>setEditVenue(f=>({...f,notes:e.target.value}))} rows={2} className="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:border-[#7A9C6E] resize-none" /></Field>
+          <Field label="Notes"><textarea value={editVenue.notes} onChange={e=>setEditVenue(f=>({...f,notes:e.target.value}))} rows={2} className="w-full px-6 py-3.5.5 rounded-3xl border border-[#2a3829] text-base focus:outline-none focus:border-[#8fb882] resize-none" /></Field>
         </Modal>
       )}
 
       {/* Detail slide-out */}
       {detail && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/35" onClick={e => e.target === e.currentTarget && setDetail(null)}>
-          <div className="w-full max-w-xl bg-white h-full flex flex-col overflow-y-auto shadow-2xl">
-            <div className="relative h-56 bg-stone-200 shrink-0">
+          <div className="w-full max-w-xl bg-[#1a2419] h-full flex flex-col overflow-y-auto shadow-2xl">
+            <div className="relative h-56 bg-[#243022] shrink-0">
               {detail.imageUrl && <img src={detail.imageUrl} alt={detail.name} className="w-full h-full object-cover" />}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <button onClick={() => setDetail(null)} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center"><X size={15} /></button>
-              {detail.isSelected && <div className="absolute top-4 left-4 bg-[#7A9C6E] text-white text-xs px-3 py-1 rounded-full flex items-center gap-1"><Check size={11} />Selected venue</div>}
+              <button onClick={() => setDetail(null)} className="absolute top-7 right-4 w-8 h-8 rounded-full bg-[#1a2419]/90 flex items-center justify-center"><X size={26} /></button>
+              {detail.isSelected && <div className="absolute top-7 left-4 bg-[#5a8a52] text-white text-base px-3 py-1 rounded-full flex items-center gap-1"><Check size={11} />Selected venue</div>}
               <div className="absolute bottom-4 left-5 right-5">
                 <h2 className="text-2xl font-light text-white" style={{ fontFamily: 'var(--font-display)' }}>{detail.name}</h2>
-                {detail.address && <p className="text-white/70 text-sm flex items-center gap-1.5 mt-0.5"><MapPin size={11} />{detail.address}</p>}
+                {detail.address && <p className="text-white/70 text-base flex items-center gap-1.5 mt-0.5"><MapPin size={11} />{detail.address}</p>}
               </div>
             </div>
-            <div className="p-6 space-y-5 flex-1">
-              <div className="grid grid-cols-3 gap-3">
-                <div className="bg-[#EDF4EA] rounded-xl p-3 text-center"><p className="text-lg font-semibold text-[#3d6b2e]">{fmt$(detail.cost)}</p><p className="text-xs text-[#7A9C6E]">Rental</p></div>
-                <div className="bg-stone-50 rounded-xl p-3 text-center"><p className="text-lg font-semibold text-stone-700">{detail.capacity ?? '—'}</p><p className="text-xs text-stone-400">Capacity</p></div>
-                <a href={detail.website} target="_blank" rel="noreferrer" className="bg-stone-50 rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-stone-500 hover:text-[#7A9C6E] transition-colors"><ExternalLink size={15} /><span className="text-xs">Website</span></a>
+            <div className="p-7 space-y-5 flex-1">
+              <div className="grid grid-cols-3 gap-5">
+                <div className="bg-[#1e3a1e] rounded-3xl p-3 text-center"><p className="text-lg font-semibold text-[#8fb882]">{fmt$(detail.cost)}</p><p className="text-base text-[#8fb882]">Rental</p></div>
+                <div className="bg-[#141c13] rounded-3xl p-3 text-center"><p className="text-lg font-semibold text-[#cde0ca]">{detail.capacity ?? '—'}</p><p className="text-base text-[#5a7057]">Capacity</p></div>
+                <a href={detail.website} target="_blank" rel="noreferrer" className="bg-[#141c13] rounded-3xl p-3 flex flex-col items-center justify-center gap-1 text-[#7a9878] hover:text-[#8fb882] transition-colors"><ExternalLink size={26} /><span className="text-base">Website</span></a>
               </div>
-              {detail.description && <div><p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">About</p><p className="text-sm text-stone-600 leading-relaxed">{detail.description}</p></div>}
+              {detail.description && <div><p className="text-base font-semibold text-[#7a9878] uppercase tracking-wider mb-2">About</p><p className="text-base text-[#a8c4a4] leading-relaxed">{detail.description}</p></div>}
               {(detail.phone || detail.email) && (
-                <div><p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Contact</p>
-                  {detail.phone && <a href={`tel:${detail.phone}`} className="flex items-center gap-2 text-sm text-stone-500 hover:text-[#7A9C6E] mb-1"><Phone size={13}/>{detail.phone}</a>}
-                  {detail.email && <a href={`mailto:${detail.email}`} className="flex items-center gap-2 text-sm text-stone-500 hover:text-[#7A9C6E]"><Mail size={13}/>{detail.email}</a>}
+                <div><p className="text-base font-semibold text-[#7a9878] uppercase tracking-wider mb-2">Contact</p>
+                  {detail.phone && <a href={`tel:${detail.phone}`} className="flex items-center gap-5 text-base text-[#7a9878] hover:text-[#8fb882] mb-1"><Phone size={19}/>{detail.phone}</a>}
+                  {detail.email && <a href={`mailto:${detail.email}`} className="flex items-center gap-5 text-base text-[#7a9878] hover:text-[#8fb882]"><Mail size={19}/>{detail.email}</a>}
                 </div>
               )}
               {detail.amenities?.length > 0 && (
-                <div><p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Amenities</p>
-                  <div className="flex flex-wrap gap-1.5">{detail.amenities.map((a,i) => <span key={i} className="text-xs bg-stone-100 text-stone-600 px-2.5 py-1 rounded-full">{a}</span>)}</div>
+                <div><p className="text-base font-semibold text-[#7a9878] uppercase tracking-wider mb-2">Amenities</p>
+                  <div className="flex flex-wrap gap-1.5">{detail.amenities.map((a,i) => <span key={i} className="text-base bg-[#1f2b1e] text-[#a8c4a4] px-2.5 py-1 rounded-full">{a}</span>)}</div>
                 </div>
               )}
             </div>
-            <div className="px-6 py-4 border-t border-stone-100 bg-stone-50 flex items-center justify-between shrink-0">
-              <button onClick={() => delVenue(detail.id)} className="text-sm text-red-400 hover:text-red-600 flex items-center gap-1.5"><Trash2 size={13}/>Remove</button>
-              <div className="flex gap-2">
-                {detail.website && <Btn variant="ghost" onClick={() => window.open(detail.website, '_blank')}><ExternalLink size={13}/>Visit site</Btn>}
+            <div className="px-7 py-5 border-t border-[#202e1f] bg-[#141c13] flex items-center justify-between shrink-0">
+              <button onClick={() => delVenue(detail.id)} className="text-base text-red-400 hover:text-red-400 flex items-center gap-1.5"><Trash2 size={19}/>Remove</button>
+              <div className="flex gap-5">
+                {detail.website && <Btn variant="ghost" onClick={() => window.open(detail.website, '_blank')}><ExternalLink size={19}/>Visit site</Btn>}
                 <Btn variant="ghost" onClick={() => {
                   setEditVenue({
                     name: detail.name, imageUrl: detail.imageUrl, cost: String(detail.cost),
@@ -497,10 +504,10 @@ function TabVenues() {
                     amenities: detail.amenities.join(', '), notes: detail.notes,
                   })
                   setShowEdit(true)
-                }}><Edit3 size={13}/>Edit</Btn>
+                }}><Edit3 size={19}/>Edit</Btn>
                 {detail.isSelected
-                  ? <Btn variant="ghost" onClick={() => unselectVenue(detail)}><X size={13}/>Unselect</Btn>
-                  : <Btn onClick={() => selectVenue(detail)}><Star size={13}/>Select as our venue</Btn>}
+                  ? <Btn variant="ghost" onClick={() => unselectVenue(detail)}><X size={19}/>Unselect</Btn>
+                  : <Btn onClick={() => selectVenue(detail)}><Star size={19}/>Select as our venue</Btn>}
               </div>
             </div>
           </div>
@@ -546,73 +553,73 @@ function TabBudget() {
   return (
     <div>
       <PageHeader title="Budget" sub="Track every dollar before you spend it"
-        action={<Btn onClick={() => setShowAdd(true)}><Plus size={14}/>Add category</Btn>} />
+        action={<Btn onClick={() => setShowAdd(true)}><Plus size={17}/>Add category</Btn>} />
 
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-4 gap-7 mb-6">
         {[
           { label:'Total budget', val: total, editable: true },
           { label:'Allocated', val: allocated, sub: `${total ? Math.round(allocated/total*100) : 0}%` },
           { label:'Paid', val: paid, sub: `${allocated ? Math.round(paid/allocated*100) : 0}% of allocated` },
           { label:'Remaining', val: total - allocated, color: total - allocated < 0 ? '#dc2626' : undefined },
         ].map(({ label, val, sub, editable, color }) => (
-          <div key={label} className="bg-white rounded-2xl border border-stone-200 p-5">
-            <p className="text-xs text-stone-400 uppercase tracking-wider mb-2">{label}</p>
+          <div key={label} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7">
+            <p className="text-base text-[#5a7057] uppercase tracking-wider mb-2">{label}</p>
             {editable
-              ? <div className="flex items-baseline gap-0.5"><span className="text-stone-400">$</span><input type="number" value={total} onChange={e => setTotal(+e.target.value)} className="text-2xl font-light w-full focus:outline-none" style={{ fontFamily: 'var(--font-display)' }} /></div>
+              ? <div className="flex items-baseline gap-0.5"><span className="text-[#5a7057]">$</span><input type="number" value={total} onChange={e => setTotal(+e.target.value)} className="text-2xl font-light w-full focus:outline-none" style={{ fontFamily: 'var(--font-display)' }} /></div>
               : <p className="text-2xl font-light" style={{ fontFamily: 'var(--font-display)', color: color || '#1c1917' }}>{fmt$(val)}</p>}
-            {sub && <p className="text-xs text-stone-400 mt-0.5">{sub}</p>}
+            {sub && <p className="text-base text-[#5a7057] mt-0.5">{sub}</p>}
           </div>
         ))}
       </div>
 
       {/* Allocation bar */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-5 mb-5">
-        <div className="flex justify-between text-xs text-stone-400 mb-2"><span>Allocation</span><span>{fmt$(allocated)} of {fmt$(total)}</span></div>
-        <div className="h-3 bg-stone-100 rounded-full overflow-hidden flex gap-px">
+      <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 mb-5">
+        <div className="flex justify-between text-base text-[#5a7057] mb-2"><span>Allocation</span><span>{fmt$(allocated)} of {fmt$(total)}</span></div>
+        <div className="h-3 bg-[#1f2b1e] rounded-full overflow-hidden flex gap-px">
           {cats.filter(c => c.budgeted > 0).map(c => <div key={c.id} className="h-full transition-all" style={{ width: `${(c.budgeted/total)*100}%`, background: c.color }} />)}
         </div>
-        <div className="flex flex-wrap gap-3 mt-3">
-          {cats.map(c => <span key={c.id} className="flex items-center gap-1.5 text-xs text-stone-500"><span className="w-2.5 h-2.5 rounded-full" style={{ background: c.color }} />{c.name}</span>)}
+        <div className="flex flex-wrap gap-5 mt-3">
+          {cats.map(c => <span key={c.id} className="flex items-center gap-1.5 text-base text-[#7a9878]"><span className="w-2.5 h-2.5 rounded-full" style={{ background: c.color }} />{c.name}</span>)}
         </div>
       </div>
 
-      {loading ? <div className="flex justify-center py-8"><Loader2 className="animate-spin text-stone-300" size={22}/></div> : (
-        <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead><tr className="border-b border-stone-100 bg-stone-50 text-left text-xs text-stone-400 uppercase tracking-wider">
-              <th className="px-5 py-3 font-medium">Category</th>
-              <th className="px-4 py-3 font-medium">Budgeted</th>
-              <th className="px-4 py-3 font-medium">Paid</th>
-              <th className="px-4 py-3 font-medium">Remaining</th>
-              <th className="px-4 py-3 font-medium w-36">Progress</th>
-              <th className="px-4 py-3 w-8" />
+      {loading ? <div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div> : (
+        <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] overflow-hidden">
+          <table className="w-full text-base">
+            <thead><tr className="border-b border-[#202e1f] bg-[#141c13] text-left text-base text-[#5a7057] uppercase tracking-wider">
+              <th className="px-6 py-3.5 font-medium">Category</th>
+              <th className="px-6 py-3.5.5 font-medium">Budgeted</th>
+              <th className="px-6 py-3.5.5 font-medium">Paid</th>
+              <th className="px-6 py-3.5.5 font-medium">Remaining</th>
+              <th className="px-6 py-3.5.5 font-medium w-36">Progress</th>
+              <th className="px-6 py-3.5.5 w-8" />
             </tr></thead>
             <tbody>
               {cats.map(c => {
                 const rem = c.budgeted - c.paid
                 const pct = c.budgeted > 0 ? Math.min(Math.round(c.paid/c.budgeted*100), 100) : 0
                 return (
-                  <tr key={c.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50 group">
-                    <td className="px-5 py-3.5"><div className="flex items-center gap-2.5"><div className="w-3 h-3 rounded-full" style={{ background: c.color }}/><span className="font-medium text-stone-800">{c.name}</span></div></td>
-                    <td className="px-4 py-3.5"><div className="relative"><span className="absolute left-2 top-1.5 text-stone-400 text-xs">$</span><input type="number" defaultValue={c.budgeted} onBlur={e => update(c.id,'budgeted',+e.target.value)} className="w-28 pl-5 pr-2 py-1.5 rounded-lg border border-transparent hover:border-stone-200 focus:border-[#7A9C6E] focus:outline-none text-sm bg-transparent focus:bg-white" /></div></td>
-                    <td className="px-4 py-3.5"><div className="relative"><span className="absolute left-2 top-1.5 text-stone-400 text-xs">$</span><input type="number" defaultValue={c.paid} onBlur={e => update(c.id,'paid',+e.target.value)} className="w-28 pl-5 pr-2 py-1.5 rounded-lg border border-transparent hover:border-stone-200 focus:border-[#7A9C6E] focus:outline-none text-sm bg-transparent focus:bg-white" /></div></td>
-                    <td className="px-4 py-3.5 text-sm font-medium" style={{ color: rem < 0 ? '#dc2626' : '#1c1917' }}>{fmt$(rem)}</td>
-                    <td className="px-4 py-3.5"><div className="flex items-center gap-2"><div className="flex-1 h-1.5 bg-stone-100 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width:`${pct}%`, background: c.color }}/></div><span className="text-xs text-stone-400 w-8 text-right">{pct}%</span></div></td>
-                    <td className="px-4 py-3.5"><button onClick={() => del(c.id)} className="text-stone-200 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={13}/></button></td>
+                  <tr key={c.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#141c13] group">
+                    <td className="px-6 py-3.5.5"><div className="flex items-center gap-5.5"><div className="w-3 h-3 rounded-full" style={{ background: c.color }}/><span className="font-medium text-[#e8f0e6]">{c.name}</span></div></td>
+                    <td className="px-6 py-3.5.5.5"><div className="relative"><span className="absolute left-2 top-1.5 text-[#5a7057] text-base">$</span><input type="number" defaultValue={c.budgeted} onBlur={e => update(c.id,'budgeted',+e.target.value)} className="w-28 pl-5 pr-2 py-1.5 rounded-lg border border-transparent hover:border-[#2a3829] focus:border-[#8fb882] focus:outline-none text-base bg-transparent focus:bg-[#1a2419]" /></div></td>
+                    <td className="px-6 py-3.5.5.5"><div className="relative"><span className="absolute left-2 top-1.5 text-[#5a7057] text-base">$</span><input type="number" defaultValue={c.paid} onBlur={e => update(c.id,'paid',+e.target.value)} className="w-28 pl-5 pr-2 py-1.5 rounded-lg border border-transparent hover:border-[#2a3829] focus:border-[#8fb882] focus:outline-none text-base bg-transparent focus:bg-[#1a2419]" /></div></td>
+                    <td className="px-6 py-3.5.5.5 text-base font-medium" style={{ color: rem < 0 ? '#dc2626' : '#1c1917' }}>{fmt$(rem)}</td>
+                    <td className="px-6 py-3.5.5.5"><div className="flex items-center gap-5"><div className="flex-1 h-1.5 bg-[#1f2b1e] rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width:`${pct}%`, background: c.color }}/></div><span className="text-base text-[#5a7057] w-8 text-right">{pct}%</span></div></td>
+                    <td className="px-6 py-3.5.5.5"><button onClick={() => del(c.id)} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={19}/></button></td>
                   </tr>
                 )
               })}
-              {cats.length === 0 && <tr><td colSpan={6} className="text-center py-10 text-stone-400">No categories yet</td></tr>}
+              {cats.length === 0 && <tr><td colSpan={6} className="text-center py-10 text-[#5a7057]">No categories yet</td></tr>}
             </tbody>
-            <tfoot className="border-t border-stone-200 bg-stone-50">
-              <tr><td className="px-5 py-3 text-sm font-semibold">Total</td><td className="px-4 py-3 text-sm font-semibold">{fmt$(allocated)}</td><td className="px-4 py-3 text-sm font-semibold">{fmt$(paid)}</td><td className="px-4 py-3 text-sm font-semibold" style={{ color: total-allocated < 0 ? '#dc2626' : '#3d6b2e' }}>{fmt$(total-allocated)}</td><td colSpan={2}/></tr>
+            <tfoot className="border-t border-[#2a3829] bg-[#141c13]">
+              <tr><td className="px-6 py-3.5 text-base font-semibold">Total</td><td className="px-6 py-3.5.5 text-base font-semibold">{fmt$(allocated)}</td><td className="px-6 py-3.5.5 text-base font-semibold">{fmt$(paid)}</td><td className="px-6 py-3.5.5 text-base font-semibold" style={{ color: total-allocated < 0 ? '#dc2626' : '#3d6b2e' }}>{fmt$(total-allocated)}</td><td colSpan={2}/></tr>
             </tfoot>
           </table>
         </div>
       )}
 
       {showAdd && (
-        <Modal title="Add category" onClose={() => setShowAdd(false)} footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!addName.trim()}><Plus size={14}/>Add</Btn></>}>
+        <Modal title="Add category" onClose={() => setShowAdd(false)} footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!addName.trim()}><Plus size={17}/>Add</Btn></>}>
           <Field label="Category name"><Input value={addName} onChange={e => setAddName(e.target.value)} onKeyDown={e => e.key==='Enter' && add()} placeholder="Photography, Flowers…" autoFocus /></Field>
         </Modal>
       )}
@@ -659,38 +666,38 @@ function TabVendors() {
   return (
     <div>
       <PageHeader title="Vendors" sub={`${vendors.length} vendors · ${vendors.filter(v=>v.status==='booked'||v.status==='paid').length} booked`}
-        action={<Btn onClick={() => setShowAdd(true)}><Plus size={14}/>Add vendor</Btn>} />
+        action={<Btn onClick={() => setShowAdd(true)}><Plus size={17}/>Add vendor</Btn>} />
 
-      <div className="flex gap-2 mb-5 flex-wrap">
-        {cats.map(c => <button key={c} onClick={() => setFilter(c)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filter===c?'bg-[#7A9C6E] text-white':'bg-stone-100 text-stone-500 hover:bg-stone-200'}`}>{c}</button>)}
+      <div className="flex gap-5 mb-5 flex-wrap">
+        {cats.map(c => <button key={c} onClick={() => setFilter(c)} className={`px-3 py-1.5 rounded-full text-base font-medium transition-all ${filter===c?'bg-[#5a8a52] text-white':'bg-[#1f2b1e] text-[#7a9878] hover:bg-[#243022]'}`}>{c}</button>)}
       </div>
 
-      {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-stone-300" size={22}/></div> : (
+      {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div> : (
         <div className="space-y-3">
-          {filtered.length === 0 ? <div className="text-center py-16 text-stone-400">No vendors yet</div> :
+          {filtered.length === 0 ? <div className="text-center py-16 text-[#5a7057]">No vendors yet</div> :
             filtered.map(v => {
               const [slabel, scolor] = VENDOR_STATUS[v.status] ?? VENDOR_STATUS.researching
               return (
-                <div key={v.id} className="bg-white rounded-2xl border border-stone-200 p-4 flex items-start gap-4 hover:border-stone-300 transition-colors">
+                <div key={v.id} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 flex items-start gap-7 hover:border-stone-300 transition-colors">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <p className="font-semibold text-stone-800">{v.name}</p>
-                      <span className="text-xs text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full">{v.category}</span>
+                    <div className="flex items-center gap-5 mb-0.5">
+                      <p className="font-semibold text-[#e8f0e6]">{v.name}</p>
+                      <span className="text-base text-[#5a7057] bg-[#1f2b1e] px-2 py-0.5 rounded-full">{v.category}</span>
                     </div>
-                    {v.contactName && <p className="text-xs text-stone-400 mb-1">{v.contactName}</p>}
-                    <div className="flex flex-wrap gap-3">
-                      {v.phone && <a href={`tel:${v.phone}`} className="flex items-center gap-1 text-xs text-stone-400 hover:text-[#7A9C6E]"><Phone size={11}/>{v.phone}</a>}
-                      {v.email && <a href={`mailto:${v.email}`} className="flex items-center gap-1 text-xs text-stone-400 hover:text-[#7A9C6E]"><Mail size={11}/>{v.email}</a>}
-                      {v.website && <a href={v.website} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs text-stone-400 hover:text-[#7A9C6E]"><ExternalLink size={11}/>Website</a>}
+                    {v.contactName && <p className="text-base text-[#5a7057] mb-1">{v.contactName}</p>}
+                    <div className="flex flex-wrap gap-5">
+                      {v.phone && <a href={`tel:${v.phone}`} className="flex items-center gap-1 text-base text-[#5a7057] hover:text-[#8fb882]"><Phone size={11}/>{v.phone}</a>}
+                      {v.email && <a href={`mailto:${v.email}`} className="flex items-center gap-1 text-base text-[#5a7057] hover:text-[#8fb882]"><Mail size={11}/>{v.email}</a>}
+                      {v.website && <a href={v.website} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-base text-[#5a7057] hover:text-[#8fb882]"><ExternalLink size={11}/>Website</a>}
                     </div>
-                    {v.notes && <p className="text-xs text-stone-400 mt-1.5 italic">{v.notes}</p>}
+                    {v.notes && <p className="text-base text-[#5a7057] mt-1.5 italic">{v.notes}</p>}
                   </div>
-                  <div className="flex flex-col items-end gap-2 shrink-0">
-                    <p className="text-sm font-semibold text-stone-700">{fmt$(v.cost)}</p>
-                    <select value={v.status} onChange={e => updateStatus(v.id,e.target.value)} className="text-xs px-2.5 py-1 rounded-full border-0 font-medium cursor-pointer focus:outline-none" style={{ background: scolor+'20', color: scolor }}>
+                  <div className="flex flex-col items-end gap-5 shrink-0">
+                    <p className="text-base font-semibold text-[#cde0ca]">{fmt$(v.cost)}</p>
+                    <select value={v.status} onChange={e => updateStatus(v.id,e.target.value)} className="text-base px-2.5 py-1 rounded-full border-0 font-medium cursor-pointer focus:outline-none" style={{ background: scolor+'20', color: scolor }}>
                       {Object.entries(VENDOR_STATUS).map(([k,[l]]) => <option key={k} value={k}>{l}</option>)}
                     </select>
-                    <button onClick={() => del(v.id)} className="text-stone-300 hover:text-red-400"><Trash2 size={13}/></button>
+                    <button onClick={() => del(v.id)} className="text-[#3a5038] hover:text-red-400"><Trash2 size={19}/></button>
                   </div>
                 </div>
               )
@@ -699,9 +706,9 @@ function TabVendors() {
       )}
 
       {showAdd && (
-        <Modal title="Add vendor" onClose={() => setShowAdd(false)} footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={save} disabled={saving||!form.name.trim()}>{saving?<><Loader2 size={14} className="animate-spin"/>Saving…</>:<><Plus size={14}/>Add vendor</>}</Btn></>}>
+        <Modal title="Add vendor" onClose={() => setShowAdd(false)} footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={save} disabled={saving||!form.name.trim()}>{saving?<><Loader2 size={17} className="animate-spin"/>Saving…</>:<><Plus size={17}/>Add vendor</>}</Btn></>}>
           <Field label="Name *"><Input value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="ABC Photography" autoFocus /></Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-5">
             <Field label="Category"><Select value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))}>{VENDOR_CATS.map(c=><option key={c}>{c}</option>)}</Select></Field>
             <Field label="Contact name"><Input value={form.contactName} onChange={e=>setForm(f=>({...f,contactName:e.target.value}))} /></Field>
             <Field label="Phone"><Input value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))} /></Field>
@@ -709,7 +716,7 @@ function TabVendors() {
             <Field label="Website"><Input value={form.website} onChange={e=>setForm(f=>({...f,website:e.target.value}))} placeholder="https://..." /></Field>
             <Field label="Total cost ($)"><Input type="number" value={form.cost} onChange={e=>setForm(f=>({...f,cost:e.target.value}))} /></Field>
           </div>
-          <Field label="Notes"><textarea value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} rows={2} className="w-full px-3 py-2.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:border-[#7A9C6E] resize-none" /></Field>
+          <Field label="Notes"><textarea value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} rows={2} className="w-full px-6 py-3.5.5 rounded-3xl border border-[#2a3829] text-base focus:outline-none focus:border-[#8fb882] resize-none" /></Field>
         </Modal>
       )}
     </div>
@@ -753,40 +760,40 @@ function TabTasks() {
   return (
     <div>
       <PageHeader title="Tasks" sub={`${done} of ${tasks.length} complete`}
-        action={<Btn onClick={() => setShowAdd(true)}><Plus size={14}/>Add task</Btn>} />
+        action={<Btn onClick={() => setShowAdd(true)}><Plus size={17}/>Add task</Btn>} />
 
-      <div className="bg-white rounded-2xl border border-stone-200 p-4 mb-5">
-        <div className="flex justify-between text-xs text-stone-400 mb-1.5"><span>Progress</span><span>{tasks.length ? Math.round(done/tasks.length*100) : 0}%</span></div>
-        <div className="h-2 bg-stone-100 rounded-full overflow-hidden"><div className="h-full bg-[#7A9C6E] rounded-full transition-all" style={{ width: `${tasks.length ? done/tasks.length*100 : 0}%` }}/></div>
+      <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 mb-5">
+        <div className="flex justify-between text-base text-[#5a7057] mb-1.5"><span>Progress</span><span>{tasks.length ? Math.round(done/tasks.length*100) : 0}%</span></div>
+        <div className="h-2 bg-[#1f2b1e] rounded-full overflow-hidden"><div className="h-full bg-[#5a8a52] rounded-full transition-all" style={{ width: `${tasks.length ? done/tasks.length*100 : 0}%` }}/></div>
       </div>
 
-      <div className="flex gap-2 mb-4">
-        {(['pending','all','done'] as const).map(f => <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filter===f?'bg-[#7A9C6E] text-white':'bg-stone-100 text-stone-500 hover:bg-stone-200'}`}>{f==='pending'?`To do (${tasks.filter(t=>!t.completed).length})`:f==='done'?`Done (${done})`:`All (${tasks.length})`}</button>)}
+      <div className="flex gap-5 mb-4">
+        {(['pending','all','done'] as const).map(f => <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-full text-base font-medium transition-all ${filter===f?'bg-[#5a8a52] text-white':'bg-[#1f2b1e] text-[#7a9878] hover:bg-[#243022]'}`}>{f==='pending'?`To do (${tasks.filter(t=>!t.completed).length})`:f==='done'?`Done (${done})`:`All (${tasks.length})`}</button>)}
       </div>
 
-      {loading ? <div className="flex justify-center py-8"><Loader2 className="animate-spin text-stone-300" size={22}/></div> : (
+      {loading ? <div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div> : (
         <div className="space-y-2">
-          {shown.length === 0 ? <div className="text-center py-12 text-stone-400">{filter==='done'?'No completed tasks':'All caught up! 🎉'}</div> :
+          {shown.length === 0 ? <div className="text-center py-12 text-[#5a7057]">{filter==='done'?'No completed tasks':'All caught up! 🎉'}</div> :
             shown.map(t => (
-              <div key={t.id} className={`bg-white rounded-xl border border-stone-200 p-3.5 flex items-center gap-3 group transition-colors hover:border-stone-300 ${t.completed?'opacity-60':''}`}>
-                <button onClick={() => toggle(t)} className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${t.completed?'border-[#7A9C6E] bg-[#7A9C6E]':'border-stone-300 hover:border-[#7A9C6E]'}`}>
+              <div key={t.id} className={`bg-[#1a2419] rounded-3xl border border-[#2a3829] p-3.5 flex items-center gap-5 group transition-colors hover:border-stone-300 ${t.completed?'opacity-60':''}`}>
+                <button onClick={() => toggle(t)} className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${t.completed?'border-[#8fb882] bg-[#5a8a52]':'border-stone-300 hover:border-[#8fb882]'}`}>
                   {t.completed && <Check size={11} className="text-white"/>}
                 </button>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium truncate ${t.completed?'line-through text-stone-400':'text-stone-800'}`}>{t.title}</p>
-                  <p className="text-xs text-stone-400">{t.category}{t.dueDate ? ` · Due ${new Date(t.dueDate).toLocaleDateString('en-US',{month:'short',day:'numeric'})}` : ''}{t.assignedTo ? ` · ${t.assignedTo}` : ''}</p>
+                  <p className={`text-base font-medium truncate ${t.completed?'line-through text-[#5a7057]':'text-[#e8f0e6]'}`}>{t.title}</p>
+                  <p className="text-base text-[#5a7057]">{t.category}{t.dueDate ? ` · Due ${new Date(t.dueDate).toLocaleDateString('en-US',{month:'short',day:'numeric'})}` : ''}{t.assignedTo ? ` · ${t.assignedTo}` : ''}</p>
                 </div>
                 <Tag color={PRIORITY_COLOR[t.priority]||'#78716c'}>{t.priority}</Tag>
-                <button onClick={() => del(t.id)} className="text-stone-200 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all shrink-0"><Trash2 size={13}/></button>
+                <button onClick={() => del(t.id)} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all shrink-0"><Trash2 size={19}/></button>
               </div>
             ))}
         </div>
       )}
 
       {showAdd && (
-        <Modal title="Add task" onClose={() => setShowAdd(false)} footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={save} disabled={saving||!form.title.trim()}>{saving?<><Loader2 size={14} className="animate-spin"/>Saving…</>:<><Plus size={14}/>Add</>}</Btn></>}>
+        <Modal title="Add task" onClose={() => setShowAdd(false)} footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={save} disabled={saving||!form.title.trim()}>{saving?<><Loader2 size={17} className="animate-spin"/>Saving…</>:<><Plus size={17}/>Add</>}</Btn></>}>
           <Field label="Task *"><Input value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&save()} placeholder="Book venue walkthrough" autoFocus /></Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-5">
             <Field label="Category"><Select value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))}>
               {['General','Venue','Catering','Photography','Florals','Music','Attire','Legal','Honeymoon','Day-of'].map(c=><option key={c}>{c}</option>)}
             </Select></Field>
@@ -820,22 +827,22 @@ function TabChecklist() {
   return (
     <div>
       <PageHeader title="Checklist" sub={`${done.size} of ${total} complete`} />
-      <div className="bg-white rounded-2xl border border-stone-200 p-4 mb-5">
-        <div className="h-2 bg-stone-100 rounded-full overflow-hidden"><div className="h-full bg-[#7A9C6E] rounded-full transition-all" style={{ width:`${(done.size/total)*100}%` }}/></div>
-        <p className="text-xs text-stone-400 text-right mt-1">{Math.round(done.size/total*100)}%</p>
+      <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 mb-5">
+        <div className="h-2 bg-[#1f2b1e] rounded-full overflow-hidden"><div className="h-full bg-[#5a8a52] rounded-full transition-all" style={{ width:`${(done.size/total)*100}%` }}/></div>
+        <p className="text-base text-[#5a7057] text-right mt-1">{Math.round(done.size/total*100)}%</p>
       </div>
       <div className="space-y-4">
         {Object.entries(ITEMS).map(([section, items]) => (
-          <div key={section} className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
-            <div className="flex justify-between px-5 py-3 border-b border-stone-100 bg-stone-50">
-              <p className="text-sm font-medium text-stone-700">{section}</p>
-              <span className="text-xs text-stone-400">{items.filter(i=>done.has(`${section}-${i}`)).length}/{items.length}</span>
+          <div key={section} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] overflow-hidden">
+            <div className="flex justify-between px-6 py-3.5 border-b border-[#202e1f] bg-[#141c13]">
+              <p className="text-base font-medium text-[#cde0ca]">{section}</p>
+              <span className="text-base text-[#5a7057]">{items.filter(i=>done.has(`${section}-${i}`)).length}/{items.length}</span>
             </div>
             <div className="p-2">
               {items.map(item => { const k=`${section}-${item}`; const checked=done.has(k); return (
-                <button key={item} onClick={() => toggle(k)} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors hover:bg-stone-50 ${checked?'opacity-60':''}`}>
-                  <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${checked?'border-[#7A9C6E] bg-[#7A9C6E]':'border-stone-300'}`}>{checked&&<Check size={11} className="text-white"/>}</div>
-                  <span className={`text-sm ${checked?'line-through text-stone-400':'text-stone-700'}`}>{item}</span>
+                <button key={item} onClick={() => toggle(k)} className={`w-full flex items-center gap-5 px-6 py-3.5.5 rounded-3xl text-left transition-colors hover:bg-[#141c13] ${checked?'opacity-60':''}`}>
+                  <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${checked?'border-[#8fb882] bg-[#5a8a52]':'border-stone-300'}`}>{checked&&<Check size={11} className="text-white"/>}</div>
+                  <span className={`text-base ${checked?'line-through text-[#5a7057]':'text-[#cde0ca]'}`}>{item}</span>
                 </button>
               )})}
             </div>
@@ -848,195 +855,237 @@ function TabChecklist() {
 
 function TabRSVP() {
   const RSVP_URL = 'https://wedding-production-7483.up.railway.app/rsvp'
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [copied, setCopied] = useState(false)
   const [guests, setGuests] = useState<Guest[]>([])
   const [loadingGuests, setLoadingGuests] = useState(true)
   const [editTarget, setEditTarget] = useState<Guest | null>(null)
   const [editForm, setEditForm] = useState({ rsvpStatus: 'pending', dietary: '', email: '', plusOneName: '', plusOneDietary: '', hasPlusOne: false })
   const [savingEdit, setSavingEdit] = useState(false)
 
-  useEffect(() => {
-    $get('guests').then(d => { setGuests(Array.isArray(d) ? d : []); setLoadingGuests(false) })
-  }, [])
-
-  const openEdit = (g: Guest) => {
-    setEditTarget(g)
-    setEditForm({
-      rsvpStatus: g.rsvpStatus,
-      dietary: g.dietary || '',
-      email: g.email || '',
-      plusOneName: g.plusOneName || '',
-      plusOneDietary: g.plusOneDietary || '',
-      hasPlusOne: g.hasPlusOne,
-    })
-  }
-
-  const saveEdit = async () => {
-    if (!editTarget) return
-    setSavingEdit(true)
-    const res = await $patch('guest', {
-      id: editTarget.id,
-      rsvpStatus: editForm.rsvpStatus,
-      dietary: editForm.dietary || null,
-      email: editForm.email || null,
-      plusOneName: editForm.plusOneName || null,
-      plusOneDietary: editForm.plusOneDietary || null,
-      hasPlusOne: editForm.hasPlusOne,
-    })
-    setGuests(p => p.map(g => g.id === res.id ? res : g))
-    setEditTarget(null)
-    setSavingEdit(false)
-  }
-
+  // RSVP page settings
+  const [settings, setSettings] = useState({
+    heading: 'Jennifer & Myles',
+    subheading: 'Together with their families',
+    dateText: 'September 24, 2026',
+    venueText: '4:00 PM · The Glass House Garden, Austin TX',
+    heroImage: '',
+    accentColor: '#7A9C6E',
+    searchLabel: 'Enter your name as it appears on your invitation',
+    attendingLabel: "Yes, I'll be there!",
+    declineLabel: 'Regretfully no',
+    confirmedMessage: "We can't wait to celebrate with you!",
+    declinedMessage: "Thank you for letting us know. We'll be thinking of you!",
+    contactEmail: '',
+    coupleNames: 'Jennifer & Myles',
+    ourStory: "We didn't expect our story to begin the way it did...",
+    photo1: '',
+    photo2: '',
+    photo3: '',
+    ceremonyTime: '4:00 PM',
+    receptionTime: '6:00 PM',
+    dressCode: 'Garden Formal',
+    dressCodeNote: 'We would love for you to celebrate with us in attire that feels elegant and true to your style.',
+  })
+  const [savingSettings, setSavingSettings] = useState(false)
+  const [settingsSaved, setSettingsSaved] = useState(false)
   const STATUS_COLORS: Record<string, [string, string]> = {
     attending: ['#059669', '#d1fae5'],
     declined: ['#dc2626', '#fee2e2'],
     pending: ['#d97706', '#fef3c7'],
   }
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
+    $get('guests').then(d => { setGuests(Array.isArray(d) ? d : []); setLoadingGuests(false) })
+    $get('rsvp-settings').then(d => { if (d && !d.error) setSettings(s => ({ ...s, ...d })) })
     const canvas = canvasRef.current
     if (!canvas) return
-    // Draw QR code using canvas — simple matrix-based QR for the fixed URL
-    // We use a data URL approach via an img tag with the QR API
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(RSVP_URL)}&bgcolor=ffffff&color=3d6b2e&margin=10`
-    img.onload = () => {
-      const ctx = canvas.getContext('2d')
-      if (ctx) { ctx.clearRect(0,0,200,200); ctx.drawImage(img,0,0,200,200) }
-    }
+    img.onload = () => { const ctx = canvas.getContext('2d'); if (ctx) { ctx.clearRect(0,0,200,200); ctx.drawImage(img,0,0,200,200) } }
   }, [])
 
-  const downloadQR = () => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const a = document.createElement('a')
-    a.download = 'rsvp-qr-code.png'
-    a.href = canvas.toDataURL('image/png')
-    a.click()
+  const openEdit = (g: Guest) => {
+    setEditTarget(g)
+    setEditForm({ rsvpStatus: g.rsvpStatus, dietary: g.dietary || '', email: g.email || '', plusOneName: g.plusOneName || '', plusOneDietary: g.plusOneDietary || '', hasPlusOne: g.hasPlusOne })
   }
 
-  const copyLink = () => {
-    navigator.clipboard.writeText(RSVP_URL)
-    setCopied(true); setTimeout(() => setCopied(false), 2000)
+  const saveGuestEdit = async () => {
+    if (!editTarget) return
+    setSavingEdit(true)
+    const res = await $patch('guest', { id: editTarget.id, rsvpStatus: editForm.rsvpStatus, dietary: editForm.dietary || null, email: editForm.email || null, plusOneName: editForm.plusOneName || null, plusOneDietary: editForm.plusOneDietary || null, hasPlusOne: editForm.hasPlusOne })
+    setGuests(p => p.map(g => g.id === res.id ? res : g))
+    setEditTarget(null); setSavingEdit(false)
   }
+
+  const saveSettings = async () => {
+    setSavingSettings(true)
+    await $patch('rsvp-settings', { id: 'main', ...settings })
+    setSavingSettings(false); setSettingsSaved(true)
+    setTimeout(() => setSettingsSaved(false), 2000)
+  }
+
+  const SF = ({ label, field, type = 'text', rows }: { label: string; field: keyof typeof settings; type?: string; rows?: number }) => (
+    <Field label={label}>
+      {rows
+        ? <textarea value={String(settings[field])} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))} rows={rows} className="w-full px-6 py-3.5.5 rounded-3xl border border-[#2a3829] text-base focus:outline-none focus:border-[#8fb882] resize-none" />
+        : <Input type={type} value={String(settings[field])} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))} />}
+    </Field>
+  )
 
   return (
     <div>
-      <PageHeader title="RSVP portal" sub="Share this QR code on your invitations" />
-      <div className="flex gap-6 items-start max-w-2xl">
-        <div className="bg-white rounded-2xl border border-stone-200 p-6 text-center shrink-0">
-          <canvas ref={canvasRef} width={200} height={200} className="rounded-xl mx-auto mb-4 block" style={{imageRendering:'pixelated'}} />
-          <p className="text-xs text-stone-400 mb-4 break-all max-w-[200px]">{RSVP_URL}</p>
-          <div className="flex flex-col gap-2">
-            <Btn onClick={downloadQR} className="w-full justify-center"><QrCode size={14}/>Download QR</Btn>
-            <Btn variant="ghost" onClick={copyLink} className="w-full justify-center">
-              {copied ? <><Check size={13}/>Copied!</> : 'Copy link'}
+      <PageHeader title="RSVP portal" sub="Customize the guest experience and manage RSVPs" />
+
+      <div className="grid grid-cols-2 gap-7 mb-8">
+        {/* QR Code */}
+        <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 text-center">
+          <canvas ref={canvasRef} width={200} height={200} className="rounded-3xl mx-auto mb-4 block" style={{imageRendering:'pixelated'}} />
+          <p className="text-base text-[#5a7057] mb-4 break-all">{RSVP_URL}</p>
+          <div className="flex flex-col gap-5">
+            <Btn onClick={() => { const c = canvasRef.current; if(c){const a=document.createElement('a');a.download='rsvp-qr.png';a.href=c.toDataURL();a.click()} }} className="w-full justify-center"><QrCode size={17}/>Download QR</Btn>
+            <Btn variant="ghost" onClick={() => { navigator.clipboard.writeText(RSVP_URL); setCopied(true); setTimeout(()=>setCopied(false),2000) }} className="w-full justify-center">
+              {copied ? <><Check size={19}/>Copied!</> : 'Copy link'}
             </Btn>
-            <Btn variant="ghost" onClick={() => window.open(RSVP_URL,'_blank')} className="w-full justify-center"><ExternalLink size={13}/>Preview RSVP</Btn>
+            <Btn variant="ghost" onClick={() => window.open(RSVP_URL,'_blank')} className="w-full justify-center"><ExternalLink size={19}/>Preview</Btn>
           </div>
         </div>
-        <div className="flex-1 space-y-4">
-          <div className="bg-[#EDF4EA] rounded-2xl p-5">
-            <p className="text-sm font-semibold text-[#3d6b2e] mb-3">How guests RSVP</p>
-            {[
-              ['Scan QR code on invite','Opens the RSVP page on their phone'],
-              ['Enter their name','System matches against your guest list'],
-              ['Confirm plus one','Only shown if they are allowed one'],
-              ['Dietary needs & email','We collect for catering and send confirmation'],
-              ['Auto-added to seating','Attending guests appear in unassigned pool'],
-            ].map(([title, desc], i) => (
-              <div key={i} className="flex gap-3 mb-3 last:mb-0">
-                <div className="w-5 h-5 rounded-full bg-[#7A9C6E] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{i+1}</div>
-                <div><p className="text-sm font-medium text-[#3d6b2e]">{title}</p><p className="text-xs text-[#5a8a4a]">{desc}</p></div>
+
+        {/* Quick stats */}
+        <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7">
+          <p className="text-base font-semibold text-[#cde0ca] mb-4">RSVP stats</p>
+          {(() => {
+            const attending = guests.filter(g=>g.rsvpStatus==='attending').length
+            const declined = guests.filter(g=>g.rsvpStatus==='declined').length
+            const pending = guests.filter(g=>g.rsvpStatus==='pending').length
+            const total = guests.length
+            return (
+              <div className="space-y-3">
+                {[['Attending',attending,'#059669'],['Declined',declined,'#dc2626'],['Pending',pending,'#d97706']].map(([l,v,c])=>(
+                  <div key={String(l)} className="flex items-center gap-5">
+                    <div className="flex-1 h-2 bg-[#1f2b1e] rounded-full overflow-hidden">
+                      <div className="h-full rounded-full" style={{width:`${total?((v as number)/total)*100:0}%`,background:String(c)}}/>
+                    </div>
+                    <span className="text-base text-[#7a9878] w-20 text-right">{l}: {v}</span>
+                  </div>
+                ))}
+                <p className="text-base text-[#5a7057] pt-1">{total} total guests</p>
               </div>
-            ))}
+            )
+          })()}
+        </div>
+      </div>
+
+      {/* ── RSVP PAGE CUSTOMIZATION ── */}
+      <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] mb-6">
+        <div className="flex items-center justify-between px-7 py-5 border-b border-[#202e1f]">
+          <div>
+            <p className="font-semibold text-[#e8f0e6]">Customize RSVP page</p>
+            <p className="text-base text-[#5a7057] mt-0.5">Changes appear live at your RSVP link</p>
           </div>
-          <div className="bg-white rounded-2xl border border-stone-200 p-4">
-            <p className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-3">Print tip</p>
-            <p className="text-sm text-stone-500">Download the QR code and add it to your invitation design. Recommended size: 1.5&quot; × 1.5&quot; minimum so it scans reliably.</p>
+          <Btn onClick={saveSettings} disabled={savingSettings} style={{ background: settingsSaved ? '#5DCAA5' : '#7A9C6E' }}>
+            {savingSettings ? <><Loader2 size={17} className="animate-spin"/>Saving…</> : settingsSaved ? <><Check size={17}/>Saved!</> : <><Check size={17}/>Save changes</>}
+          </Btn>
+        </div>
+
+        <div className="p-7 grid grid-cols-2 gap-x-8 gap-y-1">
+          {/* Left column */}
+          <div className="space-y-4">
+            <p className="text-base font-bold text-[#5a7057] uppercase tracking-wider pb-1 border-b border-[#202e1f]">Envelope & Invite</p>
+            <SF label="Couple names (shown on envelope)" field="coupleNames" />
+            <SF label="Heading (invite card)" field="heading" />
+            <SF label="Subheading" field="subheading" />
+            <SF label="Date text" field="dateText" />
+            <SF label="Venue & time text" field="venueText" />
+            <SF label="Hero image URL" field="heroImage" />
+            {settings.heroImage && <div className="h-24 rounded-3xl overflow-hidden bg-[#1f2b1e]"><img src={settings.heroImage} alt="" className="w-full h-full object-cover"/></div>}
+
+            <p className="text-base font-bold text-[#5a7057] uppercase tracking-wider pt-2 pb-1 border-b border-[#202e1f]">Photos</p>
+            <SF label="Photo 1 URL (invite card + story)" field="photo1" />
+            {settings.photo1 && <div className="h-20 rounded-3xl overflow-hidden bg-[#1f2b1e]"><img src={settings.photo1} alt="" className="w-full h-full object-cover"/></div>}
+            <SF label="Photo 2 URL (story polaroid)" field="photo2" />
+            {settings.photo2 && <div className="h-20 rounded-3xl overflow-hidden bg-[#1f2b1e]"><img src={settings.photo2} alt="" className="w-full h-full object-cover"/></div>}
+
+            <p className="text-base font-bold text-[#5a7057] uppercase tracking-wider pt-2 pb-1 border-b border-[#202e1f]">Colors</p>
+            <Field label="Accent color">
+              <div className="flex gap-5 items-center">
+                <input type="color" value={settings.accentColor} onChange={e => setSettings(s=>({...s,accentColor:e.target.value}))} className="w-10 h-10 rounded-lg border border-[#2a3829] cursor-pointer p-0.5" />
+                <Input value={settings.accentColor} onChange={e => setSettings(s=>({...s,accentColor:e.target.value}))} className="flex-1" />
+              </div>
+            </Field>
+          </div>
+
+          {/* Right column */}
+          <div className="space-y-4">
+            <p className="text-base font-bold text-[#5a7057] uppercase tracking-wider pb-1 border-b border-[#202e1f]">Details page</p>
+            <SF label="Ceremony time" field="ceremonyTime" />
+            <SF label="Reception time" field="receptionTime" />
+            <SF label="Dress code" field="dressCode" />
+            <SF label="Dress code note" field="dressCodeNote" rows={2} />
+
+            <p className="text-base font-bold text-[#5a7057] uppercase tracking-wider pt-2 pb-1 border-b border-[#202e1f]">Our story</p>
+            <SF label="Story text (use blank line for paragraphs)" field="ourStory" rows={6} />
+
+            <p className="text-base font-bold text-[#5a7057] uppercase tracking-wider pt-2 pb-1 border-b border-[#202e1f]">RSVP form text</p>
+            <SF label="Search prompt" field="searchLabel" />
+            <SF label="Attending button text" field="attendingLabel" />
+            <SF label="Decline button text" field="declineLabel" />
+            <SF label="Confirmed message" field="confirmedMessage" rows={2} />
+            <SF label="Declined message" field="declinedMessage" rows={2} />
+            <SF label="Contact email (shown if not found)" field="contactEmail" />
           </div>
         </div>
       </div>
 
-      {/* Admin — edit guest RSVPs */}
-      <div className="mt-8">
-        <h2 className="text-xl font-light text-stone-700 mb-4" style={{ fontFamily: 'var(--font-display)' }}>
-          Guest RSVP records
-        </h2>
-        {loadingGuests ? <div className="flex justify-center py-8"><Loader2 className="animate-spin text-stone-300" size={20} /></div> : (
-          <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[520px]">
-                <thead><tr className="border-b border-stone-100 bg-stone-50 text-left text-xs text-stone-400 uppercase tracking-wider">
-                  {['Name', 'Status', 'Email', 'Dietary', 'Plus one', ''].map(h => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}
-                </tr></thead>
-                <tbody>
-                  {guests.length === 0 ? (
-                    <tr><td colSpan={6} className="text-center py-10 text-stone-400">No guests yet</td></tr>
-                  ) : guests.map(g => {
-                    const [color, bg] = STATUS_COLORS[g.rsvpStatus] ?? STATUS_COLORS.pending
-                    return (
-                      <tr key={g.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50 transition-colors">
-                        <td className="px-4 py-3 font-medium text-stone-800">{g.name}</td>
-                        <td className="px-4 py-3">
-                          <span className="text-xs px-2.5 py-1 rounded-full font-medium capitalize" style={{ color, background: bg }}>
-                            {g.rsvpStatus}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-xs text-stone-500">{g.email || '—'}</td>
-                        <td className="px-4 py-3 text-xs text-stone-500">{g.dietary || '—'}</td>
-                        <td className="px-4 py-3 text-xs text-stone-500">{g.plusOneName || (g.hasPlusOne ? <span className="text-[#7A9C6E]">allowed</span> : '—')}</td>
-                        <td className="px-4 py-3">
-                          <button onClick={() => openEdit(g)} className="text-xs text-stone-400 hover:text-[#7A9C6E] flex items-center gap-1 transition-colors">
-                            <Edit3 size={12} /> Edit
-                          </button>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
+      {/* ── GUEST RSVP RECORDS ── */}
+      <h2 className="text-xl font-light text-[#cde0ca] mb-4" style={{ fontFamily: 'var(--font-display)' }}>Guest RSVP records</h2>
+      {loadingGuests ? <div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div> : (
+        <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-base min-w-[520px]">
+              <thead><tr className="border-b border-[#202e1f] bg-[#141c13] text-left text-base text-[#5a7057] uppercase tracking-wider">
+                {['Name','Status','Email','Dietary','Plus one',''].map(h=><th key={h} className="px-6 py-3.5.5 font-medium">{h}</th>)}
+              </tr></thead>
+              <tbody>
+                {guests.length === 0 ? <tr><td colSpan={6} className="text-center py-10 text-[#5a7057]">No guests yet</td></tr>
+                : guests.map(g => {
+                  const [color, bg] = STATUS_COLORS[g.rsvpStatus] ?? STATUS_COLORS.pending
+                  return (
+                    <tr key={g.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#141c13]">
+                      <td className="px-6 py-3.5.5 font-medium text-[#e8f0e6]">{g.name}</td>
+                      <td className="px-6 py-3.5.5"><span className="text-base px-2.5 py-1 rounded-full font-medium capitalize" style={{color,background:bg}}>{g.rsvpStatus}</span></td>
+                      <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.email||'—'}</td>
+                      <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.dietary||'—'}</td>
+                      <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.plusOneName||(g.hasPlusOne?<span className="text-[#8fb882]">allowed</span>:'—')}</td>
+                      <td className="px-6 py-3.5.5"><button onClick={()=>openEdit(g)} className="text-base text-[#5a7057] hover:text-[#8fb882] flex items-center gap-1"><Edit3 size={26}/>Edit</button></td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Edit guest RSVP modal */}
       {editTarget && (
-        <Modal title={`Edit RSVP — ${editTarget.name}`} onClose={() => setEditTarget(null)}
-          footer={<><Btn variant="ghost" onClick={() => setEditTarget(null)}>Cancel</Btn><Btn onClick={saveEdit} disabled={savingEdit}>{savingEdit ? <><Loader2 size={14} className="animate-spin" />Saving…</> : <><Check size={14} />Save</>}</Btn></>}>
-          <Field label="RSVP status">
-            <Select value={editForm.rsvpStatus} onChange={e => setEditForm(f => ({ ...f, rsvpStatus: e.target.value }))}>
-              <option value="pending">Pending</option>
-              <option value="attending">Attending</option>
-              <option value="declined">Declined</option>
-            </Select>
-          </Field>
-          <Field label="Email"><Input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} placeholder="guest@email.com" /></Field>
-          <Field label="Dietary requirements">
-            <Select value={editForm.dietary} onChange={e => setEditForm(f => ({ ...f, dietary: e.target.value }))}>
-              {['', 'Vegetarian', 'Vegan', 'Gluten-free', 'Nut allergy', 'Halal', 'Kosher', 'Other'].map(o => <option key={o} value={o}>{o || 'None'}</option>)}
-            </Select>
-          </Field>
+        <Modal title={`Edit RSVP — ${editTarget.name}`} onClose={()=>setEditTarget(null)}
+          footer={<><Btn variant="ghost" onClick={()=>setEditTarget(null)}>Cancel</Btn><Btn onClick={saveGuestEdit} disabled={savingEdit}>{savingEdit?<><Loader2 size={17} className="animate-spin"/>Saving…</>:<><Check size={17}/>Save</>}</Btn></>}>
+          <Field label="RSVP status"><Select value={editForm.rsvpStatus} onChange={e=>setEditForm(f=>({...f,rsvpStatus:e.target.value}))}><option value="pending">Pending</option><option value="attending">Attending</option><option value="declined">Declined</option></Select></Field>
+          <Field label="Email"><Input type="email" value={editForm.email} onChange={e=>setEditForm(f=>({...f,email:e.target.value}))} /></Field>
+          <Field label="Dietary"><Select value={editForm.dietary} onChange={e=>setEditForm(f=>({...f,dietary:e.target.value}))}>
+            {['','Vegetarian','Vegan','Gluten-free','Nut allergy','Halal','Kosher','Other'].map(o=><option key={o} value={o}>{o||'None'}</option>)}
+          </Select></Field>
           <div className="flex items-center justify-between py-1">
-            <div><p className="text-sm font-medium text-stone-700">Plus one allowed</p></div>
-            <button onClick={() => setEditForm(f => ({ ...f, hasPlusOne: !f.hasPlusOne }))} className={`w-11 h-6 rounded-full transition-colors relative ${editForm.hasPlusOne ? 'bg-[#7A9C6E]' : 'bg-stone-200'}`}>
-              <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${editForm.hasPlusOne ? 'translate-x-5' : 'translate-x-0.5'}`} />
-            </button>
+            <p className="text-base font-medium text-[#cde0ca]">Plus one allowed</p>
+            <button onClick={()=>setEditForm(f=>({...f,hasPlusOne:!f.hasPlusOne}))} className={`w-11 h-6 rounded-full transition-colors relative ${editForm.hasPlusOne?'bg-[#5a8a52]':'bg-[#243022]'}`}><div className={`absolute top-0.5 w-5 h-5 rounded-full bg-[#1a2419] shadow transition-transform ${editForm.hasPlusOne?'translate-x-5':'translate-x-0.5'}`}/></button>
           </div>
-          {editForm.hasPlusOne && (
-            <>
-              <Field label="Plus one name"><Input value={editForm.plusOneName} onChange={e => setEditForm(f => ({ ...f, plusOneName: e.target.value }))} placeholder="Full name" /></Field>
-              <Field label="Plus one dietary">
-                <Select value={editForm.plusOneDietary} onChange={e => setEditForm(f => ({ ...f, plusOneDietary: e.target.value }))}>
-                  {['', 'Vegetarian', 'Vegan', 'Gluten-free', 'Nut allergy', 'Halal', 'Kosher', 'Other'].map(o => <option key={o} value={o}>{o || 'None'}</option>)}
-                </Select>
-              </Field>
-            </>
-          )}
+          {editForm.hasPlusOne && <>
+            <Field label="Plus one name"><Input value={editForm.plusOneName} onChange={e=>setEditForm(f=>({...f,plusOneName:e.target.value}))} /></Field>
+            <Field label="Plus one dietary"><Select value={editForm.plusOneDietary} onChange={e=>setEditForm(f=>({...f,plusOneDietary:e.target.value}))}>
+              {['','Vegetarian','Vegan','Gluten-free','Nut allergy','Halal','Kosher','Other'].map(o=><option key={o} value={o}>{o||'None'}</option>)}
+            </Select></Field>
+          </>}
         </Modal>
       )}
     </div>
@@ -1051,26 +1100,26 @@ function TabMoodboard() {
   const add = () => { if (!form.imageUrl.trim()) return; setItems(p=>[...p,{id:Date.now().toString(),...form}]); setForm({imageUrl:'',label:'',category:'Florals'}); setShowAdd(false) }
   return (
     <div>
-      <PageHeader title="Mood board" sub="Pin anything that inspires your vision" action={<Btn onClick={()=>setShowAdd(true)}><Plus size={14}/>Add image</Btn>} />
+      <PageHeader title="Mood board" sub="Pin anything that inspires your vision" action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add image</Btn>} />
       {items.length === 0
-        ? <div className="text-center py-20 text-stone-400"><p className="mb-4">Paste image URLs from Pinterest, Instagram, or anywhere</p><Btn onClick={()=>setShowAdd(true)}><Plus size={14}/>Add first image</Btn></div>
-        : <div className="columns-2 md:columns-3 gap-4 space-y-4">
+        ? <div className="text-center py-20 text-[#5a7057]"><p className="mb-4">Paste image URLs from Pinterest, Instagram, or anywhere</p><Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add first image</Btn></div>
+        : <div className="columns-2 md:columns-3 gap-7 space-y-4">
             {items.map(item => (
-              <div key={item.id} className="break-inside-avoid group relative rounded-2xl overflow-hidden border border-stone-200">
+              <div key={item.id} className="break-inside-avoid group relative rounded-3xl overflow-hidden border border-[#2a3829]">
                 <img src={item.imageUrl} alt={item.label} className="w-full object-cover" onError={e=>e.currentTarget.src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200"><rect fill="%23f1efe8" width="300" height="200"/><text x="150" y="105" text-anchor="middle" fill="%23aaa" font-size="14">Image not found</text></svg>'} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-                  <span className="text-white text-xs">{item.label || item.category}</span>
-                  <button onClick={()=>setItems(p=>p.filter(i=>i.id!==item.id))} className="ml-auto w-6 h-6 rounded-full bg-black/40 flex items-center justify-center text-white hover:bg-red-500 transition-colors"><X size={11}/></button>
+                  <span className="text-white text-base">{item.label || item.category}</span>
+                  <button onClick={()=>setItems(p=>p.filter(i=>i.id!==item.id))} className="ml-auto w-6 h-6 rounded-full bg-black/40 flex items-center justify-center text-white hover:bg-red-9500 transition-colors"><X size={11}/></button>
                 </div>
               </div>
             ))}
           </div>}
       {showAdd && (
-        <Modal title="Add to mood board" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.imageUrl.trim()}><Plus size={14}/>Add</Btn></>}>
+        <Modal title="Add to mood board" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.imageUrl.trim()}><Plus size={17}/>Add</Btn></>}>
           <Field label="Image URL *"><Input value={form.imageUrl} onChange={e=>setForm(f=>({...f,imageUrl:e.target.value}))} placeholder="https://..." autoFocus /></Field>
           <Field label="Category"><Select value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))}>{CATS.map(c=><option key={c}>{c}</option>)}</Select></Field>
           <Field label="Label"><Input value={form.label} onChange={e=>setForm(f=>({...f,label:e.target.value}))} placeholder="Inspiration for florals" /></Field>
-          {form.imageUrl && <div className="h-32 rounded-xl overflow-hidden bg-stone-100"><img src={form.imageUrl} alt="" className="w-full h-full object-cover"/></div>}
+          {form.imageUrl && <div className="h-32 rounded-3xl overflow-hidden bg-[#1f2b1e]"><img src={form.imageUrl} alt="" className="w-full h-full object-cover"/></div>}
         </Modal>
       )}
     </div>
@@ -1090,26 +1139,26 @@ function TabMenu() {
   return (
     <div>
       <PageHeader title="Menu & drinks" />
-      <div className="grid grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-stone-200 p-5">
-          <div className="flex items-center gap-2 mb-4"><UtensilsCrossed size={15} className="text-[#7A9C6E]"/><h3 className="font-medium text-stone-800">Menu</h3></div>
+      <div className="grid grid-cols-2 gap-7">
+        <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7">
+          <div className="flex items-center gap-5 mb-4"><UtensilsCrossed size={26} className="text-[#8fb882]"/><h3 className="font-medium text-[#e8f0e6]">Menu</h3></div>
           {menu.map((c,i) => (
-            <div key={i} className="border-b border-stone-50 pb-3 mb-3 last:border-0 last:mb-0">
-              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1">{c.course}</p>
-              <textarea value={c.items} onChange={e=>setMenu(p=>p.map((m,j)=>j===i?{...m,items:e.target.value}:m))} className="w-full text-sm text-stone-700 resize-none border-0 focus:outline-none bg-transparent" rows={2} />
+            <div key={i} className="border-b border-[#1a2419] pb-3 mb-3 last:border-0 last:mb-0">
+              <p className="text-base font-semibold text-[#5a7057] uppercase tracking-wider mb-1">{c.course}</p>
+              <textarea value={c.items} onChange={e=>setMenu(p=>p.map((m,j)=>j===i?{...m,items:e.target.value}:m))} className="w-full text-base text-[#cde0ca] resize-none border-0 focus:outline-none bg-transparent" rows={2} />
             </div>
           ))}
         </div>
-        <div className="bg-white rounded-2xl border border-stone-200 p-5">
-          <div className="flex items-center gap-2 mb-4"><Wine size={15} className="text-[#7A9C6E]"/><h3 className="font-medium text-stone-800">Drink calculator</h3></div>
+        <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7">
+          <div className="flex items-center gap-5 mb-4"><Wine size={26} className="text-[#8fb882]"/><h3 className="font-medium text-[#e8f0e6]">Drink calculator</h3></div>
           <div className="space-y-3 mb-5">
-            <div><label className="text-xs text-stone-500 mb-1 block">Guests: <strong>{guests}</strong></label><input type="range" min={20} max={500} step={5} value={guests} onChange={e=>setGuests(+e.target.value)} className="w-full"/></div>
-            <div><label className="text-xs text-stone-500 mb-1 block">Open bar hours: <strong>{hours}h</strong></label><input type="range" min={1} max={8} step={0.5} value={hours} onChange={e=>setHours(+e.target.value)} className="w-full"/></div>
+            <div><label className="text-base text-[#7a9878] mb-1 block">Guests: <strong>{guests}</strong></label><input type="range" min={20} max={500} step={5} value={guests} onChange={e=>setGuests(+e.target.value)} className="w-full"/></div>
+            <div><label className="text-base text-[#7a9878] mb-1 block">Open bar hours: <strong>{hours}h</strong></label><input type="range" min={1} max={8} step={0.5} value={hours} onChange={e=>setHours(+e.target.value)} className="w-full"/></div>
           </div>
           {[['Wine',drinks.wine,'bottles'],['Beer',drinks.beer,'cans'],['Champagne',drinks.champagne,'bottles'],['Water',drinks.water,'cases']].map(([l,v,u])=>(
-            <div key={String(l)} className="flex justify-between py-2.5 border-b border-stone-50 last:border-0">
-              <span className="text-sm text-stone-700">{l}</span>
-              <div className="text-right"><span className="text-lg font-light text-[#3d6b2e]" style={{fontFamily:'var(--font-display)'}}>{v}</span><span className="text-xs text-stone-400 ml-1">{u}</span></div>
+            <div key={String(l)} className="flex justify-between py-2.5 border-b border-[#1a2419] last:border-0">
+              <span className="text-base text-[#cde0ca]">{l}</span>
+              <div className="text-right"><span className="text-lg font-light text-[#8fb882]" style={{fontFamily:'var(--font-display)'}}>{v}</span><span className="text-base text-[#5a7057] ml-1">{u}</span></div>
             </div>
           ))}
         </div>
@@ -1134,27 +1183,27 @@ function TabParty() {
   const groom = members.filter(m=>m.side==='groom')
   return (
     <div>
-      <PageHeader title="Wedding party" sub={`${members.length} members`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={14}/>Add member</Btn>} />
-      <div className="grid grid-cols-2 gap-6">
+      <PageHeader title="Wedding party" sub={`${members.length} members`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add member</Btn>} />
+      <div className="grid grid-cols-2 gap-7">
         {[{label:"Bride's side",side:'bride',list:bride,roles:BRIDE_ROLES},{label:"Groom's side",side:'groom',list:groom,roles:GROOM_ROLES}].map(({label,list,side,roles})=>(
           <div key={label}>
-            <h2 className="text-lg font-light text-stone-600 mb-3" style={{fontFamily:'var(--font-display)'}}>{label}</h2>
+            <h2 className="text-lg font-light text-[#a8c4a4] mb-3" style={{fontFamily:'var(--font-display)'}}>{label}</h2>
             <div className="space-y-2">
-              {list.length===0?<div className="border-2 border-dashed border-stone-200 rounded-2xl py-10 text-center text-stone-400 text-sm">No members yet</div>
+              {list.length===0?<div className="border-2 border-dashed border-[#2a3829] rounded-3xl py-10 text-center text-[#5a7057] text-base">No members yet</div>
                 :list.map(m=>(
-                  <div key={m.id} className="bg-white rounded-2xl border border-stone-200 p-4 group">
+                  <div key={m.id} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 group">
                     <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-[#EDF4EA] flex items-center justify-center text-sm font-semibold text-[#3d6b2e]">{m.name.split(' ').map((w:string)=>w[0]).join('').slice(0,2).toUpperCase()}</div>
-                        <div><p className="font-medium text-stone-800">{m.name}</p><p className="text-xs text-[#7A9C6E]">{m.role}</p></div>
+                      <div className="flex items-center gap-5">
+                        <div className="w-9 h-9 rounded-full bg-[#1e3a1e] flex items-center justify-center text-base font-semibold text-[#8fb882]">{m.name.split(' ').map((w:string)=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+                        <div><p className="font-medium text-[#e8f0e6]">{m.name}</p><p className="text-base text-[#8fb882]">{m.role}</p></div>
                       </div>
-                      <button onClick={()=>setMembers(p=>p.filter(x=>x.id!==m.id))} className="text-stone-200 hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={13}/></button>
+                      <button onClick={()=>setMembers(p=>p.filter(x=>x.id!==m.id))} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={19}/></button>
                     </div>
-                    <div className="mt-2 flex flex-wrap gap-3">
-                      {m.phone&&<a href={`tel:${m.phone}`} className="flex items-center gap-1 text-xs text-stone-400 hover:text-[#7A9C6E]"><Phone size={11}/>{m.phone}</a>}
-                      {m.email&&<a href={`mailto:${m.email}`} className="flex items-center gap-1 text-xs text-stone-400 hover:text-[#7A9C6E]"><Mail size={11}/>{m.email}</a>}
+                    <div className="mt-2 flex flex-wrap gap-5">
+                      {m.phone&&<a href={`tel:${m.phone}`} className="flex items-center gap-1 text-base text-[#5a7057] hover:text-[#8fb882]"><Phone size={11}/>{m.phone}</a>}
+                      {m.email&&<a href={`mailto:${m.email}`} className="flex items-center gap-1 text-base text-[#5a7057] hover:text-[#8fb882]"><Mail size={11}/>{m.email}</a>}
                     </div>
-                    {m.attire&&<p className="text-xs text-stone-400 mt-1.5">Attire: {m.attire}</p>}
+                    {m.attire&&<p className="text-base text-[#5a7057] mt-1.5">Attire: {m.attire}</p>}
                   </div>
                 ))}
             </div>
@@ -1162,9 +1211,9 @@ function TabParty() {
         ))}
       </div>
       {showAdd&&(
-        <Modal title="Add party member" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.name.trim()}><Plus size={14}/>Add</Btn></>}>
+        <Modal title="Add party member" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.name.trim()}><Plus size={17}/>Add</Btn></>}>
           <Field label="Name *"><Input value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} autoFocus /></Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-5">
             <Field label="Side"><Select value={form.side} onChange={e=>setForm(f=>({...f,side:e.target.value,role:e.target.value==='bride'?'Bridesmaid':'Groomsman'}))}><option value="bride">Bride&apos;s side</option><option value="groom">Groom&apos;s side</option></Select></Field>
             <Field label="Role"><Select value={form.role} onChange={e=>setForm(f=>({...f,role:e.target.value}))}>{(form.side==='bride'?BRIDE_ROLES:GROOM_ROLES).map(r=><option key={r}>{r}</option>)}</Select></Field>
             <Field label="Phone"><Input value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))} /></Field>
@@ -1194,33 +1243,33 @@ function TabTimeline() {
   const add = () => { const id=Date.now().toString(); setItems(p=>[...p,{id,time:'',title:'New event',who:'',desc:''}]); setEditing(id) }
   return (
     <div>
-      <PageHeader title="Day-of timeline" action={<div className="flex gap-2"><Btn variant="ghost" onClick={()=>window.print()}>Print</Btn><Btn onClick={add}><Plus size={14}/>Add event</Btn></div>} />
+      <PageHeader title="Day-of timeline" action={<div className="flex gap-5"><Btn variant="ghost" onClick={()=>window.print()}>Print</Btn><Btn onClick={add}><Plus size={17}/>Add event</Btn></div>} />
       <div className="relative">
-        <div className="absolute left-[72px] top-0 bottom-0 w-px bg-stone-200"/>
+        <div className="absolute left-[72px] top-0 bottom-0 w-px bg-[#243022]"/>
         <div className="space-y-2">
           {items.map(item=>(
-            <div key={item.id} className="flex gap-4 group items-start">
+            <div key={item.id} className="flex gap-7 group items-start">
               <div className="w-16 text-right shrink-0 pt-3">
                 {editing===item.id
-                  ?<input value={item.time} onChange={e=>update(item.id,'time',e.target.value)} className="w-full text-right text-xs font-medium border border-stone-200 rounded-lg px-1.5 py-1 focus:outline-none focus:border-[#7A9C6E]" placeholder="4:00 PM"/>
-                  :<span className="text-xs font-semibold text-stone-500">{item.time||'—'}</span>}
+                  ?<input value={item.time} onChange={e=>update(item.id,'time',e.target.value)} className="w-full text-right text-base font-medium border border-[#2a3829] rounded-lg px-1.5 py-1 focus:outline-none focus:border-[#8fb882]" placeholder="4:00 PM"/>
+                  :<span className="text-base font-semibold text-[#7a9878]">{item.time||'—'}</span>}
               </div>
-              <div className="w-3 h-3 rounded-full bg-[#7A9C6E] border-2 border-white shadow shrink-0 mt-3.5 relative z-10"/>
-              <div className={`flex-1 bg-white rounded-xl border p-3.5 cursor-pointer transition-colors ${editing===item.id?'border-[#7A9C6E]':'border-stone-200 hover:border-stone-300'}`} onClick={()=>setEditing(editing===item.id?null:item.id)}>
+              <div className="w-3 h-3 rounded-full bg-[#5a8a52] border-2 border-white shadow shrink-0 mt-3.5 relative z-10"/>
+              <div className={`flex-1 bg-[#1a2419] rounded-3xl border p-3.5 cursor-pointer transition-colors ${editing===item.id?'border-[#8fb882]':'border-[#2a3829] hover:border-stone-300'}`} onClick={()=>setEditing(editing===item.id?null:item.id)}>
                 {editing===item.id?(
                   <div className="space-y-2" onClick={e=>e.stopPropagation()}>
-                    <input value={item.title} onChange={e=>update(item.id,'title',e.target.value)} className="w-full font-medium text-sm border-0 focus:outline-none bg-transparent"/>
-                    <input value={item.desc} onChange={e=>update(item.id,'desc',e.target.value)} className="w-full text-xs text-stone-400 border-0 focus:outline-none bg-transparent" placeholder="Description"/>
-                    <input value={item.who} onChange={e=>update(item.id,'who',e.target.value)} className="w-full text-xs text-[#7A9C6E] border-0 focus:outline-none bg-transparent" placeholder="Who's involved"/>
-                    <div className="flex gap-2 pt-1">
-                      <button onClick={()=>setEditing(null)} className="text-xs px-3 py-1 rounded-lg bg-[#7A9C6E] text-white">Done</button>
-                      <button onClick={()=>setItems(p=>p.filter(i=>i.id!==item.id))} className="text-xs px-3 py-1 rounded-lg text-red-400 border border-red-200">Delete</button>
+                    <input value={item.title} onChange={e=>update(item.id,'title',e.target.value)} className="w-full font-medium text-base border-0 focus:outline-none bg-transparent"/>
+                    <input value={item.desc} onChange={e=>update(item.id,'desc',e.target.value)} className="w-full text-base text-[#5a7057] border-0 focus:outline-none bg-transparent" placeholder="Description"/>
+                    <input value={item.who} onChange={e=>update(item.id,'who',e.target.value)} className="w-full text-base text-[#8fb882] border-0 focus:outline-none bg-transparent" placeholder="Who's involved"/>
+                    <div className="flex gap-5 pt-1">
+                      <button onClick={()=>setEditing(null)} className="text-base px-3 py-1 rounded-lg bg-[#5a8a52] text-white">Done</button>
+                      <button onClick={()=>setItems(p=>p.filter(i=>i.id!==item.id))} className="text-base px-3 py-1 rounded-lg text-red-400 border border-red-200">Delete</button>
                     </div>
                   </div>
                 ):(
                   <div className="flex items-center justify-between">
-                    <div><p className="text-sm font-medium text-stone-800">{item.title}</p>{item.desc&&<p className="text-xs text-stone-400 mt-0.5">{item.desc}</p>}{item.who&&<p className="text-xs text-[#7A9C6E] mt-0.5">{item.who}</p>}</div>
-                    <span className="text-xs text-stone-300 opacity-0 group-hover:opacity-100">click to edit</span>
+                    <div><p className="text-base font-medium text-[#e8f0e6]">{item.title}</p>{item.desc&&<p className="text-base text-[#5a7057] mt-0.5">{item.desc}</p>}{item.who&&<p className="text-base text-[#8fb882] mt-0.5">{item.who}</p>}</div>
+                    <span className="text-base text-[#3a5038] opacity-0 group-hover:opacity-100">click to edit</span>
                   </div>
                 )}
               </div>
@@ -1241,22 +1290,22 @@ function TabDecor() {
   const add = () => { if(!form.desc.trim()) return; setItems(p=>[...p,{id:Date.now().toString(),...form,done:false}]); setForm({area:'Guest tables',desc:'',vendor:'',cost:''}); setShowAdd(false) }
   return (
     <div>
-      <PageHeader title="Décor" sub={`${items.filter(i=>i.done).length}/${items.length} ordered`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={14}/>Add item</Btn>} />
+      <PageHeader title="Décor" sub={`${items.filter(i=>i.done).length}/${items.length} ordered`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add item</Btn>} />
       <div className="space-y-2">
-        {items.length===0?<div className="text-center py-16 text-stone-400">Track florals, centrepieces, lighting and décor items here</div>:
+        {items.length===0?<div className="text-center py-16 text-[#5a7057]">Track florals, centrepieces, lighting and décor items here</div>:
           items.map(i=>(
-            <div key={i.id} className={`bg-white rounded-xl border border-stone-200 p-3.5 flex items-center gap-3 group ${i.done?'opacity-60':''}`}>
-              <button onClick={()=>setItems(p=>p.map(x=>x.id===i.id?{...x,done:!x.done}:x))} className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${i.done?'border-[#7A9C6E] bg-[#7A9C6E]':'border-stone-300'}`}>{i.done&&<Check size={11} className="text-white"/>}</button>
-              <div className="flex-1"><p className={`text-sm font-medium ${i.done?'line-through text-stone-400':'text-stone-800'}`}>{i.desc}</p><p className="text-xs text-stone-400">{i.area}{i.vendor?` · ${i.vendor}`:''}{i.cost?` · $${i.cost}`:''}</p></div>
-              <button onClick={()=>setItems(p=>p.filter(x=>x.id!==i.id))} className="text-stone-200 hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={13}/></button>
+            <div key={i.id} className={`bg-[#1a2419] rounded-3xl border border-[#2a3829] p-3.5 flex items-center gap-5 group ${i.done?'opacity-60':''}`}>
+              <button onClick={()=>setItems(p=>p.map(x=>x.id===i.id?{...x,done:!x.done}:x))} className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${i.done?'border-[#8fb882] bg-[#5a8a52]':'border-stone-300'}`}>{i.done&&<Check size={11} className="text-white"/>}</button>
+              <div className="flex-1"><p className={`text-base font-medium ${i.done?'line-through text-[#5a7057]':'text-[#e8f0e6]'}`}>{i.desc}</p><p className="text-base text-[#5a7057]">{i.area}{i.vendor?` · ${i.vendor}`:''}{i.cost?` · $${i.cost}`:''}</p></div>
+              <button onClick={()=>setItems(p=>p.filter(x=>x.id!==i.id))} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={19}/></button>
             </div>
           ))}
       </div>
       {showAdd&&(
-        <Modal title="Add décor item" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.desc.trim()}><Plus size={14}/>Add</Btn></>}>
+        <Modal title="Add décor item" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.desc.trim()}><Plus size={17}/>Add</Btn></>}>
           <Field label="Area"><Select value={form.area} onChange={e=>setForm(f=>({...f,area:e.target.value}))}>{AREAS.map(a=><option key={a}>{a}</option>)}</Select></Field>
           <Field label="Description *"><Input value={form.desc} onChange={e=>setForm(f=>({...f,desc:e.target.value}))} placeholder="e.g. Eucalyptus centrepieces" autoFocus /></Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-5">
             <Field label="Vendor"><Input value={form.vendor} onChange={e=>setForm(f=>({...f,vendor:e.target.value}))} /></Field>
             <Field label="Cost ($)"><Input value={form.cost} onChange={e=>setForm(f=>({...f,cost:e.target.value}))} type="number" /></Field>
           </div>
@@ -1280,26 +1329,26 @@ function TabAttire() {
   const upd = (id:string,f:string,v:string) => setItems(p=>p.map(i=>i.id===id?{...i,[f]:v}:i))
   return (
     <div>
-      <PageHeader title="Attire" action={<Btn onClick={()=>setShowAdd(true)}><Plus size={14}/>Add item</Btn>} />
-      <div className="bg-white rounded-2xl border border-stone-200 overflow-x-auto">
-        <table className="w-full text-sm min-w-[560px]">
-          <thead><tr className="border-b border-stone-100 bg-stone-50 text-left text-xs text-stone-400 uppercase tracking-wider">{['Person','Item','Shop','Status','Notes',''].map(h=><th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr></thead>
+      <PageHeader title="Attire" action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add item</Btn>} />
+      <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] overflow-x-auto">
+        <table className="w-full text-base min-w-[560px]">
+          <thead><tr className="border-b border-[#202e1f] bg-[#141c13] text-left text-base text-[#5a7057] uppercase tracking-wider">{['Person','Item','Shop','Status','Notes',''].map(h=><th key={h} className="px-6 py-3.5.5 font-medium">{h}</th>)}</tr></thead>
           <tbody>
             {items.map(i=>(
-              <tr key={i.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50 group">
-                <td className="px-4 py-2.5 text-xs font-medium text-stone-600">{i.person}</td>
-                <td className="px-4 py-2.5 font-medium text-stone-800">{i.item}</td>
-                <td className="px-4 py-2.5"><input value={i.shop} onChange={e=>upd(i.id,'shop',e.target.value)} className="w-full bg-transparent border-0 focus:outline-none text-sm text-stone-600" placeholder="Add shop…"/></td>
-                <td className="px-4 py-2.5"><select value={i.status} onChange={e=>upd(i.id,'status',e.target.value)} className={`text-xs px-2.5 py-1 rounded-full border-0 font-medium cursor-pointer focus:outline-none ${i.status==='Ready'||i.status==='Picked up'?'bg-emerald-50 text-emerald-700':'bg-amber-50 text-amber-600'}`}>{STATUSES.map(s=><option key={s}>{s}</option>)}</select></td>
-                <td className="px-4 py-2.5"><input value={i.notes} onChange={e=>upd(i.id,'notes',e.target.value)} className="w-full bg-transparent border-0 focus:outline-none text-xs text-stone-400" placeholder="Notes…"/></td>
-                <td className="px-4 py-2.5"><button onClick={()=>setItems(p=>p.filter(x=>x.id!==i.id))} className="text-stone-200 hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={13}/></button></td>
+              <tr key={i.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#141c13] group">
+                <td className="px-5 py-2.5.5 text-base font-medium text-[#a8c4a4]">{i.person}</td>
+                <td className="px-5 py-2.5.5 font-medium text-[#e8f0e6]">{i.item}</td>
+                <td className="px-5 py-2.5.5"><input value={i.shop} onChange={e=>upd(i.id,'shop',e.target.value)} className="w-full bg-transparent border-0 focus:outline-none text-base text-[#a8c4a4]" placeholder="Add shop…"/></td>
+                <td className="px-5 py-2.5.5"><select value={i.status} onChange={e=>upd(i.id,'status',e.target.value)} className={`text-base px-2.5 py-1 rounded-full border-0 font-medium cursor-pointer focus:outline-none ${i.status==='Ready'||i.status==='Picked up'?'bg-emerald-950 text-emerald-400':'bg-amber-950 text-amber-400'}`}>{STATUSES.map(s=><option key={s}>{s}</option>)}</select></td>
+                <td className="px-5 py-2.5.5"><input value={i.notes} onChange={e=>upd(i.id,'notes',e.target.value)} className="w-full bg-transparent border-0 focus:outline-none text-base text-[#5a7057]" placeholder="Notes…"/></td>
+                <td className="px-5 py-2.5.5"><button onClick={()=>setItems(p=>p.filter(x=>x.id!==i.id))} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={19}/></button></td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       {showAdd&&(
-        <Modal title="Add attire item" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.item.trim()}><Plus size={14}/>Add</Btn></>}>
+        <Modal title="Add attire item" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.item.trim()}><Plus size={17}/>Add</Btn></>}>
           <Field label="Person"><Select value={form.person} onChange={e=>setForm(f=>({...f,person:e.target.value}))}>{['Jennifer','Myles','Maid of Honor','Bridesmaid','Best Man','Groomsman','Flower Girl'].map(p=><option key={p}>{p}</option>)}</Select></Field>
           <Field label="Item *"><Input value={form.item} onChange={e=>setForm(f=>({...f,item:e.target.value}))} placeholder="Wedding gown, Suit…" autoFocus /></Field>
           <Field label="Shop / Designer"><Input value={form.shop} onChange={e=>setForm(f=>({...f,shop:e.target.value}))} /></Field>
@@ -1326,18 +1375,18 @@ function TabPhotoshoot() {
   const grouped = GROUPS.map(g=>({g,shots:shots.filter(s=>s.group===g)})).filter(x=>x.shots.length>0)
   return (
     <div>
-      <PageHeader title="Photoshoot" sub={`${shots.filter(s=>s.done).length}/${shots.length} shots done`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={14}/>Add shot</Btn>} />
+      <PageHeader title="Photoshoot" sub={`${shots.filter(s=>s.done).length}/${shots.length} shots done`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add shot</Btn>} />
       <div className="space-y-4">
         {grouped.map(({g,shots:gs})=>(
-          <div key={g} className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
-            <div className="flex justify-between px-5 py-3 border-b border-stone-100 bg-stone-50"><p className="text-sm font-medium text-stone-700">{g}</p><span className="text-xs text-stone-400">{gs.filter(s=>s.done).length}/{gs.length}</span></div>
+          <div key={g} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] overflow-hidden">
+            <div className="flex justify-between px-6 py-3.5 border-b border-[#202e1f] bg-[#141c13]"><p className="text-base font-medium text-[#cde0ca]">{g}</p><span className="text-base text-[#5a7057]">{gs.filter(s=>s.done).length}/{gs.length}</span></div>
             <div className="p-2">
               {gs.map(s=>(
-                <div key={s.id} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl group hover:bg-stone-50 ${s.done?'opacity-60':''}`}>
-                  <button onClick={()=>setShots(p=>p.map(x=>x.id===s.id?{...x,done:!x.done}:x))} className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${s.done?'border-[#7A9C6E] bg-[#7A9C6E]':'border-stone-300'}`}>{s.done&&<Check size={11} className="text-white"/>}</button>
-                  <span className={`text-sm flex-1 ${s.done?'line-through text-stone-400':'text-stone-700'}`}>{s.desc}</span>
-                  {s.mustHave&&<span className="text-xs px-2 py-0.5 bg-[#EDF4EA] text-[#3d6b2e] rounded-full">Must have</span>}
-                  <button onClick={()=>setShots(p=>p.filter(x=>x.id!==s.id))} className="text-stone-200 hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={13}/></button>
+                <div key={s.id} className={`flex items-center gap-5 px-6 py-3.5.5 rounded-3xl group hover:bg-[#141c13] ${s.done?'opacity-60':''}`}>
+                  <button onClick={()=>setShots(p=>p.map(x=>x.id===s.id?{...x,done:!x.done}:x))} className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${s.done?'border-[#8fb882] bg-[#5a8a52]':'border-stone-300'}`}>{s.done&&<Check size={11} className="text-white"/>}</button>
+                  <span className={`text-base flex-1 ${s.done?'line-through text-[#5a7057]':'text-[#cde0ca]'}`}>{s.desc}</span>
+                  {s.mustHave&&<span className="text-base px-2 py-0.5 bg-[#1e3a1e] text-[#8fb882] rounded-full">Must have</span>}
+                  <button onClick={()=>setShots(p=>p.filter(x=>x.id!==s.id))} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={19}/></button>
                 </div>
               ))}
             </div>
@@ -1345,12 +1394,12 @@ function TabPhotoshoot() {
         ))}
       </div>
       {showAdd&&(
-        <Modal title="Add shot" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.desc.trim()}><Plus size={14}/>Add</Btn></>}>
+        <Modal title="Add shot" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.desc.trim()}><Plus size={17}/>Add</Btn></>}>
           <Field label="Group"><Select value={form.group} onChange={e=>setForm(f=>({...f,group:e.target.value}))}>{GROUPS.map(g=><option key={g}>{g}</option>)}</Select></Field>
           <Field label="Description *"><Input value={form.desc} onChange={e=>setForm(f=>({...f,desc:e.target.value}))} placeholder="Describe the shot" autoFocus /></Field>
           <div className="flex items-center justify-between py-1">
-            <p className="text-sm text-stone-700">Must-have</p>
-            <button onClick={()=>setForm(f=>({...f,mustHave:!f.mustHave}))} className={`w-11 h-6 rounded-full transition-colors relative ${form.mustHave?'bg-[#7A9C6E]':'bg-stone-200'}`}><div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${form.mustHave?'translate-x-5':'translate-x-0.5'}`}/></button>
+            <p className="text-base text-[#cde0ca]">Must-have</p>
+            <button onClick={()=>setForm(f=>({...f,mustHave:!f.mustHave}))} className={`w-11 h-6 rounded-full transition-colors relative ${form.mustHave?'bg-[#5a8a52]':'bg-[#243022]'}`}><div className={`absolute top-0.5 w-5 h-5 rounded-full bg-[#1a2419] shadow transition-transform ${form.mustHave?'translate-x-5':'translate-x-0.5'}`}/></button>
           </div>
         </Modal>
       )}
@@ -1379,26 +1428,26 @@ function TabPlaylist() {
           const ss=songs.filter(s=>s.section===sec)
           const [bg,color]=COLORS[sec]||['#f5f5f4','#78716c']
           return (
-            <div key={sec} className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-3 border-b border-stone-100" style={{background:bg}}>
-                <div className="flex items-center gap-2"><Music size={13} style={{color}}/><h3 className="font-medium text-sm" style={{color}}>{label}</h3><span className="text-xs opacity-60" style={{color}}>({ss.length})</span></div>
-                <button onClick={()=>setAdding(adding===sec?null:sec)} className="text-xs px-2.5 py-1 rounded-full font-medium" style={{background:color+'22',color}}><Plus size={12} className="inline mr-1"/>Add</button>
+            <div key={sec} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-3.5 border-b border-[#202e1f]" style={{background:bg}}>
+                <div className="flex items-center gap-5"><Music size={19} style={{color}}/><h3 className="font-medium text-base" style={{color}}>{label}</h3><span className="text-base opacity-60" style={{color}}>({ss.length})</span></div>
+                <button onClick={()=>setAdding(adding===sec?null:sec)} className="text-base px-2.5 py-1 rounded-full font-medium" style={{background:color+'22',color}}><Plus size={26} className="inline mr-1"/>Add</button>
               </div>
               <div className="p-2">
                 {adding===sec&&(
-                  <div className="flex gap-2 p-2 bg-stone-50 rounded-xl mb-2">
-                    <input value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&add(sec)} className="flex-1 px-2 py-1.5 rounded-lg border border-stone-200 text-sm focus:outline-none focus:border-[#7A9C6E]" placeholder="Song title" autoFocus/>
-                    <input value={form.artist} onChange={e=>setForm(f=>({...f,artist:e.target.value}))} className="w-32 px-2 py-1.5 rounded-lg border border-stone-200 text-sm focus:outline-none focus:border-[#7A9C6E]" placeholder="Artist"/>
-                    <input value={form.note} onChange={e=>setForm(f=>({...f,note:e.target.value}))} className="w-24 px-2 py-1.5 rounded-lg border border-stone-200 text-sm focus:outline-none focus:border-[#7A9C6E]" placeholder="Note"/>
-                    <button onClick={()=>add(sec)} className="px-3 py-1.5 rounded-lg text-white text-sm font-medium" style={{background:'#7A9C6E'}}>Add</button>
-                    <button onClick={()=>setAdding(null)} className="text-stone-400"><X size={15}/></button>
+                  <div className="flex gap-5 p-2 bg-[#141c13] rounded-3xl mb-2">
+                    <input value={form.title} onChange={e=>setForm(f=>({...f,title:e.target.value}))} onKeyDown={e=>e.key==='Enter'&&add(sec)} className="flex-1 px-2 py-1.5 rounded-lg border border-[#2a3829] text-base focus:outline-none focus:border-[#8fb882]" placeholder="Song title" autoFocus/>
+                    <input value={form.artist} onChange={e=>setForm(f=>({...f,artist:e.target.value}))} className="w-32 px-2 py-1.5 rounded-lg border border-[#2a3829] text-base focus:outline-none focus:border-[#8fb882]" placeholder="Artist"/>
+                    <input value={form.note} onChange={e=>setForm(f=>({...f,note:e.target.value}))} className="w-24 px-2 py-1.5 rounded-lg border border-[#2a3829] text-base focus:outline-none focus:border-[#8fb882]" placeholder="Note"/>
+                    <button onClick={()=>add(sec)} className="px-3 py-1.5 rounded-lg text-white text-base font-medium" style={{background:'#7A9C6E'}}>Add</button>
+                    <button onClick={()=>setAdding(null)} className="text-[#5a7057]"><X size={26}/></button>
                   </div>
                 )}
-                {ss.length===0&&adding!==sec?<p className="text-xs text-stone-300 px-3 py-2">No songs yet</p>:
+                {ss.length===0&&adding!==sec?<p className="text-base text-[#3a5038] px-5 py-2.5.5">No songs yet</p>:
                   ss.map(s=>(
-                    <div key={s.id} className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-stone-50 group">
-                      <div className="flex-1"><p className="text-sm font-medium text-stone-800">{s.title}</p><p className="text-xs text-stone-400">{s.artist}{s.note?` · ${s.note}`:''}</p></div>
-                      <button onClick={()=>setSongs(p=>p.filter(x=>x.id!==s.id))} className="text-stone-200 hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={13}/></button>
+                    <div key={s.id} className="flex items-center gap-5 px-5 py-2.5.5 rounded-3xl hover:bg-[#141c13] group">
+                      <div className="flex-1"><p className="text-base font-medium text-[#e8f0e6]">{s.title}</p><p className="text-base text-[#5a7057]">{s.artist}{s.note?` · ${s.note}`:''}</p></div>
+                      <button onClick={()=>setSongs(p=>p.filter(x=>x.id!==s.id))} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={19}/></button>
                     </div>
                   ))}
               </div>
@@ -1432,26 +1481,26 @@ function TabGifts() {
   const pending = gifts.filter(g=>!g.thankYouSent).length
   return (
     <div>
-      <PageHeader title="Gifts & thank yous" sub={`${gifts.length} gifts · ${pending} thank you${pending!==1?'s':''} to send`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={14}/>Log gift</Btn>} />
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <PageHeader title="Gifts & thank yous" sub={`${gifts.length} gifts · ${pending} thank you${pending!==1?'s':''} to send`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Log gift</Btn>} />
+      <div className="grid grid-cols-3 gap-7 mb-6">
         {[{label:'Total gifts',val:String(gifts.length)},{label:'Thank yous pending',val:String(pending)},{label:'Est. value',val:fmt$(total)}].map(({label,val})=>(
-          <div key={label} className="bg-white rounded-2xl border border-stone-200 p-4 text-center">
+          <div key={label} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 text-center">
             <p className="text-2xl font-light" style={{fontFamily:'var(--font-display)'}}>{val}</p>
-            <p className="text-xs text-stone-400 mt-0.5">{label}</p>
+            <p className="text-base text-[#5a7057] mt-0.5">{label}</p>
           </div>
         ))}
       </div>
-      {loading?<div className="flex justify-center py-8"><Loader2 className="animate-spin text-stone-300" size={22}/></div>:(
-        <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
-          {gifts.length===0?<div className="text-center py-14 text-stone-400">No gifts logged yet</div>:(
-            <table className="w-full text-sm">
-              <thead><tr className="border-b border-stone-100 bg-stone-50 text-left text-xs text-stone-400 uppercase tracking-wider">{['From','Gift','Value','Thank you'].map(h=><th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr></thead>
+      {loading?<div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div>:(
+        <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] overflow-hidden">
+          {gifts.length===0?<div className="text-center py-14 text-[#5a7057]">No gifts logged yet</div>:(
+            <table className="w-full text-base">
+              <thead><tr className="border-b border-[#202e1f] bg-[#141c13] text-left text-base text-[#5a7057] uppercase tracking-wider">{['From','Gift','Value','Thank you'].map(h=><th key={h} className="px-6 py-3.5.5 font-medium">{h}</th>)}</tr></thead>
               <tbody>{gifts.map(g=>(
-                <tr key={g.id} className="border-b border-stone-50 last:border-0 hover:bg-stone-50">
-                  <td className="px-4 py-3 font-medium text-stone-800">{g.fromName}</td>
-                  <td className="px-4 py-3 text-stone-500 text-xs">{g.description||'—'}</td>
-                  <td className="px-4 py-3">{g.value?`$${g.value.toLocaleString()}`:'—'}</td>
-                  <td className="px-4 py-3"><button onClick={()=>toggle(g.id,g.thankYouSent)} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${g.thankYouSent?'bg-emerald-50 text-emerald-700':'bg-amber-50 text-amber-600'}`}>{g.thankYouSent?<><Check size={11}/>Sent</>:'Mark sent'}</button></td>
+                <tr key={g.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#141c13]">
+                  <td className="px-6 py-3.5.5 font-medium text-[#e8f0e6]">{g.fromName}</td>
+                  <td className="px-6 py-3.5.5 text-[#7a9878] text-base">{g.description||'—'}</td>
+                  <td className="px-6 py-3.5.5">{g.value?`$${g.value.toLocaleString()}`:'—'}</td>
+                  <td className="px-6 py-3.5.5"><button onClick={()=>toggle(g.id,g.thankYouSent)} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-base font-medium ${g.thankYouSent?'bg-emerald-950 text-emerald-400':'bg-amber-950 text-amber-400'}`}>{g.thankYouSent?<><Check size={11}/>Sent</>:'Mark sent'}</button></td>
                 </tr>
               ))}</tbody>
             </table>
@@ -1459,10 +1508,10 @@ function TabGifts() {
         </div>
       )}
       {showAdd&&(
-        <Modal title="Log a gift" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={saving||!form.fromName.trim()}>{saving?<><Loader2 size={14} className="animate-spin"/>Saving…</>:<><Plus size={14}/>Save</>}</Btn></>}>
+        <Modal title="Log a gift" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={saving||!form.fromName.trim()}>{saving?<><Loader2 size={17} className="animate-spin"/>Saving…</>:<><Plus size={17}/>Save</>}</Btn></>}>
           <Field label="From *"><Input value={form.fromName} onChange={e=>setForm(f=>({...f,fromName:e.target.value}))} placeholder="John & Jane Smith" autoFocus /></Field>
           <Field label="Description"><Input value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} placeholder="KitchenAid stand mixer" /></Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-5">
             <Field label="Value ($)"><Input type="number" value={form.value} onChange={e=>setForm(f=>({...f,value:e.target.value}))} /></Field>
             <Field label="Received date"><Input type="date" value={form.receivedAt} onChange={e=>setForm(f=>({...f,receivedAt:e.target.value}))} /></Field>
           </div>
@@ -1533,42 +1582,42 @@ function TabSeating() {
   return (
     <div>
       <PageHeader title="Seating chart" sub={`${guests.filter(g=>g.tableId).length} seated · ${unassigned.length} unassigned`}
-        action={<Btn onClick={()=>setShowAdd(true)}><Plus size={14}/>Add table</Btn>} />
-      {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-stone-300" size={22}/></div> : (
-        <div className="flex gap-4 h-[520px]">
-          <div className="w-56 shrink-0 flex flex-col gap-3">
-            <div className="bg-white rounded-2xl border border-stone-200 p-4 flex-1 overflow-y-auto">
-              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-3">Tables</p>
+        action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add table</Btn>} />
+      {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div> : (
+        <div className="flex gap-7 h-[520px]">
+          <div className="w-56 shrink-0 flex flex-col gap-5">
+            <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 flex-1 overflow-y-auto">
+              <p className="text-base font-semibold text-[#5a7057] uppercase tracking-wider mb-3">Tables</p>
               {tables.map(t => {
                 const cnt = guests.filter(g=>g.tableId===t.id).length
-                return <div key={t.id} className="flex items-center gap-1 py-2 border-b border-stone-50 last:border-0 group rounded-lg px-1 hover:bg-stone-50">
+                return <div key={t.id} className="flex items-center gap-1 py-2 border-b border-[#1a2419] last:border-0 group rounded-lg px-1 hover:bg-[#141c13]">
                   <div className="flex-1 cursor-pointer" onClick={()=>setAssignTarget(t.id)}>
-                    <p className="text-sm font-medium text-stone-700">{t.name}</p>
-                    <p className="text-xs text-stone-400 capitalize">{t.shape} · {cnt}/{t.seats}</p>
+                    <p className="text-base font-medium text-[#cde0ca]">{t.name}</p>
+                    <p className="text-base text-[#5a7057] capitalize">{t.shape} · {cnt}/{t.seats}</p>
                   </div>
-                  <button onClick={async()=>{ if(!confirm(`Delete ${t.name}?`)) return; await $del('table',t.id); setTables(p=>p.filter(x=>x.id!==t.id)) }} className="text-stone-200 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-1 shrink-0"><Trash2 size={12}/></button>
+                  <button onClick={async()=>{ if(!confirm(`Delete ${t.name}?`)) return; await $del('table',t.id); setTables(p=>p.filter(x=>x.id!==t.id)) }} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-1 shrink-0"><Trash2 size={26}/></button>
                 </div>
               })}
-              {tables.length===0 && <p className="text-xs text-stone-400">No tables yet</p>}
+              {tables.length===0 && <p className="text-base text-[#5a7057]">No tables yet</p>}
             </div>
-            <div className="bg-white rounded-2xl border border-stone-200 p-4 flex-1 overflow-y-auto">
-              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-3">Unassigned ({unassigned.length})</p>
-              {unassigned.length===0 ? <p className="text-xs text-stone-400">Everyone seated 🎉</p> :
-                unassigned.map(g => <div key={g.id} className="flex items-center gap-2 py-1.5 border-b border-stone-50 last:border-0">
-                  <div className="w-5 h-5 rounded-full bg-[#EDF4EA] flex items-center justify-center text-[10px] font-semibold text-[#3d6b2e] shrink-0">{g.name[0]}</div>
-                  <span className="text-xs text-stone-600 truncate">{g.name}</span>
+            <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 flex-1 overflow-y-auto">
+              <p className="text-base font-semibold text-[#5a7057] uppercase tracking-wider mb-3">Unassigned ({unassigned.length})</p>
+              {unassigned.length===0 ? <p className="text-base text-[#5a7057]">Everyone seated 🎉</p> :
+                unassigned.map(g => <div key={g.id} className="flex items-center gap-5 py-1.5 border-b border-[#1a2419] last:border-0">
+                  <div className="w-5 h-5 rounded-full bg-[#1e3a1e] flex items-center justify-center text-[10px] font-semibold text-[#8fb882] shrink-0">{g.name[0]}</div>
+                  <span className="text-base text-[#a8c4a4] truncate">{g.name}</span>
                 </div>)}
             </div>
           </div>
-          <div ref={canvasRef} className="flex-1 bg-white rounded-2xl border border-stone-200 relative overflow-hidden select-none">
-            <div className="absolute inset-0 opacity-20" style={{ backgroundImage:'radial-gradient(circle,#d1c9bd 1px,transparent 1px)', backgroundSize:'24px 24px' }}/>
-            {tables.length===0 && <div className="absolute inset-0 flex items-center justify-center text-stone-400 text-sm">Add tables to build your floor plan</div>}
+          <div ref={canvasRef} style={{ flex:1, background:'#0f180e', borderRadius:16, border:'1px solid #1e2e1c', position:'relative', overflow:'hidden', userSelect:'none', minHeight:420 }}>
+            <div style={{ position:'absolute', inset:0, opacity:0.12, backgroundImage:'radial-gradient(circle,#4a7048 1px,transparent 1px)', backgroundSize:'28px 28px' }}/>
+            {tables.length===0 && <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', color:'#3a5038', fontSize:15 }}>Add tables to build your floor plan</div>}
             {tables.map(t => {
               const d = DIMS[t.shape]||DIMS.round
-              return <div key={t.id} style={{ position:'absolute', left:t.x, top:t.y, width:d.w, height:d.h, background:t.color, borderRadius:d.r, border:`2px solid ${BORDERS[t.shape]||'#888'}`, cursor:'grab', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', userSelect:'none' }}
+              return <div key={t.id} style={{ position:'absolute', left:t.x, top:t.y, width:d.w, height:d.h, background:t.color, borderRadius:d.r, border:`2.5px solid ${BORDERS[t.shape]||'#888'}`, cursor:'grab', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', userSelect:'none', boxShadow:'0 4px 12px rgba(0,0,0,0.4)' }}
                 onMouseDown={e=>onMouseDown(e,t.id,t.x,t.y)} onClick={()=>setAssignTarget(t.id)}>
-                <p style={{fontSize:10,fontWeight:600,color:'#444',textAlign:'center',padding:'0 4px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:d.w-8}}>{t.name}</p>
-                <p style={{fontSize:9,color:'#888'}}>{guests.filter(g=>g.tableId===t.id).length}/{t.seats}</p>
+                <p style={{fontSize:12,fontWeight:700,color:'#1a2e1a',textAlign:'center',padding:'0 6px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:d.w-10,lineHeight:1.2}}>{t.name}</p>
+                <p style={{fontSize:11,color:'#2a4428',marginTop:2,fontWeight:500}}>{guests.filter(g=>g.tableId===t.id).length}/{t.seats}</p>
               </div>
             })}
           </div>
@@ -1576,11 +1625,11 @@ function TabSeating() {
       )}
 
       {showAdd && (
-        <Modal title="Add table" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={addTable} disabled={!form.name.trim()}><Plus size={14}/>Add</Btn></>}>
+        <Modal title="Add table" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={addTable} disabled={!form.name.trim()}><Plus size={17}/>Add</Btn></>}>
           <Field label="Table name"><Input value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Table 1, Head Table…" autoFocus /></Field>
           <Field label="Shape">
-            <div className="grid grid-cols-3 gap-2">
-              {['round','rectangular','oval'].map(s=><button key={s} onClick={()=>setForm(f=>({...f,shape:s}))} className={`py-2 rounded-xl text-xs font-medium capitalize border-2 transition-all ${form.shape===s?'border-[#7A9C6E] bg-[#EDF4EA] text-[#3d6b2e]':'border-stone-200 text-stone-500'}`}>{s}</button>)}
+            <div className="grid grid-cols-3 gap-5">
+              {['round','rectangular','oval'].map(s=><button key={s} onClick={()=>setForm(f=>({...f,shape:s}))} className={`py-2 rounded-3xl text-base font-medium capitalize border-2 transition-all ${form.shape===s?'border-[#8fb882] bg-[#1e3a1e] text-[#8fb882]':'border-[#2a3829] text-[#7a9878]'}`}>{s}</button>)}
             </div>
           </Field>
           <Field label={`Seats: ${form.seats}`}><input type="range" min={2} max={20} value={form.seats} onChange={e=>setForm(f=>({...f,seats:+e.target.value}))} className="w-full"/></Field>
@@ -1591,17 +1640,17 @@ function TabSeating() {
         <Modal title={tables.find(t=>t.id===assignTarget)?.name||'Table'} onClose={()=>setAssignTarget(null)}>
           <div className="space-y-1">
             {guests.filter(g=>g.tableId===assignTarget).map(g=>(
-              <div key={g.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-stone-50">
-                <span className="text-sm text-stone-700">{g.name}</span>
-                <button onClick={()=>assignGuest(g.id,'')} className="text-xs text-red-400 hover:text-red-600">Remove</button>
+              <div key={g.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-[#141c13]">
+                <span className="text-base text-[#cde0ca]">{g.name}</span>
+                <button onClick={()=>assignGuest(g.id,'')} className="text-base text-red-400 hover:text-red-400">Remove</button>
               </div>
             ))}
             {unassigned.length > 0 && <>
-              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider pt-2 pb-1">Add guest</p>
+              <p className="text-base font-semibold text-[#5a7057] uppercase tracking-wider pt-2 pb-1">Add guest</p>
               {unassigned.map(g=>(
-                <div key={g.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-[#EDF4EA] cursor-pointer" onClick={()=>assignGuest(g.id,assignTarget)}>
-                  <span className="text-sm text-stone-700">{g.name}</span>
-                  <Plus size={13} className="text-[#7A9C6E]"/>
+                <div key={g.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-[#1e3a1e] cursor-pointer" onClick={()=>assignGuest(g.id,assignTarget)}>
+                  <span className="text-base text-[#cde0ca]">{g.name}</span>
+                  <Plus size={19} className="text-[#8fb882]"/>
                 </div>
               ))}
             </>}
@@ -1639,9 +1688,9 @@ export default function DashboardPage() {
   const TabComponent = TAB_COMPONENTS[tab] || TabHome
 
   return (
-    <div className="flex h-screen overflow-hidden bg-stone-50">
+    <div style={{ display:"flex", height:"100vh", overflow:"hidden", background:"#111714" }}>
       <Sidebar activeTab={tab} onTab={setTab} />
-      <main className="flex-1 overflow-y-auto p-8">
+      <main style={{ flex:1, overflowY:"auto", padding:"40px 48px", background:"#111714" }}>
         <TabComponent onTab={setTab} />
       </main>
     </div>

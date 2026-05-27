@@ -21,6 +21,11 @@ export async function GET(req: NextRequest) {
       case 'tasks':    return ok(await prisma.task.findMany({ orderBy: { createdAt: 'desc' } }))
       case 'tables':   return ok(await prisma.seatingTable.findMany({ orderBy: { createdAt: 'asc' } }))
       case 'gifts':    return ok(await prisma.gift.findMany({ orderBy: { createdAt: 'desc' } }))
+      case 'rsvp-settings': {
+        let s = await prisma.rsvpSettings.findUnique({ where: { id: 'main' } })
+        if (!s) s = await prisma.rsvpSettings.create({ data: { id: 'main' } })
+        return ok(s)
+      }
       default: return err('unknown type')
     }
   } catch (e) { return err(String(e), 500) }
@@ -54,12 +59,21 @@ export async function POST(req: NextRequest) {
         return ok(await prisma.budgetCategory.create({ data: {
           name: body.name, budgeted: 0, paid: 0, color: body.color || '#8FAF7A', order: body.order || 0,
         }}))
-      case 'vendor':
-        return ok(await prisma.vendor.create({ data: {
+      case 'vendor': {
+        const vendor = await prisma.vendor.create({ data: {
           name: body.name, category: body.category || 'Other', contactName: body.contactName || '',
           phone: body.phone || '', email: body.email || '', website: body.website || '',
           cost: body.cost || 0, paid: 0, status: 'researching', notes: body.notes || '',
-        }}))
+        }})
+        // Auto-add to budget: find matching category or create one
+        if (vendor.cost > 0) {
+          const cat = await prisma.budgetCategory.findFirst({ where: { name: { contains: vendor.category, mode: 'insensitive' } } })
+          if (cat) {
+            await prisma.budgetCategory.update({ where: { id: cat.id }, data: { budgeted: { increment: vendor.cost } } })
+          }
+        }
+        return ok(vendor)
+      }
       case 'task':
         return ok(await prisma.task.create({ data: {
           title: body.title, category: body.category || 'General',
@@ -103,10 +117,25 @@ export async function PATCH(req: NextRequest) {
       case 'guest':   return ok(await prisma.guest.update({ where: { id }, data }))
       case 'venue':   return ok(await prisma.venue.update({ where: { id }, data }))
       case 'budget':  return ok(await prisma.budgetCategory.update({ where: { id }, data }))
-      case 'vendor':  return ok(await prisma.vendor.update({ where: { id }, data }))
+      case 'vendor': {
+        const oldVendor = await prisma.vendor.findUnique({ where: { id } })
+        const updated = await prisma.vendor.update({ where: { id }, data })
+        // If marked as paid and wasn't before, update budget paid amount
+        if (data.status === 'paid' && oldVendor?.status !== 'paid' && updated.cost > 0) {
+          const cat = await prisma.budgetCategory.findFirst({ where: { name: { contains: updated.category, mode: 'insensitive' } } })
+          if (cat) await prisma.budgetCategory.update({ where: { id: cat.id }, data: { paid: { increment: updated.cost } } })
+        }
+        // If un-paid (was paid, now something else), reverse the paid amount
+        if (oldVendor?.status === 'paid' && data.status && data.status !== 'paid' && updated.cost > 0) {
+          const cat = await prisma.budgetCategory.findFirst({ where: { name: { contains: updated.category, mode: 'insensitive' } } })
+          if (cat) await prisma.budgetCategory.update({ where: { id: cat.id }, data: { paid: { decrement: updated.cost } } })
+        }
+        return ok(updated)
+      }
       case 'task':    return ok(await prisma.task.update({ where: { id }, data }))
       case 'table':   return ok(await prisma.seatingTable.update({ where: { id }, data }))
       case 'gift':    return ok(await prisma.gift.update({ where: { id }, data }))
+      case 'rsvp-settings': return ok(await prisma.rsvpSettings.upsert({ where: { id: 'main' }, update: { ...body }, create: { id: 'main', ...body } }))
       default: return err('unknown type')
     }
   } catch (e) { return err(String(e), 500) }
