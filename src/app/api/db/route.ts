@@ -26,6 +26,13 @@ export async function GET(req: NextRequest) {
       case 'gifts': return ok(await prisma.gift.findMany({ orderBy: { createdAt: 'desc' } }))
       case 'timeline': return ok(await prisma.timelineItem.findMany({ orderBy: { order: 'asc' } }))
       case 'rsvp-settings': {
+        // Auto-add new columns if missing
+        await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "secondaryColor" TEXT NOT NULL DEFAULT '#8fb882'`).catch(()=>{})
+        await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "bgColor" TEXT NOT NULL DEFAULT '#111714'`).catch(()=>{})
+        await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "tertiaryColor" TEXT NOT NULL DEFAULT '#1a2419'`).catch(()=>{})
+        await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "photo1" TEXT NOT NULL DEFAULT ''`).catch(()=>{})
+        await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "photo2" TEXT NOT NULL DEFAULT ''`).catch(()=>{})
+        await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "photo3" TEXT NOT NULL DEFAULT ''`).catch(()=>{})
         let s = await prisma.rsvpSettings.findUnique({ where: { id: 'main' } })
         if (!s) s = await prisma.rsvpSettings.create({ data: { id: 'main' } })
         return ok(s)
@@ -126,7 +133,25 @@ export async function PATCH(req: NextRequest) {
       case 'table': return ok(await prisma.seatingTable.update({ where: { id }, data }))
       case 'gift': return ok(await prisma.gift.update({ where: { id }, data }))
       case 'timeline-item': return ok(await prisma.timelineItem.update({ where: { id }, data }))
-      case 'rsvp-settings': return ok(await prisma.rsvpSettings.upsert({ where: { id: 'main' }, update: data, create: { id: 'main', ...data } }))
+      case 'rsvp-settings': {
+        // Only pass known fields to avoid errors from missing columns
+        const allowed = ['accentColor','secondaryColor','bgColor','tertiaryColor','heroImage','photo1','photo2','photo3','heading','subheading','dateText','venueText','searchLabel','attendingLabel','declineLabel','confirmedMessage','declinedMessage','contactEmail','weddingDate','coupleNames','ourStory','dressCode','dressCodeNote','ceremonyTime','receptionTime']
+        const safe: Record<string,unknown> = {}
+        for (const k of allowed) { if (k in data) safe[k] = data[k] }
+        // Try full upsert first, fall back to raw SQL for new columns
+        try {
+          return ok(await prisma.rsvpSettings.upsert({ where: { id: 'main' }, update: safe, create: { id: 'main', ...safe } }))
+        } catch {
+          // Columns may not exist yet - run migration then retry
+          await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "secondaryColor" TEXT NOT NULL DEFAULT '#8fb882'`)
+          await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "bgColor" TEXT NOT NULL DEFAULT '#111714'`)
+          await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "tertiaryColor" TEXT NOT NULL DEFAULT '#1a2419'`)
+          await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "photo1" TEXT NOT NULL DEFAULT ''`)
+          await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "photo2" TEXT NOT NULL DEFAULT ''`)
+          await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "photo3" TEXT NOT NULL DEFAULT ''`)
+          return ok(await prisma.rsvpSettings.upsert({ where: { id: 'main' }, update: safe, create: { id: 'main', ...safe } }))
+        }
+      }
       default: return err('unknown type')
     }
   } catch (e) { return err(String(e), 500) }
