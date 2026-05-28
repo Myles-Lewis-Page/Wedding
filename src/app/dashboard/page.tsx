@@ -55,10 +55,10 @@ const Tag = ({ color, children }: { color: string; children: React.ReactNode }) 
 )
 
 const PageHeader = ({ title, sub, action }: { title: string; sub?: string; action?: React.ReactNode }) => (
-  <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:32, paddingTop:12 }}>
+  <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:28, paddingTop:16 }}>
     <div>
-      <h1 style={{ fontFamily:'var(--font-display)', fontSize:'clamp(24px, 4vw, 36px)', fontWeight:300, color:'#e8f0e6', marginBottom:4 }}>{title}</h1>
-      {sub && <p style={{ fontSize:15, color:'#4a6448' }}>{sub}</p>}
+      <h1 style={{ fontFamily:'var(--font-display)', fontSize:'clamp(24px, 4vw, 36px)', fontWeight:300, color:'#ffffff', marginBottom:4 }}>{title}</h1>
+      {sub && <p style={{ fontSize:15, color:'#9ca3af' }}>{sub}</p>}
     </div>
     {action}
   </div>
@@ -129,7 +129,7 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
   if (loading) return <div style={{display:'flex',justifyContent:'center',paddingTop:80}}><Loader2 size={24} className="animate-spin" style={{color:'#3a5038'}} /></div>
 
   return (
-    <div style={{maxWidth:800}}>
+    <div>
       <PageHeader title="Good morning 🌿" sub="Here's where your wedding planning stands." />
 
       {venue && (
@@ -145,7 +145,7 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
         </button>
       )}
 
-      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:28,marginBottom:28}}>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:28,marginBottom:28}}>
         {[
           { label:'Total guests', val:stats.total, sub:'on the list', color:'var(--sage)' },
           { label:'Attending', val:stats.attending, sub:`${rate}% responded`, color:'#00ff00' },
@@ -153,9 +153,9 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
           { label:'Declined', val:stats.declined, sub:'unable to come', color:'#ff0000' },
         ].map(({ label, val, sub, color }) => (
           <div key={label} style={{background:'var(--bg3,#1a2419)',borderRadius:16,padding:'28px',border:'1px solid #202e1f'}}>
-            <p style={{fontSize:12,color:'#3a5038',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>{label}</p>
+            <p style={{fontSize:12,color:'#000000',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8,fontWeight:700}}>{label}</p>
             <p style={{fontFamily:'var(--font-display)',fontSize:40,fontWeight:300,color,lineHeight:1,marginBottom:4}}>{val}</p>
-            <p style={{fontSize:13,color:'#3a5038'}}>{sub}</p>
+            <p style={{fontSize:13,color:'#9ca3af'}}>{sub}</p>
           </div>
         ))}
       </div>
@@ -163,14 +163,14 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
       {/* RSVP progress */}
       <div style={{background:'var(--bg3,#1a2419)',borderRadius:16,padding:'28px',border:'1px solid #202e1f',marginBottom:28}}>
         <div style={{display:'flex',justifyContent:'space-between',fontSize:15,marginBottom:14}}>
-          <span style={{fontWeight:600,color:'#cde0ca'}}>RSVP progress</span>
-          <span style={{color:'#3a5038'}}>{stats.attending + stats.declined} / {stats.total}</span>
+          <span style={{fontWeight:600,color:'#ffffff'}}>RSVP progress</span>
+          <span style={{color:'#9ca3af'}}>{stats.attending + stats.declined} / {stats.total}</span>
         </div>
         <div style={{height:10,background:'#141c13',borderRadius:5,overflow:'hidden',display:'flex'}}>
           <div style={{height:'100%',background:'#00ff00',borderRadius:5,transition:'width 0.5s',width:`${stats.total?(stats.attending/stats.total)*100:0}%`}}/>
           <div style={{height:'100%',background:'#ff0000',transition:'width 0.5s',width:`${stats.total?(stats.declined/stats.total)*100:0}%`}}/>
         </div>
-        <div style={{display:'flex',gap:24,marginTop:12,fontSize:13,color:'#3a5038'}}>
+        <div style={{display:'flex',gap:24,marginTop:12,fontSize:13,color:'#9ca3af'}}>
           <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'#00ff00',display:'inline-block'}}/> Attending</span>
           <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'#ff0000',display:'inline-block'}}/> Declined</span>
           <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'#1e2e1c',display:'inline-block'}}/> Pending</span>
@@ -181,8 +181,8 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
       <div style={{background:'var(--bg3,#1a2419)',borderRadius:16,padding:'28px',border:'1px solid #202e1f'}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:18}}>
           <div>
-            <p style={{fontSize:15,fontWeight:600,color:'#cde0ca',marginBottom:3}}>Theme colors</p>
-            <p style={{fontSize:13,color:'#3a5038'}}>Applied across dashboard and RSVP page</p>
+            <p style={{fontSize:15,fontWeight:600,color:'#ffffff',marginBottom:3}}>Theme colors</p>
+            <p style={{fontSize:13,color:'#9ca3af'}}>Applied across dashboard and RSVP page</p>
           </div>
           <Btn onClick={saveColors} style={{background: colorSaved ? 'var(--accent)' : '#4a7a44'}}>
             {colorSaved ? <><Check size={17}/>Saved!</> : 'Save colors'}
@@ -256,7 +256,7 @@ function TabGuests() {
       <PageHeader title="Guest list" sub={`${stats.all} guests · ${stats.attending} attending · ${stats.pending} pending`}
         action={<div className="flex gap-5"><Btn variant="ghost" onClick={exportCSV}>Export CSV</Btn><Btn onClick={() => setShowAdd(true)}><Plus size={17} />Add guest</Btn></div>} />
 
-      <div className="flex gap-5 mb-4 flex-wrap">
+      <div className="flex gap-3 mb-7 flex-wrap">
         {(['all','attending','declined','pending'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)} className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all capitalize ${filter === f ? 'bg-[var(--accent)] text-white' : 'bg-[var(--bg3,#1a2419)] text-[#7a9878] border border-[#2a3829] hover:border-[var(--sage)]'}`}>
             {f === 'all' ? `All (${stats.all})` : `${f.charAt(0).toUpperCase() + f.slice(1)} (${stats[f]})`}
@@ -268,16 +268,16 @@ function TabGuests() {
         <Input placeholder="Search guests…" value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
-      {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#3a5038]" size={26} /></div> : (
+      {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#9ca3af]" size={26} /></div> : (
         <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-base min-w-[560px]">
-              <thead><tr className="border-b border-[#202e1f] bg-[#141c13] text-left text-base text-[#5a7057] uppercase tracking-wider">
+              <thead><tr className="border-b border-black/20 bg-black/20 text-left text-base text-black uppercase tracking-wider font-bold">
                 {['Name','Side','RSVP','Plus one','Dietary','Table',''].map(h => <th key={h} className="px-6 py-3.5.5 font-medium">{h}</th>)}
               </tr></thead>
               <tbody>
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={7} className="text-center py-16 text-[#5a7057]">{guests.length === 0 ? 'No guests yet — add your first one.' : 'No matches found.'}</td></tr>
+                  <tr><td colSpan={7} className="text-center py-16 text-[#9ca3af]">{guests.length === 0 ? 'No guests yet — add your first one.' : 'No matches found.'}</td></tr>
                 ) : filtered.map(g => {
                   const [label, color] = STATUS[g.rsvpStatus] ?? STATUS.pending
                   return (
@@ -292,15 +292,15 @@ function TabGuests() {
                             <p className="font-medium text-[#e8f0e6]">{g.name}</p>
                             {g.isInvitee ? <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{background:'var(--sage-light,#1e3a1e)',color:'var(--sage)'}}>Invitee</span> : <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{background:'#1e1a3a',color:'#a5b4fc'}}>+1</span>}
                           </div>
-                          {g.email && <p className="text-base text-[#5a7057]">{g.email}</p>}
+                          {g.email && <p className="text-base text-[#9ca3af]">{g.email}</p>}
                           {g.notes && <p className="text-base text-[#3a5038] italic">{g.notes}</p>}
                         </div>
                         </div>
                       </td>
                       <td className="px-6 py-3.5.5 text-[#7a9878] text-base capitalize">{g.side}</td>
                       <td className="px-8 py-4"><Tag color={color}>{label}</Tag></td>
-                      <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.hasPlusOne ? (g.plusOneName || <span className="text-[var(--sage)]">✓ allowed</span>) : '—'}</td>
-                      <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.dietary || '—'}</td>
+                      <td className="px-6 py-3.5.5 text-base text-[#9ca3af]">{g.hasPlusOne ? (g.plusOneName || <span className="text-[var(--sage)]">✓ allowed</span>) : '—'}</td>
+                      <td className="px-6 py-3.5.5 text-base text-[#9ca3af]">{g.dietary || '—'}</td>
                       <td className="px-8 py-4"><Tag color={g.tableId ? '#2563eb' : '#78716c'}>{g.tableId ? 'Assigned' : 'Unassigned'}</Tag></td>
                       <td className="px-8 py-4"><button onClick={() => del(g.id)} className="text-[#3a5038] hover:text-red-400 transition-colors"><Trash2 size={17} /></button></td>
                     </tr>
@@ -322,7 +322,7 @@ function TabGuests() {
             <Field label="Dietary"><Select value={form.dietary} onChange={e => setForm(f => ({...f, dietary: e.target.value}))}><option value="">None</option><option>Vegetarian</option><option>Vegan</option><option>Gluten-free</option><option>Nut allergy</option><option>Halal</option><option>Kosher</option></Select></Field>
           </div>
           <div className="flex items-center justify-between py-1 px-1">
-            <div><p className="text-base font-medium text-[#cde0ca]">Plus one allowed</p><p className="text-base text-[#5a7057]">Can bring a guest</p></div>
+            <div><p className="text-base font-medium text-white">Plus one allowed</p><p className="text-base text-[#9ca3af]">Can bring a guest</p></div>
             <button onClick={() => setForm(f => ({...f, hasPlusOne: !f.hasPlusOne}))} className={`w-11 h-6 rounded-full transition-colors relative ${form.hasPlusOne ? 'bg-[var(--accent)]' : 'bg-[#243022]'}`}>
               <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-[#1a2419] shadow transition-transform ${form.hasPlusOne ? 'translate-x-5' : 'translate-x-0.5'}`} />
             </button>
@@ -420,7 +420,7 @@ function TabVenues() {
 
       {/* Date picker */}
       <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 mb-7">
-        <p className="text-base font-medium text-[#cde0ca] mb-1">Wedding date</p>
+        <p className="text-base font-medium text-white mb-1">Wedding date</p>
         <p className="text-base text-[#5a7057] mb-3">{fmtDate || 'Pick your date — it shows across the whole app'}</p>
         <div className="flex gap-5">
           <Input type="date" value={weddingDate} onChange={e => { setWeddingDate(e.target.value); setDateSaved(false) }} className="flex-1" />
@@ -448,7 +448,7 @@ function TabVenues() {
         </button>
       )}
 
-      {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#3a5038]" size={26} /></div>
+      {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#9ca3af]" size={26} /></div>
       : venues.length === 0 ? (
         <div className="text-center py-20">
           <MapPin size={36} className="text-[#2a3828] mx-auto mb-7" />
@@ -460,7 +460,7 @@ function TabVenues() {
           {venues.map(v => (
             <button key={v.id} onClick={() => setDetail(v)} className="group rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] hover:border-[var(--sage)] hover:shadow-md transition-all text-left overflow-hidden">
               <div className="relative h-44 bg-[#1f2b1e]">
-                {v.imageUrl ? <img src={v.imageUrl} alt={v.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-full flex items-center justify-center"><MapPin size={30} className="text-[#3a5038]" /></div>}
+                {v.imageUrl ? <img src={v.imageUrl} alt={v.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-full flex items-center justify-center"><MapPin size={30} className="text-[#9ca3af]" /></div>}
                 {v.isSelected && <div className="absolute top-2 left-2 bg-[var(--accent)] text-white text-base px-2.5 py-1 rounded-full flex items-center gap-1"><Check size={10} />Selected</div>}
               </div>
               <div className="p-7">
@@ -489,7 +489,7 @@ function TabVenues() {
                 <Input type="url" value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && scrape()} placeholder="https://thebarnatstonegate.com" autoFocus />
               </Field>
               <div className="bg-[#141c13] rounded-2xl p-7 text-base text-[#7a9878] space-y-1">
-                <p className="font-medium text-[#cde0ca]">We&apos;ll auto-fill: name, image, address, phone</p>
+                <p className="font-medium text-white">We&apos;ll auto-fill: name, image, address, phone</p>
                 <p>You enter the rental cost yourself.</p>
               </div>
               <div className="flex gap-5">
@@ -558,7 +558,7 @@ function TabVenues() {
             <div className="p-7 space-y-5 flex-1">
               <div className="grid grid-cols-3 gap-5">
                 <div className="bg-[var(--sage-light,#1e3a1e)] rounded-3xl p-3 text-center"><p className="text-lg font-semibold text-[var(--sage)]">{fmt$(detail.cost)}</p><p className="text-base text-[var(--sage)]">Rental</p></div>
-                <div className="bg-[#141c13] rounded-2xl p-3 text-center"><p className="text-lg font-semibold text-[#cde0ca]">{detail.capacity ?? '—'}</p><p className="text-base text-[#5a7057]">Capacity</p></div>
+                <div className="bg-[#141c13] rounded-2xl p-3 text-center"><p className="text-lg font-semibold text-white">{detail.capacity ?? '—'}</p><p className="text-base text-[#9ca3af]">Capacity</p></div>
                 <a href={detail.website} target="_blank" rel="noreferrer" className="bg-[#141c13] rounded-2xl p-3 flex flex-col items-center justify-center gap-1 text-[#7a9878] hover:text-[var(--sage)] transition-colors"><ExternalLink size={26} /><span className="text-base">Website</span></a>
               </div>
               {detail.description && <div><p className="text-base font-semibold text-[#7a9878] uppercase tracking-wider mb-2">About</p><p className="text-base text-[#a8c4a4] leading-relaxed">{detail.description}</p></div>}
@@ -647,7 +647,7 @@ function TabBudget() {
           <div key={label} className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8">
             <p className="text-base text-[#5a7057] uppercase tracking-wider mb-2">{label}</p>
             {editable
-              ? <div className="flex items-baseline gap-0.5"><span className="text-[#5a7057]">$</span><input type="number" value={total} onChange={e => setTotal(+e.target.value)} className="text-2xl font-light w-full focus:outline-none" style={{ fontFamily: 'var(--font-display)' }} /></div>
+              ? <div className="flex items-baseline gap-0.5"><span className="text-[#9ca3af]">$</span><input type="number" value={total} onChange={e => setTotal(+e.target.value)} className="text-2xl font-light w-full focus:outline-none" style={{ fontFamily: 'var(--font-display)' }} /></div>
               : <p className="text-2xl font-light" style={{ fontFamily: 'var(--font-display)', color: color || '#1c1917' }}>{fmt$(val)}</p>}
             {sub && <p className="text-base text-[#5a7057] mt-0.5">{sub}</p>}
           </div>
@@ -661,14 +661,14 @@ function TabBudget() {
           {cats.filter(c => c.budgeted > 0).map(c => <div key={c.id} className="h-full transition-all" style={{ width: `${(c.budgeted/total)*100}%`, background: c.color }} />)}
         </div>
         <div className="flex flex-wrap gap-5 mt-3">
-          {cats.map(c => <span key={c.id} className="flex items-center gap-1.5 text-base text-[#7a9878]"><span className="w-2.5 h-2.5 rounded-full" style={{ background: c.color }} />{c.name}</span>)}
+          {cats.map(c => <span key={c.id} className="flex items-center gap-1.5 text-base text-[#9ca3af]"><span className="w-2.5 h-2.5 rounded-full" style={{ background: c.color }} />{c.name}</span>)}
         </div>
       </div>
 
-      {loading ? <div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div> : (
+      {loading ? <div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#9ca3af]" size={26}/></div> : (
         <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
           <table className="w-full text-base">
-            <thead><tr className="border-b border-[#202e1f] bg-[#141c13] text-left text-base text-[#5a7057] uppercase tracking-wider">
+            <thead><tr className="border-b border-black/20 bg-black/20 text-left text-base text-black uppercase tracking-wider font-bold">
               <th className="px-6 py-3.5 font-medium">Category</th>
               <th className="px-6 py-3.5.5 font-medium">Budgeted</th>
               <th className="px-6 py-3.5.5 font-medium">Paid</th>
@@ -691,7 +691,7 @@ function TabBudget() {
                   </tr>
                 )
               })}
-              {cats.length === 0 && <tr><td colSpan={6} className="text-center py-10 text-[#5a7057]">No categories yet</td></tr>}
+              {cats.length === 0 && <tr><td colSpan={6} className="text-center py-10 text-[#9ca3af]">No categories yet</td></tr>}
             </tbody>
             <tfoot className="border-t border-[#2a3829] bg-[#141c13]">
               <tr><td className="px-6 py-3.5 text-base font-semibold">Total</td><td className="px-6 py-3.5.5 text-base font-semibold">{fmt$(allocated)}</td><td className="px-6 py-3.5.5 text-base font-semibold">{fmt$(paid)}</td><td className="px-6 py-3.5.5 text-base font-semibold" style={{ color: total-allocated < 0 ? '#dc2626' : '#3d6b2e' }}>{fmt$(total-allocated)}</td><td colSpan={2}/></tr>
@@ -754,9 +754,9 @@ function TabVendors() {
         {cats.map(c => <button key={c} onClick={() => setFilter(c)} className={`px-3 py-1.5 rounded-full text-base font-medium transition-all ${filter===c?'bg-[var(--accent)] text-white':'bg-[#1f2b1e] text-[#7a9878] hover:bg-[#243022]'}`}>{c}</button>)}
       </div>
 
-      {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div> : (
+      {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#9ca3af]" size={26}/></div> : (
         <div className="space-y-[28px]">
-          {filtered.length === 0 ? <div className="text-center py-16 text-[#5a7057]">No vendors yet</div> :
+          {filtered.length === 0 ? <div className="text-center py-16 text-[#9ca3af]">No vendors yet</div> :
             filtered.map(v => {
               const [slabel, scolor] = VENDOR_STATUS[v.status] ?? VENDOR_STATUS.researching
               return (
@@ -765,7 +765,7 @@ function TabVendors() {
                   <div className="flex items-center justify-between px-6 py-4 border-b border-[#202e1f]">
                     <div className="flex items-center gap-3 min-w-0">
                       <p className="font-semibold text-[#e8f0e6] truncate">{v.name}</p>
-                      <span className="text-xs text-[#5a7057] bg-[#1f2b1e] px-2.5 py-1 rounded-full shrink-0">{v.category}</span>
+                      <span className="text-xs text-[#9ca3af] bg-black/20 px-2.5 py-1 rounded-full shrink-0">{v.category}</span>
                     </div>
                     <div className="flex items-center gap-3 shrink-0 ml-4">
                       <p className="font-semibold text-[var(--sage)]">{fmt$(v.cost)}</p>
@@ -777,12 +777,12 @@ function TabVendors() {
                   </div>
                   {/* Details row */}
                   <div className="flex items-center gap-6 px-6 py-3 flex-wrap">
-                    {v.contactName && <span className="text-sm text-[#7a9878]">{v.contactName}</span>}
+                    {v.contactName && <span className="text-sm text-[#9ca3af]">{v.contactName}</span>}
                     {v.phone && <a href={`tel:${v.phone}`} className="flex items-center gap-1.5 text-sm text-[#5a7057] hover:text-[var(--sage)] transition-colors"><Phone size={13}/>{v.phone}</a>}
                     {v.email && <a href={`mailto:${v.email}`} className="flex items-center gap-1.5 text-sm text-[#5a7057] hover:text-[var(--sage)] transition-colors"><Mail size={13}/>{v.email}</a>}
                     {v.website && <a href={v.website} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-sm text-[#5a7057] hover:text-[var(--sage)] transition-colors"><ExternalLink size={13}/>Website</a>}
                     {v.notes && <span className="text-sm text-[#4a6448] italic">{v.notes}</span>}
-                    {!v.contactName && !v.phone && !v.email && !v.website && !v.notes && <span className="text-sm text-[#3a5038]">No contact info</span>}
+                    {!v.contactName && !v.phone && !v.email && !v.website && !v.notes && <span className="text-sm text-[#9ca3af]">No contact info</span>}
                   </div>
                 </div>
               )
@@ -856,9 +856,9 @@ function TabTasks() {
         {(['pending','all','done'] as const).map(f => <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-full text-base font-medium transition-all ${filter===f?'bg-[var(--accent)] text-white':'bg-[#1f2b1e] text-[#7a9878] hover:bg-[#243022]'}`}>{f==='pending'?`To do (${tasks.filter(t=>!t.completed).length})`:f==='done'?`Done (${done})`:`All (${tasks.length})`}</button>)}
       </div>
 
-      {loading ? <div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div> : (
+      {loading ? <div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#9ca3af]" size={26}/></div> : (
         <div className="space-y-2">
-          {shown.length === 0 ? <div className="text-center py-12 text-[#5a7057]">{filter==='done'?'No completed tasks':'All caught up! 🎉'}</div> :
+          {shown.length === 0 ? <div className="text-center py-12 text-[#9ca3af]">{filter==='done'?'No completed tasks':'All caught up! 🎉'}</div> :
             shown.map(t => (
               <div key={t.id} className={`rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-3.5 flex items-center gap-5 group transition-colors hover:border-stone-300 ${t.completed?'opacity-60':''}`}>
                 <button onClick={() => toggle(t)} className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${t.completed?'border-[var(--sage)] bg-[var(--accent)]':'border-stone-300 hover:border-[var(--sage)]'}`}>
@@ -866,7 +866,7 @@ function TabTasks() {
                 </button>
                 <div className="flex-1 min-w-0">
                   <p className={`text-base font-medium truncate ${t.completed?'line-through text-[#5a7057]':'text-[#e8f0e6]'}`}>{t.title}</p>
-                  <p className="text-base text-[#5a7057]">{t.category}{t.dueDate ? ` · Due ${new Date(t.dueDate).toLocaleDateString('en-US',{month:'short',day:'numeric'})}` : ''}{t.assignedTo ? ` · ${t.assignedTo}` : ''}</p>
+                  <p className="text-base text-[#9ca3af]">{t.category}{t.dueDate ? ` · Due ${new Date(t.dueDate).toLocaleDateString('en-US',{month:'short',day:'numeric'})}` : ''}{t.assignedTo ? ` · ${t.assignedTo}` : ''}</p>
                 </div>
                 <Tag color={PRIORITY_COLOR[t.priority]||'#78716c'}>{t.priority}</Tag>
                 <button onClick={() => del(t.id)} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all shrink-0"><Trash2 size={19}/></button>
@@ -920,14 +920,14 @@ function TabChecklist() {
         {Object.entries(ITEMS).map(([section, items]) => (
           <div key={section} className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
             <div className="flex justify-between px-6 py-3.5 border-b border-[#202e1f] bg-[#141c13]">
-              <p className="text-base font-medium text-[#cde0ca]">{section}</p>
-              <span className="text-base text-[#5a7057]">{items.filter(i=>done.has(`${section}-${i}`)).length}/{items.length}</span>
+              <p className="text-base font-medium text-white">{section}</p>
+              <span className="text-base text-[#9ca3af]">{items.filter(i=>done.has(`${section}-${i}`)).length}/{items.length}</span>
             </div>
             <div className="p-2">
               {items.map(item => { const k=`${section}-${item}`; const checked=done.has(k); return (
                 <button key={item} onClick={() => toggle(k)} className={`w-full flex items-center gap-5 px-6 py-3.5.5 rounded-3xl text-left transition-colors hover:bg-[#141c13] ${checked?'opacity-60':''}`}>
                   <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${checked?'border-[var(--sage)] bg-[var(--accent)]':'border-stone-300'}`}>{checked&&<Check size={11} className="text-white"/>}</div>
-                  <span className={`text-base ${checked?'line-through text-[#5a7057]':'text-[#cde0ca]'}`}>{item}</span>
+                  <span className={`text-base ${checked?'line-through text-[#5a7057]':'text-white'}`}>{item}</span>
                 </button>
               )})}
             </div>
@@ -1043,7 +1043,7 @@ function TabRSVP() {
 
         {/* Quick stats */}
         <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 flex flex-col justify-center">
-          <p className="text-base font-semibold text-[#cde0ca] mb-7">RSVP stats</p>
+          <p className="text-base font-semibold text-white mb-7">RSVP stats</p>
           {(() => {
             const attending = guests.filter(g=>g.rsvpStatus==='attending').length
             const declined = guests.filter(g=>g.rsvpStatus==='declined').length
@@ -1080,7 +1080,7 @@ function TabRSVP() {
 
         <div className="p-7" style={{maxWidth: 520}}>
           <div className="space-y-4">
-            <p className="text-base font-bold text-[#5a7057] uppercase tracking-wider pb-1 border-b border-[#202e1f]">Photos</p>
+            <p className="text-base font-bold text-black uppercase tracking-wider pb-1 border-b border-[#000000]/20">Photos</p>
             <SF label="Hero image URL" field="heroImage" />
             {settings.heroImage && <div className="h-24 rounded-xl overflow-hidden bg-[#1f2b1e]"><img src={settings.heroImage} alt="" className="w-full h-full object-cover"/></div>}
             <SF label="Photo 1 URL (invite card + story)" field="photo1" />
@@ -1091,7 +1091,7 @@ function TabRSVP() {
             {settings.photo3 && <div className="h-20 rounded-xl overflow-hidden bg-[#1f2b1e]"><img src={settings.photo3} alt="" className="w-full h-full object-cover"/></div>}
 
             <p className="text-base font-bold text-[#5a7057] uppercase tracking-wider pt-2 pb-1 border-b border-[#202e1f]">Dress Code Colors</p>
-            <p className="text-xs text-[#5a7057]">These 4 dots appear on the RSVP details page under dress code</p>
+            <p className="text-xs text-[#9ca3af]">These 4 dots appear on the RSVP details page under dress code</p>
             {([
               { label: 'Bridesmaid dresses', field: 'swatchBridesmaids' as const },
               { label: "Men's suits", field: 'swatchSuits' as const },
@@ -1112,25 +1112,25 @@ function TabRSVP() {
       </div>
 
       {/* ── GUEST RSVP RECORDS ── */}
-      <h2 className="text-xl font-light text-[#cde0ca] mb-7" style={{ fontFamily: 'var(--font-display)' }}>Guest RSVP records</h2>
-      {loadingGuests ? <div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div> : (
+      <h2 className="text-xl font-light text-white mb-7" style={{ fontFamily: 'var(--font-display)' }}>Guest RSVP records</h2>
+      {loadingGuests ? <div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#9ca3af]" size={26}/></div> : (
         <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-base min-w-[520px]">
-              <thead><tr className="border-b border-[#202e1f] bg-[#141c13] text-left text-base text-[#5a7057] uppercase tracking-wider">
+              <thead><tr className="border-b border-black/20 bg-black/20 text-left text-base text-black uppercase tracking-wider font-bold">
                 {['Name','Status','Email','Dietary','Plus one',''].map(h=><th key={h} className="px-6 py-3.5.5 font-medium">{h}</th>)}
               </tr></thead>
               <tbody>
-                {guests.length === 0 ? <tr><td colSpan={6} className="text-center py-10 text-[#5a7057]">No guests yet</td></tr>
+                {guests.length === 0 ? <tr><td colSpan={6} className="text-center py-10 text-[#9ca3af]">No guests yet</td></tr>
                 : guests.map(g => {
                   const [color, bg] = STATUS_COLORS[g.rsvpStatus] ?? STATUS_COLORS.pending
                   return (
                     <tr key={g.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#141c13]">
                       <td className="px-6 py-3.5.5 font-medium text-[#e8f0e6]">{g.name}</td>
                       <td className="px-8 py-4"><span className="text-base px-2.5 py-1 rounded-full font-medium capitalize" style={{color,background:bg}}>{g.rsvpStatus}</span></td>
-                      <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.email||'—'}</td>
-                      <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.dietary||'—'}</td>
-                      <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.plusOneName||(g.hasPlusOne?<span className="text-[var(--sage)]">allowed</span>:'—')}</td>
+                      <td className="px-6 py-3.5.5 text-base text-[#9ca3af]">{g.email||'—'}</td>
+                      <td className="px-6 py-3.5.5 text-base text-[#9ca3af]">{g.dietary||'—'}</td>
+                      <td className="px-6 py-3.5.5 text-base text-[#9ca3af]">{g.plusOneName||(g.hasPlusOne?<span className="text-[var(--sage)]">allowed</span>:'—')}</td>
                       <td className="px-8 py-4"><button onClick={()=>openEdit(g)} className="text-base text-[#5a7057] hover:text-[var(--sage)] flex items-center gap-1"><Edit3 size={26}/>Edit</button></td>
                     </tr>
                   )
@@ -1150,7 +1150,7 @@ function TabRSVP() {
             {['','Vegetarian','Vegan','Gluten-free','Nut allergy','Halal','Kosher','Other'].map(o=><option key={o} value={o}>{o||'None'}</option>)}
           </Select></Field>
           <div className="flex items-center justify-between py-1">
-            <p className="text-base font-medium text-[#cde0ca]">Plus one allowed</p>
+            <p className="text-base font-medium text-white">Plus one allowed</p>
             <button onClick={()=>setEditForm(f=>({...f,hasPlusOne:!f.hasPlusOne}))} className={`w-11 h-6 rounded-full transition-colors relative ${editForm.hasPlusOne?'bg-[var(--accent)]':'bg-[#243022]'}`}><div className={`absolute top-0.5 w-5 h-5 rounded-full bg-[#1a2419] shadow transition-transform ${editForm.hasPlusOne?'translate-x-5':'translate-x-0.5'}`}/></button>
           </div>
           {editForm.hasPlusOne && <>
@@ -1175,7 +1175,7 @@ function TabMoodboard() {
     <div>
       <PageHeader title="Mood board" sub="Pin anything that inspires your vision" action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add image</Btn>} />
       {items.length === 0
-        ? <div className="text-center py-20 text-[#5a7057]"><p className="mb-7">Paste image URLs from Pinterest, Instagram, or anywhere</p><Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add first image</Btn></div>
+        ? <div className="text-center py-20 text-[#9ca3af]"><p className="mb-7">Paste image URLs from Pinterest, Instagram, or anywhere</p><Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add first image</Btn></div>
         : <div className="columns-2 md:columns-3 gap-7 space-y-4">
             {items.map(item => (
               <div key={item.id} className="break-inside-avoid group relative rounded-3xl overflow-hidden border border-[#2a3829]">
@@ -1218,7 +1218,7 @@ function TabMenu() {
           {menu.map((c,i) => (
             <div key={i} className="border-b border-[#1a2419] pb-3 mb-3 last:border-0 last:mb-0">
               <p className="text-base font-semibold text-[#5a7057] uppercase tracking-wider mb-1">{c.course}</p>
-              <textarea value={c.items} onChange={e=>setMenu(p=>p.map((m,j)=>j===i?{...m,items:e.target.value}:m))} className="w-full text-base text-[#cde0ca] resize-none border-0 focus:outline-none bg-transparent" rows={2} />
+              <textarea value={c.items} onChange={e=>setMenu(p=>p.map((m,j)=>j===i?{...m,items:e.target.value}:m))} className="w-full text-base text-white resize-none border-0 focus:outline-none bg-transparent" rows={2} />
             </div>
           ))}
         </div>
@@ -1230,7 +1230,7 @@ function TabMenu() {
           </div>
           {[['Wine',drinks.wine,'bottles'],['Beer',drinks.beer,'cans'],['Champagne',drinks.champagne,'bottles'],['Water',drinks.water,'cases']].map(([l,v,u])=>(
             <div key={String(l)} className="flex justify-between py-2.5 border-b border-[#1a2419] last:border-0">
-              <span className="text-base text-[#cde0ca]">{l}</span>
+              <span className="text-base text-white">{l}</span>
               <div className="text-right"><span className="text-lg font-light text-[var(--sage)]" style={{fontFamily:'var(--font-display)'}}>{v}</span><span className="text-base text-[#5a7057] ml-1">{u}</span></div>
             </div>
           ))}
@@ -1388,11 +1388,11 @@ function TabDecor() {
     <div>
       <PageHeader title="Décor" sub={`${items.filter(i=>i.done).length}/${items.length} ordered`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add item</Btn>} />
       <div className="space-y-2">
-        {items.length===0?<div className="text-center py-16 text-[#5a7057]">Track florals, centrepieces, lighting and décor items here</div>:
+        {items.length===0?<div className="text-center py-16 text-[#9ca3af]">Track florals, centrepieces, lighting and décor items here</div>:
           items.map(i=>(
             <div key={i.id} className={`rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-3.5 flex items-center gap-5 group ${i.done?'opacity-60':''}`}>
               <button onClick={()=>setItems(p=>p.map(x=>x.id===i.id?{...x,done:!x.done}:x))} className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${i.done?'border-[var(--sage)] bg-[var(--accent)]':'border-stone-300'}`}>{i.done&&<Check size={11} className="text-white"/>}</button>
-              <div className="flex-1"><p className={`text-base font-medium ${i.done?'line-through text-[#5a7057]':'text-[#e8f0e6]'}`}>{i.desc}</p><p className="text-base text-[#5a7057]">{i.area}{i.vendor?` · ${i.vendor}`:''}{i.cost?` · $${i.cost}`:''}</p></div>
+              <div className="flex-1"><p className={`text-base font-medium ${i.done?'line-through text-[#5a7057]':'text-[#e8f0e6]'}`}>{i.desc}</p><p className="text-base text-[#9ca3af]">{i.area}{i.vendor?` · ${i.vendor}`:''}{i.cost?` · $${i.cost}`:''}</p></div>
               <button onClick={()=>setItems(p=>p.filter(x=>x.id!==i.id))} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={19}/></button>
             </div>
           ))}
@@ -1428,7 +1428,7 @@ function TabAttire() {
       <PageHeader title="Attire" action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add item</Btn>} />
       <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-x-auto">
         <table className="w-full text-base min-w-[560px]">
-          <thead><tr className="border-b border-[#202e1f] bg-[#141c13] text-left text-base text-[#5a7057] uppercase tracking-wider">{['Person','Item','Shop','Status','Notes',''].map(h=><th key={h} className="px-6 py-3.5.5 font-medium">{h}</th>)}</tr></thead>
+          <thead><tr className="border-b border-black/20 bg-black/20 text-left text-base text-black uppercase tracking-wider font-bold">{['Person','Item','Shop','Status','Notes',''].map(h=><th key={h} className="px-6 py-3.5.5 font-medium">{h}</th>)}</tr></thead>
           <tbody>
             {items.map(i=>(
               <tr key={i.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#141c13] group">
@@ -1436,7 +1436,7 @@ function TabAttire() {
                 <td className="px-5 py-2.5.5 font-medium text-[#e8f0e6]">{i.item}</td>
                 <td className="px-5 py-2.5.5"><input value={i.shop} onChange={e=>upd(i.id,'shop',e.target.value)} className="w-full bg-transparent border-0 focus:outline-none text-base text-[#a8c4a4]" placeholder="Add shop…"/></td>
                 <td className="px-5 py-2.5.5"><select value={i.status} onChange={e=>upd(i.id,'status',e.target.value)} className={`text-base px-2.5 py-1 rounded-full border-0 font-medium cursor-pointer focus:outline-none ${i.status==='Ready'||i.status==='Picked up'?'bg-emerald-950 text-emerald-400':'bg-amber-950 text-amber-400'}`}>{STATUSES.map(s=><option key={s}>{s}</option>)}</select></td>
-                <td className="px-5 py-2.5.5"><input value={i.notes} onChange={e=>upd(i.id,'notes',e.target.value)} className="w-full bg-transparent border-0 focus:outline-none text-base text-[#5a7057]" placeholder="Notes…"/></td>
+                <td className="px-5 py-2.5.5"><input value={i.notes} onChange={e=>upd(i.id,'notes',e.target.value)} className="w-full bg-transparent border-0 focus:outline-none text-base text-[#9ca3af]" placeholder="Notes…"/></td>
                 <td className="px-5 py-2.5.5"><button onClick={()=>setItems(p=>p.filter(x=>x.id!==i.id))} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={19}/></button></td>
               </tr>
             ))}
@@ -1475,12 +1475,12 @@ function TabPhotoshoot() {
       <div className="space-y-4">
         {grouped.map(({g,shots:gs})=>(
           <div key={g} className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
-            <div className="flex justify-between px-6 py-3.5 border-b border-[#202e1f] bg-[#141c13]"><p className="text-base font-medium text-[#cde0ca]">{g}</p><span className="text-base text-[#5a7057]">{gs.filter(s=>s.done).length}/{gs.length}</span></div>
+            <div className="flex justify-between px-6 py-3.5 border-b border-[#202e1f] bg-[#141c13]"><p className="text-base font-medium text-white">{g}</p><span className="text-base text-[#9ca3af]">{gs.filter(s=>s.done).length}/{gs.length}</span></div>
             <div className="p-2">
               {gs.map(s=>(
                 <div key={s.id} className={`flex items-center gap-5 px-6 py-3.5.5 rounded-3xl group hover:bg-[#141c13] ${s.done?'opacity-60':''}`}>
                   <button onClick={()=>setShots(p=>p.map(x=>x.id===s.id?{...x,done:!x.done}:x))} className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${s.done?'border-[var(--sage)] bg-[var(--accent)]':'border-stone-300'}`}>{s.done&&<Check size={11} className="text-white"/>}</button>
-                  <span className={`text-base flex-1 ${s.done?'line-through text-[#5a7057]':'text-[#cde0ca]'}`}>{s.desc}</span>
+                  <span className={`text-base flex-1 ${s.done?'line-through text-[#5a7057]':'text-white'}`}>{s.desc}</span>
                   {s.mustHave&&<span className="text-base px-2 py-0.5 bg-[var(--sage-light,#1e3a1e)] text-[var(--sage)] rounded-full">Must have</span>}
                   <button onClick={()=>setShots(p=>p.filter(x=>x.id!==s.id))} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={19}/></button>
                 </div>
@@ -1494,7 +1494,7 @@ function TabPhotoshoot() {
           <Field label="Group"><Select value={form.group} onChange={e=>setForm(f=>({...f,group:e.target.value}))}>{GROUPS.map(g=><option key={g}>{g}</option>)}</Select></Field>
           <Field label="Description *"><Input value={form.desc} onChange={e=>setForm(f=>({...f,desc:e.target.value}))} placeholder="Describe the shot" autoFocus /></Field>
           <div className="flex items-center justify-between py-1">
-            <p className="text-base text-[#cde0ca]">Must-have</p>
+            <p className="text-base text-white">Must-have</p>
             <button onClick={()=>setForm(f=>({...f,mustHave:!f.mustHave}))} className={`w-11 h-6 rounded-full transition-colors relative ${form.mustHave?'bg-[var(--accent)]':'bg-[#243022]'}`}><div className={`absolute top-0.5 w-5 h-5 rounded-full bg-[#1a2419] shadow transition-transform ${form.mustHave?'translate-x-5':'translate-x-0.5'}`}/></button>
           </div>
         </Modal>
@@ -1536,13 +1536,13 @@ function TabPlaylist() {
                     <input value={form.artist} onChange={e=>setForm(f=>({...f,artist:e.target.value}))} className="w-32 px-2 py-1.5 rounded-lg border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)]" placeholder="Artist"/>
                     <input value={form.note} onChange={e=>setForm(f=>({...f,note:e.target.value}))} className="w-24 px-2 py-1.5 rounded-lg border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)]" placeholder="Note"/>
                     <button onClick={()=>add(sec)} className="px-3 py-1.5 rounded-lg text-white text-base font-medium" style={{background:'var(--accent)'}}>Add</button>
-                    <button onClick={()=>setAdding(null)} className="text-[#5a7057]"><X size={26}/></button>
+                    <button onClick={()=>setAdding(null)} className="text-[#9ca3af]"><X size={26}/></button>
                   </div>
                 )}
                 {ss.length===0&&adding!==sec?<p className="text-base text-[#3a5038] px-5 py-2.5.5">No songs yet</p>:
                   ss.map(s=>(
                     <div key={s.id} className="flex items-center gap-5 px-5 py-2.5.5 rounded-3xl hover:bg-[#141c13] group">
-                      <div className="flex-1"><p className="text-base font-medium text-[#e8f0e6]">{s.title}</p><p className="text-base text-[#5a7057]">{s.artist}{s.note?` · ${s.note}`:''}</p></div>
+                      <div className="flex-1"><p className="text-base font-medium text-[#e8f0e6]">{s.title}</p><p className="text-base text-[#9ca3af]">{s.artist}{s.note?` · ${s.note}`:''}</p></div>
                       <button onClick={()=>setSongs(p=>p.filter(x=>x.id!==s.id))} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={19}/></button>
                     </div>
                   ))}
@@ -1586,11 +1586,11 @@ function TabGifts() {
           </div>
         ))}
       </div>
-      {loading?<div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div>:(
+      {loading?<div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#9ca3af]" size={26}/></div>:(
         <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
-          {gifts.length===0?<div className="text-center py-14 text-[#5a7057]">No gifts logged yet</div>:(
+          {gifts.length===0?<div className="text-center py-14 text-[#9ca3af]">No gifts logged yet</div>:(
             <table className="w-full text-base">
-              <thead><tr className="border-b border-[#202e1f] bg-[#141c13] text-left text-base text-[#5a7057] uppercase tracking-wider">{['From','Gift','Value','Thank you'].map(h=><th key={h} className="px-6 py-3.5.5 font-medium">{h}</th>)}</tr></thead>
+              <thead><tr className="border-b border-black/20 bg-black/20 text-left text-base text-black uppercase tracking-wider font-bold">{['From','Gift','Value','Thank you'].map(h=><th key={h} className="px-6 py-3.5.5 font-medium">{h}</th>)}</tr></thead>
               <tbody>{gifts.map(g=>(
                 <tr key={g.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#141c13]">
                   <td className="px-6 py-3.5.5 font-medium text-[#e8f0e6]">{g.fromName}</td>
@@ -1679,7 +1679,7 @@ function TabSeating() {
     <div>
       <PageHeader title="Seating chart" sub={`${guests.filter(g=>g.tableId).length} seated · ${unassigned.length} unassigned`}
         action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add table</Btn>} />
-      {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div> : (
+      {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#9ca3af]" size={26}/></div> : (
         <div className="flex gap-7 h-[520px]">
           <div className="w-56 shrink-0 flex flex-col gap-5">
             <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 flex-1 overflow-y-auto">
@@ -1688,17 +1688,17 @@ function TabSeating() {
                 const cnt = guests.filter(g=>g.tableId===t.id).length
                 return <div key={t.id} className="flex items-center gap-1 py-2 border-b border-[#1a2419] last:border-0 group rounded-lg px-1 hover:bg-[#141c13]">
                   <div className="flex-1 cursor-pointer" onClick={()=>setAssignTarget(t.id)}>
-                    <p className="text-base font-medium text-[#cde0ca]">{t.name}</p>
+                    <p className="text-base font-medium text-white">{t.name}</p>
                     <p className="text-base text-[#5a7057] capitalize">{t.shape} · {cnt}/{t.seats}</p>
                   </div>
                   <button onClick={async()=>{ if(!confirm(`Delete ${t.name}?`)) return; await $del('table',t.id); setTables(p=>p.filter(x=>x.id!==t.id)); setGuests(p=>p.map(g=>g.tableId===t.id?{...g,tableId:null}:g)) }} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-1 shrink-0"><Trash2 size={26}/></button>
                 </div>
               })}
-              {tables.length===0 && <p className="text-base text-[#5a7057]">No tables yet</p>}
+              {tables.length===0 && <p className="text-base text-[#9ca3af]">No tables yet</p>}
             </div>
             <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 flex-1 overflow-y-auto">
               <p className="text-base font-semibold text-[#5a7057] uppercase tracking-wider mb-3">Unassigned ({unassigned.length})</p>
-              {unassigned.length===0 ? <p className="text-base text-[#5a7057]">Everyone seated 🎉</p> :
+              {unassigned.length===0 ? <p className="text-base text-[#9ca3af]">Everyone seated 🎉</p> :
                 unassigned.map(g => <div key={g.id} className="flex items-center gap-5 py-1.5 border-b border-[#1a2419] last:border-0">
                   <div className="w-5 h-5 rounded-full bg-[var(--sage-light,#1e3a1e)] flex items-center justify-center text-[10px] font-semibold text-[var(--sage)] shrink-0">{g.name[0]}</div>
                   <span className="text-base text-[#a8c4a4] truncate">{g.name}</span>
@@ -1737,7 +1737,7 @@ function TabSeating() {
           <div className="space-y-1">
             {guests.filter(g=>g.tableId===assignTarget).map(g=>(
               <div key={g.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-[#141c13]">
-                <span className="text-base text-[#cde0ca]">{g.name}</span>
+                <span className="text-base text-white">{g.name}</span>
                 <button onClick={()=>assignGuest(g.id,'')} className="text-base text-red-400 hover:text-red-400">Remove</button>
               </div>
             ))}
@@ -1745,7 +1745,7 @@ function TabSeating() {
               <p className="text-base font-semibold text-[#5a7057] uppercase tracking-wider pt-2 pb-1">Add guest</p>
               {unassigned.map(g=>(
                 <div key={g.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-[var(--sage-light,#1e3a1e)] cursor-pointer" onClick={()=>assignGuest(g.id,assignTarget)}>
-                  <span className="text-base text-[#cde0ca]">{g.name}</span>
+                  <span className="text-base text-white">{g.name}</span>
                   <Plus size={19} className="text-[var(--sage)]"/>
                 </div>
               ))}
