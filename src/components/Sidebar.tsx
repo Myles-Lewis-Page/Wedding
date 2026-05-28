@@ -36,42 +36,44 @@ const TABS = [
 
 interface SidebarProps { activeTab: string; onTab: (t: string) => void }
 
-function NavContent({ activeTab, onTab, onClose }: SidebarProps & { onClose?: () => void }) {
+function NavLinks({ activeTab, onTab, onClose }: SidebarProps & { onClose?: () => void }) {
   const router = useRouter()
   const logout = async () => {
     await fetch('/api/auth', { method: 'DELETE' })
     router.push('/login')
     router.refresh()
   }
-  const handleTab = (tab: string) => { onTab(tab); onClose?.() }
 
   return (
     <div style={{ display:'flex', flexDirection:'column', height:'100%', overflow:'hidden' }}>
-      <div style={{ padding:'20px 18px 16px', borderBottom:'1px solid #1e2e1c', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:8, minWidth:0 }}>
+      {/* Header */}
+      <div style={{ padding:'20px 18px 12px', borderBottom:'1px solid #1e2e1c', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
           <Heart size={15} fill="var(--sage)" style={{ color:'var(--sage)', flexShrink:0 }} />
-          <span style={{ fontFamily:'var(--font-display)', fontSize:17, fontWeight:500, color:'#e8f0e6', letterSpacing:1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>Sage Planner</span>
+          <span style={{ fontFamily:'var(--font-display)', fontSize:17, fontWeight:500, color:'#e8f0e6', letterSpacing:1 }}>Sage Planner</span>
         </div>
         {onClose && (
-          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'#5a7057', lineHeight:0, flexShrink:0, marginLeft:8 }}>
+          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'#5a7057', lineHeight:0, padding:4 }}>
             <X size={20} />
           </button>
         )}
       </div>
       <p style={{ fontSize:11, color:'#4a6448', padding:'6px 18px 0', flexShrink:0 }}>Jennifer & Myles</p>
-      <nav style={{ flex:1, overflowY:'auto', padding:'12px 10px' }}>
+
+      {/* Nav */}
+      <nav style={{ flex:1, overflowY:'auto', padding:'10px 10px' }}>
         {TABS.map(({ section, links }) => (
-          <div key={section} style={{ marginBottom:16 }}>
-            <p style={{ fontSize:10, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.15em', color:'#3a5038', padding:'0 10px', marginBottom:4 }}>{section}</p>
+          <div key={section} style={{ marginBottom:14 }}>
+            <p style={{ fontSize:10, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.15em', color:'#3a5038', padding:'0 10px', marginBottom:3 }}>{section}</p>
             {links.map(({ tab, label }) => {
               const active = activeTab === tab
               return (
-                <button key={tab} onClick={() => handleTab(tab)} style={{
+                <button key={tab} onClick={() => { onTab(tab); onClose?.() }} style={{
                   width:'100%', textAlign:'left', padding:'9px 12px', borderRadius:10,
                   fontSize:14, fontWeight: active ? 600 : 400,
-                  color: active ? 'var(--sage-dark, #b8d4b4)' : '#5a7857',
-                  background: active ? 'var(--sage-light, #1e3a1e)' : 'transparent',
-                  border:'none', cursor:'pointer', marginBottom:1, transition:'all 0.15s',
+                  color: active ? 'var(--sage-dark,#b8d4b4)' : '#5a7857',
+                  background: active ? 'var(--sage-light,#1e3a1e)' : 'transparent',
+                  border:'none', cursor:'pointer', marginBottom:1, transition:'all 0.12s',
                   whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis',
                 }}
                 onMouseEnter={e => { if (!active) { e.currentTarget.style.background='#161f15'; e.currentTarget.style.color='var(--sage)' } }}
@@ -83,7 +85,9 @@ function NavContent({ activeTab, onTab, onClose }: SidebarProps & { onClose?: ()
           </div>
         ))}
       </nav>
-      <div style={{ padding:'12px 10px', flexShrink:0, borderTop:'1px solid #1e2e1c' }}>
+
+      {/* Bottom */}
+      <div style={{ padding:'10px', flexShrink:0, borderTop:'1px solid #1e2e1c' }}>
         <div style={{ background:'var(--sage-light,#1e3a1e)', borderRadius:14, padding:'10px 12px', textAlign:'center', marginBottom:8 }}>
           <Countdown />
         </div>
@@ -113,44 +117,54 @@ function Countdown() {
 }
 
 export default function Sidebar({ activeTab, onTab }: SidebarProps) {
-  const [mobileOpen, setMobileOpen] = useState(false)
-
-  // Close drawer on resize to desktop
-  useEffect(() => {
-    const handler = () => { if (window.innerWidth >= 768) setMobileOpen(false) }
-    window.addEventListener('resize', handler)
-    return () => window.removeEventListener('resize', handler)
-  }, [])
+  const [open, setOpen] = useState(false)
 
   return (
     <>
-      {/* Desktop sidebar */}
-      <aside style={{ width:220, minWidth:220, height:'100vh', background:'#0f1a0e', borderRight:'1px solid #1e2e1c', flexDirection:'column', overflow:'hidden', flexShrink:0 }}
-        className="hidden md:flex">
-        <NavContent activeTab={activeTab} onTab={onTab} />
+      {/* ── DESKTOP: fixed sidebar ── */}
+      <aside style={{
+        width: 220, minWidth: 220, height: '100vh',
+        background: '#0f1a0e', borderRight: '1px solid #1e2e1c',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0,
+      }} className="hidden md:flex">
+        <NavLinks activeTab={activeTab} onTab={onTab} />
       </aside>
 
-      {/* Mobile top bar */}
-      <div style={{ position:'fixed', top:0, left:0, right:0, zIndex:40, background:'#0f1a0e', borderBottom:'1px solid #1e2e1c', padding:'12px 16px', display:'flex', alignItems:'center', justifyContent:'space-between', height:52 }}
-        className="flex md:hidden">
+      {/* ── MOBILE: fixed top bar ── */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, height: 52, zIndex: 100,
+        background: '#0f1a0e', borderBottom: '1px solid #1e2e1c',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 16px',
+      }} className="flex md:hidden">
         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
           <Heart size={14} fill="var(--sage)" style={{ color:'var(--sage)', flexShrink:0 }} />
           <span style={{ fontFamily:'var(--font-display)', fontSize:16, fontWeight:500, color:'#e8f0e6' }}>Sage Planner</span>
         </div>
         <button
-          onClick={() => setMobileOpen(o => !o)}
-          style={{ background:'none', border:'none', cursor:'pointer', color:'var(--sage)', lineHeight:0, padding:4 }}
+          type="button"
+          onClick={() => setOpen(true)}
+          style={{ background:'none', border:'none', cursor:'pointer', color:'var(--sage)', padding:6, lineHeight:0 }}
           aria-label="Open menu">
           <Menu size={24} />
         </button>
       </div>
 
-      {/* Mobile drawer */}
-      {mobileOpen && (
-        <div style={{ position:'fixed', inset:0, zIndex:50 }} className="md:hidden">
-          <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.65)' }} onClick={() => setMobileOpen(false)} />
-          <div style={{ position:'absolute', top:0, left:0, bottom:0, width:270, background:'#0f1a0e', borderRight:'1px solid #1e2e1c', display:'flex', flexDirection:'column' }}>
-            <NavContent activeTab={activeTab} onTab={onTab} onClose={() => setMobileOpen(false)} />
+      {/* ── MOBILE: drawer ── */}
+      {open && (
+        <div style={{ position:'fixed', inset:0, zIndex:200 }} className="md:hidden">
+          {/* backdrop */}
+          <div
+            style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.7)' }}
+            onClick={() => setOpen(false)}
+          />
+          {/* panel */}
+          <div style={{
+            position: 'absolute', top: 0, left: 0, bottom: 0, width: 270,
+            background: '#0f1a0e', borderRight: '1px solid #1e2e1c',
+            display: 'flex', flexDirection: 'column',
+          }}>
+            <NavLinks activeTab={activeTab} onTab={onTab} onClose={() => setOpen(false)} />
           </div>
         </div>
       )}
