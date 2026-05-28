@@ -51,7 +51,8 @@ export async function POST(req: NextRequest) {
         return ok(await prisma.guest.create({ data: {
           name: body.name, email: body.email || null, side: body.side || 'bride',
           hasPlusOne: !!body.hasPlusOne, dietary: body.dietary || null, rsvpStatus: 'pending',
-          notes: body.notes || null, isInvitee: !!body.isInvitee,
+          notes: body.notes || null, isInvitee: true, // manually added guests are always invitees
+          ...(body.address !== undefined ? { address: body.address || '' } : {})
         }}))
       case 'venue':
         return ok(await prisma.venue.create({ data: {

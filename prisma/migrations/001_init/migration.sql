@@ -118,3 +118,9 @@ ON CONFLICT DO NOTHING;
 
 -- Add tertiaryColor column (card/surface color)
 ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "tertiaryColor" TEXT NOT NULL DEFAULT '#1a2419';
+
+-- Add address column to guests
+ALTER TABLE guests ADD COLUMN IF NOT EXISTS "address" TEXT DEFAULT '';
+
+-- Add partyRole to guests
+ALTER TABLE guests ADD COLUMN IF NOT EXISTS "partyRole" TEXT DEFAULT '';

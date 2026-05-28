@@ -54,6 +54,8 @@ model Guest {
   seatNumber     Int?
   rsvpAt         DateTime?
   notes          String?
+  address        String?   @default("")
+  partyRole      String?   @default("")
   isInvitee      Boolean   @default(false)
   createdAt      DateTime  @default(now())
   @@map("guests")

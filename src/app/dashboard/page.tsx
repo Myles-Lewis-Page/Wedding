@@ -213,7 +213,18 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
   )
 }
 
-interface Guest { id: string; name: string; email: string | null; side: string; hasPlusOne: boolean; plusOneName: string | null; plusOneDietary: string | null; dietary: string | null; rsvpStatus: string; tableId: string | null; isInvitee: boolean; notes: string | null }
+interface Guest { id: string; name: string; email: string | null; side: string; hasPlusOne: boolean; plusOneName: string | null; plusOneDietary: string | null; dietary: string | null; rsvpStatus: string; tableId: string | null; isInvitee: boolean; notes: string | null; address: string | null; partyRole: string | null }
+
+
+// Role icons for wedding party
+const ROLE_ICONS: Record<string, string> = {
+  'Maid of Honor': '👑', 'Bridesmaid': '💐', 'Flower Girl': '🌸',
+  'Junior Bridesmaid': '🎀', 'Best Man': '🎩', 'Groomsman': '🤵',
+  'Usher': '🚪', 'Ring Bearer': '💍', 'Officiant': '📖',
+}
+const BRIDE_ROLES = ['Maid of Honor','Bridesmaid','Flower Girl','Junior Bridesmaid']
+const GROOM_ROLES = ['Best Man','Groomsman','Usher','Ring Bearer']
+const ALL_ROLES = [...BRIDE_ROLES, ...GROOM_ROLES, 'Officiant']
 
 function TabGuests() {
   const [guests, setGuests] = useState<Guest[]>([])
@@ -222,10 +233,10 @@ function TabGuests() {
   const [filter, setFilter] = useState('all')
   const [showAdd, setShowAdd] = useState(false)
   const [err, setErr] = useState('')
-  const [form, setForm] = useState({ name: '', email: '', side: 'bride', hasPlusOne: false, dietary: '' })
+  const [form, setForm] = useState({ name: '', email: '', side: 'bride', hasPlusOne: false, dietary: '', address: '' })
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => { $get('guests').then(d => { setGuests(Array.isArray(d) ? d : []); setLoading(false) }) }, []) // guest list tab
+  useEffect(() => { $get('guests').then(d => { setGuests(Array.isArray(d) ? d : []); setLoading(false) }) }, [])
 
   const save = async () => {
     if (!form.name.trim()) return
@@ -233,7 +244,7 @@ function TabGuests() {
     const res = await $post('guest', form)
     if (res.error) { setErr(res.error); setSaving(false); return }
     setGuests(p => [res, ...p]); setShowAdd(false); setSaving(false)
-    setForm({ name: '', email: '', side: 'bride', hasPlusOne: false, dietary: '' })
+    setForm({ name: '', email: '', side: 'bride', hasPlusOne: false, dietary: '', address: '' })
   }
 
   const del = async (id: string) => {
@@ -242,23 +253,105 @@ function TabGuests() {
   }
 
   const stats = { all: guests.length, attending: guests.filter(g => g.rsvpStatus === 'attending').length, declined: guests.filter(g => g.rsvpStatus === 'declined').length, pending: guests.filter(g => g.rsvpStatus === 'pending').length }
-  const filtered = guests.filter(g => (filter === 'all' || g.rsvpStatus === filter) && (g.name.toLowerCase().includes(search.toLowerCase()) || g.email?.toLowerCase().includes(search.toLowerCase())))
 
   const STATUS: Record<string, [string, string]> = { attending: ['Attending', '#00ff00'], declined: ['Declined', '#ff0000'], pending: ['Pending', '#f0b429'] }
 
   const exportCSV = () => {
-    const csv = [['Name','Email','Side','RSVP','Plus One','Dietary'], ...guests.map(g => [g.name, g.email||'', g.side, g.rsvpStatus, g.plusOneName||'', g.dietary||''])].map(r => r.map(c => `"${c}"`).join(',')).join('\n')
+    const csv = [['Name','Email','Side','RSVP','Plus One','Dietary','Address'], ...guests.map(g => [g.name, g.email||'', g.side, g.rsvpStatus, g.plusOneName||'', g.dietary||'', g.address||''])].map(r => r.map(c => `"${c}"`).join(',')).join('\n')
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'guests.csv'; a.click()
   }
+
+  // Group invitees by side, attach their plus-ones below them
+  const invitees = guests.filter(g => g.isInvitee)
+  const plusOnes = guests.filter(g => !g.isInvitee)
+
+  // Match plus-ones to invitees by plusOneName
+  const getRows = (sideFilter: string) => {
+    const sideGuests = search
+      ? invitees.filter(g => g.name.toLowerCase().includes(search.toLowerCase()) || g.email?.toLowerCase().includes(search.toLowerCase()))
+      : invitees.filter(g => sideFilter === 'both' ? g.side === 'both' : g.side === sideFilter)
+    const filtered = filter === 'all' ? sideGuests : sideGuests.filter(g => g.rsvpStatus === filter)
+    const rows: { guest: Guest; plusOne: Guest | null }[] = filtered.map(g => ({
+      guest: g,
+      plusOne: g.plusOneName ? (plusOnes.find(p => p.name === g.plusOneName) ?? null) : null
+    }))
+    return rows
+  }
+
+  const GuestTable = ({ title, rows }: { title: string; rows: { guest: Guest; plusOne: Guest | null }[] }) => (
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-bold text-black uppercase tracking-wider mb-3">{title} ({rows.length})</p>
+      <div className="rounded-2xl border border-[#2a3829] overflow-hidden" style={{background:'var(--bg3,#1a2419)'}}>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-black/20 bg-black/20 text-left text-xs text-black uppercase tracking-wider font-bold">
+              <th className="px-4 py-3">Name</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3 text-center">Addr</th>
+              <th className="px-2 py-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 ? (
+              <tr><td colSpan={4} className="text-center py-8 text-[#9ca3af] text-xs">No guests</td></tr>
+            ) : rows.map(({ guest: g, plusOne: p }) => {
+              const [label, color] = STATUS[g.rsvpStatus] ?? STATUS.pending
+              return (
+                <>
+                  {/* Main invitee row */}
+                  <tr key={g.id} className="border-b border-black/10 last:border-0 hover:bg-black/10 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{background:'var(--accent)',color:'#fff'}}>
+                          {g.name.split(' ').map((w:string) => w[0]).join('').slice(0,2).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1">
+                            <p className="font-semibold text-white text-xs truncate">{g.name}</p>
+                            {g.partyRole && <span className="text-sm" title={g.partyRole}>{ROLE_ICONS[g.partyRole] || '⭐'}</span>}
+                          </div>
+                          {g.email && <p className="text-[#9ca3af] text-[10px] truncate">{g.email}</p>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3"><Tag color={color}>{label}</Tag></td>
+                    <td className="px-4 py-3 text-center">
+                      {g.address ? <Check size={14} className="text-[#00ff00] mx-auto" /> : <span className="text-[#9ca3af] text-xs">—</span>}
+                    </td>
+                    <td className="px-2 py-3"><button onClick={() => del(g.id)} className="text-[#9ca3af] hover:text-red-400 transition-colors"><Trash2 size={13}/></button></td>
+                  </tr>
+                  {/* Plus-one row — tabbed in */}
+                  {p && (
+                    <tr key={p.id} className="border-b border-black/10 last:border-0 hover:bg-black/10 transition-colors opacity-80">
+                      <td className="py-2" colSpan={4}>
+                        <div className="flex items-center gap-2 pl-10 pr-4">
+                          <div className="w-1 h-6 rounded-full bg-[#2a3829] shrink-0" />
+                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 bg-[#1e1a3a] text-[#a5b4fc]">
+                            {p.name.split(' ').map((w:string) => w[0]).join('').slice(0,2).toUpperCase()}
+                          </div>
+                          <p className="text-xs text-[#9ca3af] flex-1 truncate">{p.name}</p>
+                          <Tag color={STATUS[p.rsvpStatus]?.[1] ?? '#f0b429'}>{STATUS[p.rsvpStatus]?.[0] ?? 'Pending'}</Tag>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
 
   return (
     <div>
       <PageHeader title="Guest list" sub={`${stats.all} guests · ${stats.attending} attending · ${stats.pending} pending`}
-        action={<div className="flex gap-5"><Btn variant="ghost" onClick={exportCSV}>Export CSV</Btn><Btn onClick={() => setShowAdd(true)}><Plus size={17} />Add guest</Btn></div>} />
+        action={<div className="flex gap-3"><Btn variant="ghost" onClick={exportCSV}>Export CSV</Btn><Btn onClick={() => setShowAdd(true)}><Plus size={17} />Add guest</Btn></div>} />
 
       <div className="flex gap-3 mb-7 flex-wrap">
         {(['all','attending','declined','pending'] as const).map(f => (
-          <button key={f} onClick={() => setFilter(f)} className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all capitalize ${filter === f ? 'bg-[var(--accent)] text-white' : 'bg-[var(--bg3,#1a2419)] text-[#7a9878] border border-[#2a3829] hover:border-[var(--sage)]'}`}>
+          <button key={f} onClick={() => setFilter(f)} className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all capitalize ${filter === f ? 'bg-[var(--accent)] text-white' : 'bg-[var(--bg3,#1a2419)] text-[#9ca3af] border border-[#2a3829] hover:border-[var(--sage)]'}`}>
             {f === 'all' ? `All (${stats.all})` : `${f.charAt(0).toUpperCase() + f.slice(1)} (${stats[f]})`}
           </button>
         ))}
@@ -269,54 +362,19 @@ function TabGuests() {
       </div>
 
       {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#9ca3af]" size={26} /></div> : (
-        <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-base min-w-[560px]">
-              <thead><tr className="border-b border-black/20 bg-black/20 text-left text-base text-black uppercase tracking-wider font-bold">
-                {['Name','Side','RSVP','Plus one','Dietary','Table',''].map(h => <th key={h} className="px-6 py-3.5.5 font-medium">{h}</th>)}
-              </tr></thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr><td colSpan={7} className="text-center py-16 text-[#9ca3af]">{guests.length === 0 ? 'No guests yet — add your first one.' : 'No matches found.'}</td></tr>
-                ) : filtered.map(g => {
-                  const [label, color] = STATUS[g.rsvpStatus] ?? STATUS.pending
-                  return (
-                    <tr key={g.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#141c13] transition-colors">
-                      <td className="px-8 py-4">
-                        <div className="flex items-center gap-5.5">
-                          <div className="w-8 h-8 rounded-full bg-[var(--sage-light,#1e3a1e)] flex items-center justify-center text-base font-semibold text-[var(--sage)] shrink-0">
-                            {g.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase()}
-                          </div>
-                          <div>
-                          <div className="flex items-center gap-1.5">
-                            <p className="font-medium text-[#e8f0e6]">{g.name}</p>
-                            {g.isInvitee ? <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{background:'var(--sage-light,#1e3a1e)',color:'var(--sage)'}}>Invitee</span> : <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{background:'#1e1a3a',color:'#a5b4fc'}}>+1</span>}
-                          </div>
-                          {g.email && <p className="text-base text-[#9ca3af]">{g.email}</p>}
-                          {g.notes && <p className="text-base text-[#3a5038] italic">{g.notes}</p>}
-                        </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-3.5.5 text-[#7a9878] text-base capitalize">{g.side}</td>
-                      <td className="px-8 py-4"><Tag color={color}>{label}</Tag></td>
-                      <td className="px-6 py-3.5.5 text-base text-[#9ca3af]">{g.hasPlusOne ? (g.plusOneName || <span className="text-[var(--sage)]">✓ allowed</span>) : '—'}</td>
-                      <td className="px-6 py-3.5.5 text-base text-[#9ca3af]">{g.dietary || '—'}</td>
-                      <td className="px-8 py-4"><Tag color={g.tableId ? '#2563eb' : '#78716c'}>{g.tableId ? 'Assigned' : 'Unassigned'}</Tag></td>
-                      <td className="px-8 py-4"><button onClick={() => del(g.id)} className="text-[#3a5038] hover:text-red-400 transition-colors"><Trash2 size={17} /></button></td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+        <div className="flex gap-7">
+          <GuestTable title="Bride's side" rows={getRows('bride')} />
+          <GuestTable title="Both" rows={getRows('both')} />
+          <GuestTable title="Groom's side" rows={getRows('groom')} />
         </div>
       )}
 
       {showAdd && (
         <Modal title="Add guest" onClose={() => setShowAdd(false)} footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={save} disabled={saving || !form.name.trim()}>{saving ? <><Loader2 size={17} className="animate-spin" />Saving…</> : <><Plus size={17} />Add guest</>}</Btn></>}>
-          {err && <div className="flex items-center gap-5 bg-red-950 text-red-400 text-base rounded-3xl p-3"><AlertCircle size={17} />{err}</div>}
+          {err && <div className="flex items-center gap-5 bg-red-950 text-red-400 text-base rounded-2xl p-3"><AlertCircle size={17} />{err}</div>}
           <Field label="Full name *"><Input value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} onKeyDown={e => e.key === 'Enter' && save()} placeholder="Katie Marsh" autoFocus /></Field>
           <Field label="Email"><Input type="email" value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} placeholder="katie@email.com" /></Field>
+          <Field label="Address"><Input value={form.address} onChange={e => setForm(f => ({...f, address: e.target.value}))} placeholder="123 Main St, City, State" /></Field>
           <div className="grid grid-cols-2 gap-5">
             <Field label="Side"><Select value={form.side} onChange={e => setForm(f => ({...f, side: e.target.value}))}><option value="bride">Bride&apos;s side</option><option value="groom">Groom&apos;s side</option><option value="both">Both</option></Select></Field>
             <Field label="Dietary"><Select value={form.dietary} onChange={e => setForm(f => ({...f, dietary: e.target.value}))}><option value="">None</option><option>Vegetarian</option><option>Vegan</option><option>Gluten-free</option><option>Nut allergy</option><option>Halal</option><option>Kosher</option></Select></Field>
@@ -1242,57 +1300,87 @@ function TabMenu() {
 
 // ─── WEDDING PARTY ──────────────────────────────────────────────────────────
 function TabParty() {
-  const [members, setMembers] = useState<{id:string;name:string;role:string;side:string;phone:string;email:string;attire:string;notes:string}[]>([])
+  const [guests, setGuests] = useState<Guest[]>([])
+  const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
-  const [form, setForm] = useState({name:'',role:'Bridesmaid',side:'bride',phone:'',email:'',attire:'',notes:''})
-  const BRIDE_ROLES = ['Maid of Honor','Bridesmaid','Flower Girl','Junior Bridesmaid']
-  const GROOM_ROLES = ['Best Man','Groomsman','Usher','Ring Bearer']
-  const add = () => {
-    if (!form.name.trim()) return
-    setMembers(p=>[...p,{id:Date.now().toString(),...form}])
-    setForm({name:'',role:'Bridesmaid',side:'bride',phone:'',email:'',attire:'',notes:''}); setShowAdd(false)
+  const [selectedGuest, setSelectedGuest] = useState('')
+  const [selectedRole, setSelectedRole] = useState('Bridesmaid')
+  const [saving, setSaving] = useState(false)
+  const [removing, setRemoving] = useState<string|null>(null)
+
+  useEffect(() => { $get('guests').then(d => { setGuests(Array.isArray(d)?d:[]); setLoading(false) }) }, [])
+
+  const partyMembers = guests.filter(g => g.partyRole)
+  const bride = partyMembers.filter(m => m.side === 'bride')
+  const groom = partyMembers.filter(m => m.side === 'groom')
+  const available = guests.filter(g => g.isInvitee && !g.partyRole)
+
+  const addMember = async () => {
+    if (!selectedGuest) return
+    setSaving(true)
+    const res = await $patch('guest', { id: selectedGuest, partyRole: selectedRole })
+    setGuests(p => p.map(g => g.id === res.id ? res : g))
+    setSelectedGuest(''); setSelectedRole('Bridesmaid'); setShowAdd(false); setSaving(false)
   }
-  const bride = members.filter(m=>m.side==='bride')
-  const groom = members.filter(m=>m.side==='groom')
+
+  const removeMember = async (id: string) => {
+    setRemoving(id)
+    const res = await $patch('guest', { id, partyRole: '' })
+    setGuests(p => p.map(g => g.id === res.id ? {...g, partyRole: ''} : g))
+    setRemoving(null)
+  }
+
+  const MemberCard = ({ m }: { m: Guest }) => (
+    <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-5 group flex items-center gap-4">
+      <div className="text-2xl">{ROLE_ICONS[m.partyRole||''] || '⭐'}</div>
+      <div className="flex-1 min-w-0">
+        <p className="font-semibold text-white text-sm truncate">{m.name}</p>
+        <p className="text-xs text-[var(--sage)]">{m.partyRole}</p>
+        {m.email && <p className="text-[10px] text-[#9ca3af] truncate">{m.email}</p>}
+      </div>
+      <button onClick={() => removeMember(m.id)} disabled={removing===m.id} className="text-[#9ca3af] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all shrink-0">
+        {removing===m.id ? <Loader2 size={15} className="animate-spin"/> : <Trash2 size={15}/>}
+      </button>
+    </div>
+  )
+
   return (
     <div>
-      <PageHeader title="Wedding party" sub={`${members.length} members`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add member</Btn>} />
-      <div className="grid grid-cols-2 gap-7">
-        {[{label:"Bride's side",side:'bride',list:bride,roles:BRIDE_ROLES},{label:"Groom's side",side:'groom',list:groom,roles:GROOM_ROLES}].map(({label,list,side,roles})=>(
-          <div key={label}>
-            <h2 className="text-lg font-light text-[#a8c4a4] mb-3" style={{fontFamily:'var(--font-display)'}}>{label}</h2>
-            <div className="space-y-2">
-              {list.length===0?<div className="border-2 border-dashed border-[#2a3829] rounded-3xl py-10 text-center text-[#5a7057] text-base">No members yet</div>
-                :list.map(m=>(
-                  <div key={m.id} className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 group">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-5">
-                        <div className="w-9 h-9 rounded-full bg-[var(--sage-light,#1e3a1e)] flex items-center justify-center text-base font-semibold text-[var(--sage)]">{m.name.split(' ').map((w:string)=>w[0]).join('').slice(0,2).toUpperCase()}</div>
-                        <div><p className="font-medium text-[#e8f0e6]">{m.name}</p><p className="text-base text-[var(--sage)]">{m.role}</p></div>
-                      </div>
-                      <button onClick={()=>setMembers(p=>p.filter(x=>x.id!==m.id))} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={19}/></button>
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-5">
-                      {m.phone&&<a href={`tel:${m.phone}`} className="flex items-center gap-1 text-base text-[#5a7057] hover:text-[var(--sage)]"><Phone size={11}/>{m.phone}</a>}
-                      {m.email&&<a href={`mailto:${m.email}`} className="flex items-center gap-1 text-base text-[#5a7057] hover:text-[var(--sage)]"><Mail size={11}/>{m.email}</a>}
-                    </div>
-                    {m.attire&&<p className="text-base text-[#5a7057] mt-1.5">Attire: {m.attire}</p>}
-                  </div>
-                ))}
+      <PageHeader title="Wedding party" sub={`${partyMembers.length} members`}
+        action={<Btn onClick={() => setShowAdd(true)}><Plus size={17}/>Add member</Btn>} />
+
+      {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#9ca3af]" size={26}/></div> : (
+        <div className="grid grid-cols-2 gap-7">
+          {[{label:"Bride's side", list:bride}, {label:"Groom's side", list:groom}].map(({label, list}) => (
+            <div key={label}>
+              <h2 className="text-base font-bold text-black uppercase tracking-wider mb-4">{label}</h2>
+              <div className="space-y-3">
+                {list.length === 0
+                  ? <div className="border-2 border-dashed border-[#2a3829] rounded-2xl py-10 text-center text-[#9ca3af] text-sm">No members yet</div>
+                  : list.map(m => <MemberCard key={m.id} m={m} />)}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
-      {showAdd&&(
-        <Modal title="Add party member" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.name.trim()}><Plus size={17}/>Add</Btn></>}>
-          <Field label="Name *"><Input value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} autoFocus /></Field>
-          <div className="grid grid-cols-2 gap-5">
-            <Field label="Side"><Select value={form.side} onChange={e=>setForm(f=>({...f,side:e.target.value,role:e.target.value==='bride'?'Bridesmaid':'Groomsman'}))}><option value="bride">Bride&apos;s side</option><option value="groom">Groom&apos;s side</option></Select></Field>
-            <Field label="Role"><Select value={form.role} onChange={e=>setForm(f=>({...f,role:e.target.value}))}>{(form.side==='bride'?BRIDE_ROLES:GROOM_ROLES).map(r=><option key={r}>{r}</option>)}</Select></Field>
-            <Field label="Phone"><Input value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))} /></Field>
-            <Field label="Email"><Input value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} /></Field>
-          </div>
-          <Field label="Attire"><Input value={form.attire} onChange={e=>setForm(f=>({...f,attire:e.target.value}))} placeholder="e.g. Sage green, floor length" /></Field>
+          ))}
+        </div>
+      )}
+
+      {showAdd && (
+        <Modal title="Add to wedding party" onClose={() => setShowAdd(false)}
+          footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={addMember} disabled={saving || !selectedGuest}>{saving ? <><Loader2 size={17} className="animate-spin"/>Saving…</> : <><Plus size={17}/>Add</>}</Btn></>}>
+          <Field label="Select guest">
+            <Select value={selectedGuest} onChange={e => setSelectedGuest(e.target.value)}>
+              <option value="">— Choose a guest —</option>
+              {available.map(g => <option key={g.id} value={g.id}>{g.name} ({g.side}&apos;s side)</option>)}
+            </Select>
+          </Field>
+          <Field label="Role">
+            <Select value={selectedRole} onChange={e => setSelectedRole(e.target.value)}>
+              <optgroup label="Bride's side">{BRIDE_ROLES.map(r => <option key={r}>{r}</option>)}</optgroup>
+              <optgroup label="Groom's side">{GROOM_ROLES.map(r => <option key={r}>{r}</option>)}</optgroup>
+              <option value="Officiant">Officiant</option>
+            </Select>
+          </Field>
+          {selectedRole && <p className="text-2xl text-center py-2">{ROLE_ICONS[selectedRole] || '⭐'} {selectedRole}</p>}
         </Modal>
       )}
     </div>
