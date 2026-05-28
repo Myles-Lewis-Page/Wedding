@@ -74,6 +74,7 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
   const [bgColor, setBgColor] = useState('#111714')
   const [tertiaryColor, setTertiaryColor] = useState('#1a2419')
   const [colorSaved, setColorSaved] = useState(false)
+  const [upcomingTasks, setUpcomingTasks] = useState<{id:string;title:string;category:string;dueDate:string|null;priority:string;completed:boolean}[]>([])
 
   useEffect(() => {
     // Apply colors from localStorage immediately (no flash)
@@ -87,7 +88,16 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
         if (c.tertiary) { setTertiaryColor(c.tertiary); document.documentElement.style.setProperty('--bg3', c.tertiary); }
       } catch {}
     }
-    Promise.all([$get('guest-stats'), $get('venues'), $get('rsvp-settings')]).then(([s, vs, rs]) => {
+    Promise.all([$get('guest-stats'), $get('venues'), $get('rsvp-settings'), $get('tasks')]).then(([s, vs, rs, tasks]) => {
+      // Top 5 incomplete tasks sorted by due date
+      const pending = Array.isArray(tasks) ? tasks.filter((t:{completed:boolean;dueDate:string|null}) => !t.completed) : []
+      pending.sort((a:{dueDate:string|null},b:{dueDate:string|null}) => {
+        if (!a.dueDate && !b.dueDate) return 0
+        if (!a.dueDate) return 1
+        if (!b.dueDate) return -1
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+      })
+      setUpcomingTasks(pending.slice(0, 5))
       setStats(s)
       setVenue(Array.isArray(vs) ? (vs.find((v: {isSelected:boolean;name:string;address:string}) => v.isSelected) ?? null) : null)
       // DB is source of truth — overwrite localStorage if DB has colors
@@ -175,6 +185,38 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
           <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'#ff0000',display:'inline-block'}}/> Declined</span>
           <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'#1e2e1c',display:'inline-block'}}/> Pending</span>
         </div>
+      </div>
+
+      {/* Upcoming tasks */}
+      <div style={{background:'var(--bg3,#1a2419)',borderRadius:16,padding:'28px',border:'1px solid #202e1f',marginTop:28}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:18}}>
+          <p style={{fontSize:15,fontWeight:600,color:'#ffffff'}}>Upcoming tasks</p>
+          <button onClick={()=>onTab?.('tasks')} style={{fontSize:13,color:'var(--sage)',background:'none',border:'none',cursor:'pointer'}}>View all →</button>
+        </div>
+        {upcomingTasks.length === 0 ? (
+          <p style={{fontSize:14,color:'#9ca3af',textAlign:'center',padding:'16px 0'}}>No pending tasks 🎉</p>
+        ) : (
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            {upcomingTasks.map(t => {
+              const daysUntil = t.dueDate ? Math.ceil((new Date(t.dueDate).getTime() - Date.now()) / 86400000) : null
+              const urgency = daysUntil === null ? '#9ca3af' : daysUntil < 0 ? '#ff0000' : daysUntil <= 7 ? '#f0b429' : '#00ff00'
+              return (
+                <div key={t.id} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 16px',background:'#141c13',borderRadius:10,border:'1px solid #202e1f'}}>
+                  <div style={{width:8,height:8,borderRadius:'50%',background:urgency,flexShrink:0}}/>
+                  <div style={{flex:1,minWidth:0}}>
+                    <p style={{fontSize:14,fontWeight:500,color:'#ffffff',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.title}</p>
+                    <p style={{fontSize:12,color:'#9ca3af'}}>{t.category}</p>
+                  </div>
+                  {t.dueDate && (
+                    <p style={{fontSize:12,color:urgency,flexShrink:0,fontWeight:600}}>
+                      {daysUntil === 0 ? 'Today' : daysUntil! < 0 ? `${Math.abs(daysUntil!)}d overdue` : `${daysUntil}d`}
+                    </p>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
     </div>
