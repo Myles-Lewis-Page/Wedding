@@ -167,12 +167,12 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
           <span style={{color:'#3a5038'}}>{stats.attending + stats.declined} / {stats.total}</span>
         </div>
         <div style={{height:10,background:'#141c13',borderRadius:5,overflow:'hidden',display:'flex'}}>
-          <div style={{height:'100%',background:'var(--accent)',borderRadius:5,transition:'width 0.5s',width:`${stats.total?(stats.attending/stats.total)*100:0}%`}}/>
+          <div style={{height:'100%',background:'#00ff00',borderRadius:5,transition:'width 0.5s',width:`${stats.total?(stats.attending/stats.total)*100:0}%`}}/>
           <div style={{height:'100%',background:'#ff0000',transition:'width 0.5s',width:`${stats.total?(stats.declined/stats.total)*100:0}%`}}/>
         </div>
         <div style={{display:'flex',gap:24,marginTop:12,fontSize:13,color:'#3a5038'}}>
-          <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'var(--accent)',display:'inline-block'}}/> Attending</span>
-          <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'#7f2020',display:'inline-block'}}/> Declined</span>
+          <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'#00ff00',display:'inline-block'}}/> Attending</span>
+          <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'#ff0000',display:'inline-block'}}/> Declined</span>
           <span style={{display:'flex',alignItems:'center',gap:6}}><span style={{width:10,height:10,borderRadius:'50%',background:'#1e2e1c',display:'inline-block'}}/> Pending</span>
         </div>
       </div>
@@ -1689,7 +1689,7 @@ function TabSeating() {
                     <p className="text-base font-medium text-[#cde0ca]">{t.name}</p>
                     <p className="text-base text-[#5a7057] capitalize">{t.shape} · {cnt}/{t.seats}</p>
                   </div>
-                  <button onClick={async()=>{ if(!confirm(`Delete ${t.name}?`)) return; await $del('table',t.id); setTables(p=>p.filter(x=>x.id!==t.id)) }} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-1 shrink-0"><Trash2 size={26}/></button>
+                  <button onClick={async()=>{ if(!confirm(`Delete ${t.name}?`)) return; await $del('table',t.id); setTables(p=>p.filter(x=>x.id!==t.id)); setGuests(p=>p.map(g=>g.tableId===t.id?{...g,tableId:null}:g)) }} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-1 shrink-0"><Trash2 size={26}/></button>
                 </div>
               })}
               {tables.length===0 && <p className="text-base text-[#5a7057]">No tables yet</p>}
@@ -1782,7 +1782,7 @@ export default function DashboardPage() {
   const TabComponent = TAB_COMPONENTS[tab] || TabHome
 
   return (
-    <div style={{ display:"flex", height:"100vh", overflow:"hidden", background:"var(--bg)" }}>
+    <div style={{ display:"flex", height:"100vh", overflow:"hidden", background:"var(--bg)", maxWidth:"100vw" }}>
       <Sidebar activeTab={tab} onTab={setTab} />
       <main style={{ flex:1, overflowY:"auto", padding:"40px 48px", background:"var(--bg)" }} className="md:pt-10">
         <TabComponent onTab={setTab} />
