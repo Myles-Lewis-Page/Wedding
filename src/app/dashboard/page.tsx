@@ -705,7 +705,7 @@ function TabBudget() {
           { label:'Remaining', val: total - allocated, color: total - allocated < 0 ? '#dc2626' : undefined },
         ].map(({ label, val, sub, editable, color }) => (
           <div key={label} className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8">
-            <p className="text-base text-[#5a7057] uppercase tracking-wider mb-2">{label}</p>
+            <p className="text-base font-bold text-black uppercase tracking-wider mb-2">{label}</p>
             {editable
               ? <div className="flex items-baseline gap-0.5"><span className="text-[#9ca3af]">$</span><input type="number" value={total} onChange={e => setTotal(+e.target.value)} className="text-2xl font-light w-full focus:outline-none" style={{ fontFamily: 'var(--font-display)' }} /></div>
               : <p className="text-2xl font-light" style={{ fontFamily: 'var(--font-display)', color: color || '#1c1917' }}>{fmt$(val)}</p>}
@@ -716,7 +716,7 @@ function TabBudget() {
 
       {/* Allocation bar */}
       <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 mb-7">
-        <div className="flex justify-between text-base text-[#5a7057] mb-2"><span>Allocation</span><span>{fmt$(allocated)} of {fmt$(total)}</span></div>
+        <div className="flex justify-between text-base font-bold text-black mb-2"><span>Allocation</span><span className="font-normal text-[#9ca3af]">{fmt$(allocated)} of {fmt$(total)}</span></div>
         <div className="h-3 bg-[#1f2b1e] rounded-full overflow-hidden flex gap-px">
           {cats.filter(c => c.budgeted > 0).map(c => <div key={c.id} className="h-full transition-all" style={{ width: `${(c.budgeted/total)*100}%`, background: c.color }} />)}
         </div>
@@ -743,8 +743,8 @@ function TabBudget() {
                 return (
                   <tr key={c.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#141c13] group">
                     <td className="px-8 py-4"><div className="flex items-center gap-5.5"><div className="w-3 h-3 rounded-full" style={{ background: c.color }}/><span className="font-medium text-[#e8f0e6]">{c.name}</span></div></td>
-                    <td className="px-8 py-4"><div className="relative"><span className="absolute left-2 top-1.5 text-[#5a7057] text-base">$</span><input type="number" defaultValue={c.budgeted} onBlur={e => update(c.id,'budgeted',+e.target.value)} className="w-28 pl-5 pr-2 py-1.5 rounded-lg border border-transparent hover:border-[#2a3829] focus:border-[var(--sage)] focus:outline-none text-base bg-transparent focus:bg-[#1a2419]" /></div></td>
-                    <td className="px-8 py-4"><div className="relative"><span className="absolute left-2 top-1.5 text-[#5a7057] text-base">$</span><input type="number" defaultValue={c.paid} onBlur={e => update(c.id,'paid',+e.target.value)} className="w-28 pl-5 pr-2 py-1.5 rounded-lg border border-transparent hover:border-[#2a3829] focus:border-[var(--sage)] focus:outline-none text-base bg-transparent focus:bg-[#1a2419]" /></div></td>
+                    <td className="px-8 py-4"><div className="flex items-center gap-1"><span className="text-[#9ca3af] text-sm shrink-0">$</span><input type="number" defaultValue={c.budgeted} onBlur={e => update(c.id,'budgeted',+e.target.value)} className="w-24 px-2 py-1.5 rounded-lg border border-transparent hover:border-[#2a3829] focus:border-[var(--sage)] focus:outline-none text-base bg-transparent focus:bg-[#1a2419]" /></div></td>
+                    <td className="px-8 py-4"><div className="flex items-center gap-1"><span className="text-[#9ca3af] text-sm shrink-0">$</span><input type="number" defaultValue={c.paid} onBlur={e => update(c.id,'paid',+e.target.value)} className="w-24 px-2 py-1.5 rounded-lg border border-transparent hover:border-[#2a3829] focus:border-[var(--sage)] focus:outline-none text-base bg-transparent focus:bg-[#1a2419]" /></div></td>
                     <td className="px-6 py-3.5.5.5 text-base font-medium" style={{ color: rem < 0 ? '#dc2626' : '#1c1917' }}>{fmt$(rem)}</td>
                     <td className="px-8 py-4"><div className="flex items-center gap-5"><div className="flex-1 h-1.5 bg-[#1f2b1e] rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width:`${pct}%`, background: c.color }}/></div><span className="text-base text-[#5a7057] w-8 text-right">{pct}%</span></div></td>
                     <td className="px-8 py-4"><button onClick={() => del(c.id)} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={19}/></button></td>
@@ -908,7 +908,7 @@ function TabTasks() {
         action={<Btn onClick={() => setShowAdd(true)}><Plus size={17}/>Add task</Btn>} />
 
       <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 mb-7">
-        <div className="flex justify-between text-base text-[#5a7057] mb-1.5"><span>Progress</span><span>{tasks.length ? Math.round(done/tasks.length*100) : 0}%</span></div>
+        <div className="flex justify-between text-base font-bold text-black mb-1.5"><span>Progress</span><span className="font-normal text-[#9ca3af]">{tasks.length ? Math.round(done/tasks.length*100) : 0}%</span></div>
         <div className="h-2 bg-[#1f2b1e] rounded-full overflow-hidden"><div className="h-full bg-[var(--accent)] rounded-full transition-all" style={{ width: `${tasks.length ? done/tasks.length*100 : 0}%` }}/></div>
       </div>
 
@@ -1277,7 +1277,7 @@ function TabMenu() {
           <div className="flex items-center gap-5 mb-7"><UtensilsCrossed size={26} className="text-[var(--sage)]"/><h3 className="font-medium text-[#e8f0e6]">Menu</h3></div>
           {menu.map((c,i) => (
             <div key={i} className="border-b border-[#1a2419] pb-3 mb-3 last:border-0 last:mb-0">
-              <p className="text-base font-semibold text-[#5a7057] uppercase tracking-wider mb-1">{c.course}</p>
+              <p className="text-base font-bold text-black uppercase tracking-wider mb-1">{c.course}</p>
               <textarea value={c.items} onChange={e=>setMenu(p=>p.map((m,j)=>j===i?{...m,items:e.target.value}:m))} className="w-full text-base text-white resize-none border-0 focus:outline-none bg-transparent" rows={2} />
             </div>
           ))}
@@ -1675,59 +1675,140 @@ function TabPlaylist() {
 // ─── GIFTS ────────────────────────────────────────────────────────────────────
 function TabGifts() {
   const [gifts, setGifts] = useState<{id:string;fromName:string;description:string;value:number|null;thankYouSent:boolean}[]>([])
+  const [guests, setGuests] = useState<Guest[]>([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
-  const [form, setForm] = useState({fromName:'',description:'',value:'',receivedAt:''})
+  const [editTarget, setEditTarget] = useState<{id:string;fromName:string;description:string;value:number|null;thankYouSent:boolean}|null>(null)
+  const [selectedGuests, setSelectedGuests] = useState<string[]>([])
+  const [guestSearch, setGuestSearch] = useState('')
+  const [form, setForm] = useState({description:''})
+  const [editForm, setEditForm] = useState({fromName:'',description:'',value:''})
   const [saving, setSaving] = useState(false)
-  useEffect(()=>{$get('gifts').then(d=>{setGifts(Array.isArray(d)?d:[]); setLoading(false)})},[])
+
+  useEffect(()=>{
+    Promise.all([$get('gifts'),$get('guests')]).then(([g,gs])=>{
+      setGifts(Array.isArray(g)?g:[])
+      setGuests(Array.isArray(gs)?gs:[])
+      setLoading(false)
+    })
+  },[])
+
+  const filteredGuests = guests.filter(g=>g.isInvitee&&(g.name.toLowerCase().includes(guestSearch.toLowerCase())||g.email?.toLowerCase().includes(guestSearch.toLowerCase())))
+
+  const toggleGuest = (id:string) => setSelectedGuests(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id])
+
   const add = async () => {
-    if(!form.fromName.trim()) return
+    if(selectedGuests.length===0) return
     setSaving(true)
-    const res = await $post('gift',{...form,value:parseFloat(form.value)||null})
-    setGifts(p=>[res,...p]); setForm({fromName:'',description:'',value:'',receivedAt:''}); setShowAdd(false); setSaving(false)
+    const names = selectedGuests.map(id=>guests.find(g=>g.id===id)?.name||'Unknown').join(' & ')
+    const res = await $post('gift',{fromName:names,description:form.description,value:null})
+    setGifts(p=>[res,...p])
+    setForm({description:''}); setSelectedGuests([]); setGuestSearch(''); setShowAdd(false); setSaving(false)
   }
+
+  const saveEdit = async () => {
+    if(!editTarget) return
+    setSaving(true)
+    const res = await $patch('gift',{id:editTarget.id,fromName:editForm.fromName,description:editForm.description,value:parseFloat(editForm.value)||null})
+    setGifts(p=>p.map(g=>g.id===res.id?res:g)); setEditTarget(null); setSaving(false)
+  }
+
+  const del = async (id:string) => {
+    if(!confirm('Delete this gift?')) return
+    await $del('gift',id); setGifts(p=>p.filter(g=>g.id!==id))
+  }
+
   const toggle = async (id:string, sent:boolean) => {
     setGifts(p=>p.map(g=>g.id===id?{...g,thankYouSent:!sent}:g))
     await $patch('gift',{id,thankYouSent:!sent})
   }
-  const total = gifts.reduce((s,g)=>s+(g.value||0),0)
+
   const pending = gifts.filter(g=>!g.thankYouSent).length
+
   return (
     <div>
       <PageHeader title="Gifts & thank yous" sub={`${gifts.length} gifts · ${pending} thank you${pending!==1?'s':''} to send`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Log gift</Btn>} />
-      <div className="grid grid-cols-3 gap-7 mb-7">
-        {[{label:'Total gifts',val:String(gifts.length)},{label:'Thank yous pending',val:String(pending)},{label:'Est. value',val:fmt$(total)}].map(({label,val})=>(
+
+      <div className="grid grid-cols-2 gap-7 mb-7">
+        {[{label:'Total gifts',val:String(gifts.length)},{label:'Thank yous pending',val:String(pending)}].map(({label,val})=>(
           <div key={label} className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 text-center">
-            <p className="text-2xl font-light" style={{fontFamily:'var(--font-display)'}}>{val}</p>
-            <p className="text-base text-[#5a7057] mt-0.5">{label}</p>
+            <p className="text-3xl font-light text-white" style={{fontFamily:'var(--font-display)'}}>{val}</p>
+            <p className="text-sm font-bold text-black uppercase tracking-wider mt-2">{label}</p>
           </div>
         ))}
       </div>
+
       {loading?<div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#9ca3af]" size={26}/></div>:(
         <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
           {gifts.length===0?<div className="text-center py-14 text-[#9ca3af]">No gifts logged yet</div>:(
-            <table className="w-full text-base">
-              <thead><tr className="border-b border-black/20 bg-black/20 text-left text-base text-black uppercase tracking-wider font-bold">{['From','Gift','Value','Thank you'].map(h=><th key={h} className="px-6 py-3.5.5 font-medium">{h}</th>)}</tr></thead>
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-black/20 bg-black/20 text-left text-xs text-black uppercase tracking-wider font-bold">
+                {['From','Gift','Thank you',''].map(h=><th key={h} className="px-6 py-3 font-bold">{h}</th>)}
+              </tr></thead>
               <tbody>{gifts.map(g=>(
-                <tr key={g.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#141c13]">
-                  <td className="px-6 py-3.5.5 font-medium text-[#e8f0e6]">{g.fromName}</td>
-                  <td className="px-6 py-3.5.5 text-[#7a9878] text-base">{g.description||'—'}</td>
-                  <td className="px-8 py-4">{g.value?`$${g.value.toLocaleString()}`:'—'}</td>
-                  <td className="px-8 py-4"><button onClick={()=>toggle(g.id,g.thankYouSent)} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-base font-medium ${g.thankYouSent?'bg-emerald-950 text-emerald-400':'bg-amber-950 text-amber-400'}`}>{g.thankYouSent?<><Check size={11}/>Sent</>:'Mark sent'}</button></td>
+                <tr key={g.id} className="border-b border-black/10 last:border-0 hover:bg-black/10 group">
+                  <td className="px-6 py-3 font-semibold text-white">{g.fromName}</td>
+                  <td className="px-6 py-3 text-[#9ca3af]">{g.description||'—'}</td>
+                  <td className="px-6 py-3">
+                    <button onClick={()=>toggle(g.id,g.thankYouSent)} className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all ${g.thankYouSent?'bg-emerald-950 text-emerald-400':'bg-amber-950 text-amber-400 hover:bg-amber-900'}`}>
+                      {g.thankYouSent?<><Check size={11}/>Sent</>:'Mark sent'}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                      <button onClick={()=>{setEditTarget(g);setEditForm({fromName:g.fromName,description:g.description,value:g.value?String(g.value):''})}} className="text-[#9ca3af] hover:text-[var(--sage)] transition-colors"><Edit3 size={14}/></button>
+                      <button onClick={()=>del(g.id)} className="text-[#9ca3af] hover:text-red-400 transition-colors"><Trash2 size={14}/></button>
+                    </div>
+                  </td>
                 </tr>
               ))}</tbody>
             </table>
           )}
         </div>
       )}
+
+      {/* Add gift modal */}
       {showAdd&&(
-        <Modal title="Log a gift" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={saving||!form.fromName.trim()}>{saving?<><Loader2 size={17} className="animate-spin"/>Saving…</>:<><Plus size={17}/>Save</>}</Btn></>}>
-          <Field label="From *"><Input value={form.fromName} onChange={e=>setForm(f=>({...f,fromName:e.target.value}))} placeholder="John & Jane Smith" autoFocus /></Field>
-          <Field label="Description"><Input value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} placeholder="KitchenAid stand mixer" /></Field>
-          <div className="grid grid-cols-2 gap-5">
-            <Field label="Value ($)"><Input type="number" value={form.value} onChange={e=>setForm(f=>({...f,value:e.target.value}))} /></Field>
-            <Field label="Received date"><Input type="date" value={form.receivedAt} onChange={e=>setForm(f=>({...f,receivedAt:e.target.value}))} /></Field>
-          </div>
+        <Modal title="Log a gift" onClose={()=>{setShowAdd(false);setSelectedGuests([]);setGuestSearch('')}}
+          footer={<><Btn variant="ghost" onClick={()=>{setShowAdd(false);setSelectedGuests([]);setGuestSearch('')}}>Cancel</Btn><Btn onClick={add} disabled={saving||selectedGuests.length===0}>{saving?<><Loader2 size={17} className="animate-spin"/>Saving…</>:<><Plus size={17}/>Save</>}</Btn></>}>
+          <Field label={`Select guests (${selectedGuests.length} selected)`}>
+            <div className="space-y-2">
+              <Input placeholder="Search guests…" value={guestSearch} onChange={e=>setGuestSearch(e.target.value)} autoFocus />
+              <div className="max-h-52 overflow-y-auto rounded-xl border border-[#2a3829] divide-y divide-[#2a3829]">
+                {filteredGuests.length===0
+                  ?<p className="text-xs text-[#9ca3af] text-center py-4">No guests found</p>
+                  :filteredGuests.map(g=>{
+                    const sel=selectedGuests.includes(g.id)
+                    return(
+                      <button key={g.id} type="button" onClick={()=>toggleGuest(g.id)}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-black/20 transition-colors"
+                        style={{background:sel?'var(--accent)22':'transparent'}}>
+                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all ${sel?'border-[var(--accent)] bg-[var(--accent)]':'border-[#2a3829]'}`}>
+                          {sel&&<Check size={11} className="text-white"/>}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-white truncate">{g.name}</p>
+                          {g.email&&<p className="text-[10px] text-[#9ca3af] truncate">{g.email}</p>}
+                        </div>
+                        <span className="text-xs text-[#9ca3af] capitalize shrink-0">{g.side}</span>
+                      </button>
+                    )
+                  })}
+              </div>
+              {selectedGuests.length>0&&<p className="text-xs text-[var(--sage)]">Selected: {selectedGuests.map(id=>guests.find(g=>g.id===id)?.name).filter(Boolean).join(', ')}</p>}
+            </div>
+          </Field>
+          <Field label="Gift description (optional)"><Input value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} placeholder="KitchenAid stand mixer, cash, etc." /></Field>
+        </Modal>
+      )}
+
+      {/* Edit gift modal */}
+      {editTarget&&(
+        <Modal title="Edit gift" onClose={()=>setEditTarget(null)}
+          footer={<><Btn variant="ghost" onClick={()=>setEditTarget(null)}>Cancel</Btn><Btn onClick={saveEdit} disabled={saving}>{saving?<><Loader2 size={17} className="animate-spin"/>Saving…</>:<><Check size={17}/>Save</>}</Btn></>}>
+          <Field label="From"><Input value={editForm.fromName} onChange={e=>setEditForm(f=>({...f,fromName:e.target.value}))} autoFocus /></Field>
+          <Field label="Description"><Input value={editForm.description} onChange={e=>setEditForm(f=>({...f,description:e.target.value}))} /></Field>
+          <Field label="Value ($)"><Input type="number" value={editForm.value} onChange={e=>setEditForm(f=>({...f,value:e.target.value}))} /></Field>
         </Modal>
       )}
     </div>
