@@ -2077,36 +2077,31 @@ function TabColors() {
 
   const ColorPicker = useCallback(({ label, desc, colorKey }: { label:string; desc:string; colorKey: keyof ColorSet }) => {
     const val = colors[colorKey] as string
+    const onColorChange = (v: string) => {
+      const updated = { ...colors, [colorKey]: v }
+      setColors(updated)
+      apply(updated)
+      debouncedSave(updated)
+    }
     return (
       <div style={{ background:'var(--bg3,#1a2419)', borderRadius:12, border:'1px solid #202e1f', overflow:'hidden' }}>
-        <div style={{ padding:'20px 20px 16px' }}>
-        <p style={{ fontSize:12, fontWeight:700, color:'#000', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:3 }}>{label}</p>
-        <p style={{ fontSize:11, color:'#9ca3af', marginBottom:12 }}>{desc}</p>
-        <div style={{ display:'flex', gap:10, alignItems:'center', marginBottom:10 }}>
-          <div style={{ position:'relative', flexShrink:0 }}>
-            <div style={{ width:44, height:44, borderRadius:10, border:'2px solid #2a3829', background:val, cursor:'pointer' }}
-              onClick={e => { (e.currentTarget.nextSibling as HTMLInputElement)?.click() }} />
-            <input type="color" value={val}
-              onChange={e => {
-                const updated = { ...colors, [colorKey]: e.target.value }
-                setColors(updated)
-                apply(updated)
-                debouncedSave(updated)
-              }}
-              style={{ position:'absolute', top:0, left:0, width:44, height:44, opacity:0, cursor:'pointer', zIndex:10 }} />
+        <div style={{ padding:'20px 20px 12px' }}>
+          <p style={{ fontSize:12, fontWeight:700, color:'#000', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:3 }}>{label}</p>
+          <p style={{ fontSize:11, color:'#9ca3af', marginBottom:12 }}>{desc}</p>
+          <div style={{ display:'flex', gap:10, alignItems:'center' }}>
+            <div style={{ position:'relative', flexShrink:0, width:44, height:44 }}>
+              <div style={{ width:44, height:44, borderRadius:10, border:'2px solid rgba(0,0,0,0.3)', background:val, cursor:'pointer', position:'absolute', inset:0 }} />
+              <input type="color" defaultValue={val} key={val}
+                onInput={e => onColorChange((e.target as HTMLInputElement).value)}
+                style={{ position:'absolute', inset:0, width:'100%', height:'100%', opacity:0, cursor:'pointer', border:'none', padding:0 }} />
+            </div>
+            <input type="text" value={val}
+              onChange={e => onColorChange(e.target.value)}
+              onBlur={e => persist({ ...colors, [colorKey]: e.target.value })}
+              style={{ flex:1, padding:'10px 14px', borderRadius:10, border:'1px solid #2a3829', fontSize:14, background:'#141c13', color:'#e8f0e6', outline:'none' }} />
           </div>
-          <input type="text" value={val}
-            onChange={e => {
-              const updated = { ...colors, [colorKey]: e.target.value }
-              setColors(updated)
-              apply(updated)
-              debouncedSave(updated)
-            }}
-            onBlur={e => persist({ ...colors, [colorKey]: e.target.value })}
-            style={{ flex:1, padding:'10px 14px', borderRadius:10, border:'1px solid #2a3829', fontSize:14, background:'#141c13', color:'#e8f0e6', outline:'none' }} />
         </div>
-        </div>
-        <div style={{ height:5, background:val }} />
+        <div style={{ height:6, background:val, marginTop:12 }} />
       </div>
     )
   // eslint-disable-next-line react-hooks/exhaustive-deps
