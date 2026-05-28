@@ -2068,10 +2068,18 @@ function TabColors() {
     localStorage.setItem('colorPresets', JSON.stringify(updated))
   }
 
+  // Debounce save — fires 800ms after last color change
+  const saveTimer = useRef<ReturnType<typeof setTimeout>|null>(null)
+  const debouncedSave = useCallback((col: ColorSet) => {
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => { persist(col) }, 800)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const ColorPicker = useCallback(({ label, desc, colorKey }: { label:string; desc:string; colorKey: keyof ColorSet }) => {
     const val = colors[colorKey] as string
     return (
-      <div style={{ background:'var(--bg3,#1a2419)', borderRadius:12, padding:20, border:'1px solid #202e1f' }}>
+      <div style={{ background:'var(--bg3,#1a2419)', borderRadius:12, border:'1px solid #202e1f', overflow:'hidden' }}>
+        <div style={{ padding:'20px 20px 16px' }}>
         <p style={{ fontSize:12, fontWeight:700, color:'#000', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:3 }}>{label}</p>
         <p style={{ fontSize:11, color:'#9ca3af', marginBottom:12 }}>{desc}</p>
         <div style={{ display:'flex', gap:10, alignItems:'center', marginBottom:10 }}>
@@ -2079,16 +2087,26 @@ function TabColors() {
             <div style={{ width:44, height:44, borderRadius:10, border:'2px solid #2a3829', background:val, cursor:'pointer' }}
               onClick={e => { (e.currentTarget.nextSibling as HTMLInputElement)?.click() }} />
             <input type="color" value={val}
-              onChange={e => updateColor(colorKey, e.target.value)}
-              onBlur={e => handleBlur({ ...colors, [colorKey]: e.target.value })}
+              onChange={e => {
+                const updated = { ...colors, [colorKey]: e.target.value }
+                setColors(updated)
+                apply(updated)
+                debouncedSave(updated)
+              }}
               style={{ position:'absolute', top:0, left:0, width:44, height:44, opacity:0, cursor:'pointer', zIndex:10 }} />
           </div>
           <input type="text" value={val}
-            onChange={e => updateColor(colorKey, e.target.value)}
-            onBlur={e => handleBlur({ ...colors, [colorKey]: e.target.value })}
+            onChange={e => {
+              const updated = { ...colors, [colorKey]: e.target.value }
+              setColors(updated)
+              apply(updated)
+              debouncedSave(updated)
+            }}
+            onBlur={e => persist({ ...colors, [colorKey]: e.target.value })}
             style={{ flex:1, padding:'10px 14px', borderRadius:10, border:'1px solid #2a3829', fontSize:14, background:'#141c13', color:'#e8f0e6', outline:'none' }} />
         </div>
-        <div style={{ height:5, borderRadius:3, background:val }} />
+        </div>
+        <div style={{ height:5, background:val }} />
       </div>
     )
   // eslint-disable-next-line react-hooks/exhaustive-deps
