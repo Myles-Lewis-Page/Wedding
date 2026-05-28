@@ -9,6 +9,7 @@ interface Settings {
   confirmedMessage: string; declinedMessage: string; contactEmail: string
   coupleNames: string; ourStory: string; photo1: string; photo2: string
   dressCode: string; dressCodeNote: string; weddingDate: string
+  swatchBridesmaids: string; swatchSuits: string; swatchVenue: string; swatchFlowers: string
 }
 
 interface Venue { name: string; address: string; isSelected: boolean }
@@ -33,6 +34,7 @@ const DEFAULT: Settings = {
   contactEmail: '', coupleNames: 'Jennifer & Myles', secondaryColor: '#8fb882', bgColor: '#111714', tertiaryColor: '#1a2419',
   ourStory: "We didn't expect our story to begin the way it did, but from the very first moment something just felt right.\n\nWhat started with simple conversations quickly turned into something deeper, and little by little we realised we had found someone truly special.\n\nSince then, we've shared so many memories — the quiet moments, the big laughs, the small adventures that somehow become the ones you cherish most.",
   photo1: '', photo2: '', dressCode: 'Garden Formal',
+  swatchBridesmaids: '#9bb89a', swatchSuits: '#4a5568', swatchVenue: '#8b7355', swatchFlowers: '#e8b4bc',
   dressCodeNote: 'We would love for you to celebrate with us in attire that feels elegant and true to your style.',
   weddingDate: '',
 }
@@ -166,14 +168,13 @@ export default function RSVPPage() {
     } finally { setSubmitting(false) }
   }
 
+  const cardStyle = { background:card, borderRadius:24, boxShadow:'0 30px 80px rgba(0,0,0,0.6)', border:`1px solid ${card}dd` }
+
   if (loading) return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:bg }}>
       <Loader2 size={28} style={{ color:'#3a5038', animation:'spin 1s linear infinite' }} />
     </div>
   )
-
-  // bg defined in parent scope
-  const cardStyle = { background:card, borderRadius:24, boxShadow:'0 30px 80px rgba(0,0,0,0.6)', border:`1px solid ${card}dd` }
 
   return (
     <div style={{ minHeight:'100vh', fontFamily:'Georgia, serif', background: bg }}>
@@ -280,7 +281,21 @@ export default function RSVPPage() {
               <div style={{ marginTop:20, textAlign:'center', borderTop:`1px solid ${card}`, paddingTop:18 }}>
                 <p style={{ fontFamily:'Palatino,serif', fontStyle:'italic', fontSize:16, color:sage, marginBottom:6 }}>Dress Code</p>
                 <p style={{ fontSize:13, fontWeight:700, letterSpacing:'0.15em', textTransform:'uppercase', color:'#cde0ca', marginBottom:8 }}>{s.dressCode}</p>
-                <p style={{ fontSize:12, color:sage+'aa', lineHeight:1.6 }}>{s.dressCodeNote}</p>
+                <p style={{ fontSize:12, color:sage+'aa', lineHeight:1.6, marginBottom:20 }}>{s.dressCodeNote}</p>
+                {/* Color palette swatches */}
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10 }}>
+                  {([
+                    { color: s.swatchBridesmaids, label: 'Bridesmaid\ndresses' },
+                    { color: s.swatchSuits,       label: "Men's\nsuits" },
+                    { color: s.swatchVenue,       label: 'Venue\ncolors' },
+                    { color: s.swatchFlowers,     label: 'Floral\ncolors' },
+                  ] as {color:string; label:string}[]).map(({ color, label }) => (
+                    <div key={label} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
+                      <div style={{ width:44, height:44, borderRadius:'50%', background:color, boxShadow:`0 0 0 3px ${card}, 0 0 0 5px ${color}66`, flexShrink:0 }} />
+                      <p style={{ fontSize:10, color:sage+'88', lineHeight:1.4, textAlign:'center', whiteSpace:'pre-line' }}>{label}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
