@@ -1795,7 +1795,7 @@ export default function DashboardPage() {
       </div>
       {/* Main content — on mobile add top padding for the fixed header bar */}
       <main style={{ flex:1, overflowY:"auto", overflowX:"hidden", background:"var(--bg)", minWidth:0 }}
-        className="pt-16 px-4 pb-6 md:pt-10 md:pl-16 md:pr-12 md:pb-10">
+        className="pt-16 px-4 pb-6 md:pt-10 md:pl-7 md:pr-7 md:pb-10">
         <TabComponent onTab={setTab} />
       </main>
     </div>
