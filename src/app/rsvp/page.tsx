@@ -72,12 +72,36 @@ export default function RSVPPage() {
   const [email, setEmail] = useState('')
 
   useEffect(() => {
+    // Apply colors from localStorage immediately — no waiting for DB
+    try {
+      const saved = localStorage.getItem('weddingColors')
+      if (saved) {
+        const p = JSON.parse(saved)
+        setS(prev => ({
+          ...prev,
+          ...(p.accent ? { accentColor: p.accent } : {}),
+          ...(p.sage   ? { secondaryColor: p.sage } : {}),
+          ...(p.bg     ? { bgColor: p.bg } : {}),
+          ...(p.tertiary ? { tertiaryColor: p.tertiary } : {}),
+        }))
+      }
+    } catch {}
+
     Promise.all([
       fetch('/api/db?t=rsvp-settings').then(r => r.json()),
       fetch('/api/db?t=venues').then(r => r.json()),
       fetch('/api/db?t=timeline').then(r => r.json()),
     ]).then(([rs, vs, tl]) => {
-      if (rs && !rs.error) setS({ ...DEFAULT, ...rs })
+      if (rs && !rs.error) {
+        setS({ ...DEFAULT, ...rs })
+        // Keep localStorage in sync with DB
+        localStorage.setItem('weddingColors', JSON.stringify({
+          accent:   rs.accentColor    || '#4a7a44',
+          sage:     rs.secondaryColor || '#8fb882',
+          bg:       rs.bgColor        || '#111714',
+          tertiary: rs.tertiaryColor  || '#1a2419',
+        }))
+      }
       if (Array.isArray(vs)) setVenue(vs.find((v: Venue) => v.isSelected) ?? null)
       if (Array.isArray(tl)) setTimeline(tl)
       setLoading(false)
