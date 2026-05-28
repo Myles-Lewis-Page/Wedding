@@ -1784,7 +1784,7 @@ export default function DashboardPage() {
   const TabComponent = TAB_COMPONENTS[tab] || TabHome
 
   return (
-    <div style={{ display:"flex", height:"100vh", overflow:"hidden", background:"var(--bg)" }}>
+    <div style={{ display:"flex", height:"100vh", overflow:"hidden", background:"var(--bg2,#1a2419)" }}>
       {/* Sidebar — hidden on mobile, shown on desktop */}
       <div className="hidden md:block flex-shrink-0">
         <Sidebar activeTab={tab} onTab={setTab} />
@@ -1794,9 +1794,11 @@ export default function DashboardPage() {
         <Sidebar activeTab={tab} onTab={setTab} />
       </div>
       {/* Main content — on mobile add top padding for the fixed header bar */}
-      <main style={{ flex:1, overflowY:"auto", overflowX:"hidden", background:"var(--bg)", minWidth:0 }}
-        className="pt-16 px-4 pb-6 md:pt-10 md:pl-7 md:pr-7 md:pb-10">
+      <main style={{ flex:1, overflowY:"auto", overflowX:"hidden", background:"var(--bg)", minWidth:0, padding:0 }}
+        className="pt-16 md:pt-0">
+        <div style={{ minHeight:"100%", background:"var(--bg)", padding:"28px" }} className="pt-20 md:pt-7">
         <TabComponent onTab={setTab} />
+        </div>
       </main>
     </div>
   )
