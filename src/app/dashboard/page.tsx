@@ -264,9 +264,8 @@ function TabGuests() {
         ))}
       </div>
 
-      <div className="relative mb-4">
-        <Search size={17} className="absolute left-3 top-3 text-[#5a7057]" />
-        <Input placeholder="Search guests…" value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+      <div className="mb-4">
+        <Input placeholder="Search guests…" value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
       {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#3a5038]" size={26} /></div> : (
@@ -420,7 +419,7 @@ function TabVenues() {
         action={<Btn onClick={() => setShowAdd(true)}><Plus size={17} />Add venue</Btn>} />
 
       {/* Date picker */}
-      <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 mb-6">
+      <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-8 mb-6">
         <p className="text-base font-medium text-[#cde0ca] mb-1">Wedding date</p>
         <p className="text-base text-[#5a7057] mb-3">{fmtDate || 'Pick your date — it shows across the whole app'}</p>
         <div className="flex gap-5">
@@ -645,7 +644,7 @@ function TabBudget() {
           { label:'Paid', val: paid, sub: `${allocated ? Math.round(paid/allocated*100) : 0}% of allocated` },
           { label:'Remaining', val: total - allocated, color: total - allocated < 0 ? '#dc2626' : undefined },
         ].map(({ label, val, sub, editable, color }) => (
-          <div key={label} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7">
+          <div key={label} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-8">
             <p className="text-base text-[#5a7057] uppercase tracking-wider mb-2">{label}</p>
             {editable
               ? <div className="flex items-baseline gap-0.5"><span className="text-[#5a7057]">$</span><input type="number" value={total} onChange={e => setTotal(+e.target.value)} className="text-2xl font-light w-full focus:outline-none" style={{ fontFamily: 'var(--font-display)' }} /></div>
@@ -656,7 +655,7 @@ function TabBudget() {
       </div>
 
       {/* Allocation bar */}
-      <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 mb-5">
+      <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-8 mb-5">
         <div className="flex justify-between text-base text-[#5a7057] mb-2"><span>Allocation</span><span>{fmt$(allocated)} of {fmt$(total)}</span></div>
         <div className="h-3 bg-[#1f2b1e] rounded-full overflow-hidden flex gap-px">
           {cats.filter(c => c.budgeted > 0).map(c => <div key={c.id} className="h-full transition-all" style={{ width: `${(c.budgeted/total)*100}%`, background: c.color }} />)}
@@ -761,7 +760,7 @@ function TabVendors() {
             filtered.map(v => {
               const [slabel, scolor] = VENDOR_STATUS[v.status] ?? VENDOR_STATUS.researching
               return (
-                <div key={v.id} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 flex items-start gap-7 hover:border-stone-300 transition-colors">
+                <div key={v.id} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-8 flex items-start gap-7 hover:border-stone-300 transition-colors">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-5 mb-0.5">
                       <p className="font-semibold text-[#e8f0e6]">{v.name}</p>
@@ -845,7 +844,7 @@ function TabTasks() {
       <PageHeader title="Tasks" sub={`${done} of ${tasks.length} complete`}
         action={<Btn onClick={() => setShowAdd(true)}><Plus size={17}/>Add task</Btn>} />
 
-      <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 mb-5">
+      <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-8 mb-5">
         <div className="flex justify-between text-base text-[#5a7057] mb-1.5"><span>Progress</span><span>{tasks.length ? Math.round(done/tasks.length*100) : 0}%</span></div>
         <div className="h-2 bg-[#1f2b1e] rounded-full overflow-hidden"><div className="h-full bg-[var(--accent)] rounded-full transition-all" style={{ width: `${tasks.length ? done/tasks.length*100 : 0}%` }}/></div>
       </div>
@@ -910,7 +909,7 @@ function TabChecklist() {
   return (
     <div>
       <PageHeader title="Checklist" sub={`${done.size} of ${total} complete`} />
-      <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 mb-5">
+      <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-8 mb-5">
         <div className="h-2 bg-[#1f2b1e] rounded-full overflow-hidden"><div className="h-full bg-[var(--accent)] rounded-full transition-all" style={{ width:`${(done.size/total)*100}%` }}/></div>
         <p className="text-base text-[#5a7057] text-right mt-1">{Math.round(done.size/total*100)}%</p>
       </div>
@@ -1025,22 +1024,22 @@ function TabRSVP() {
     <div>
       <PageHeader title="RSVP portal" sub="Customize the guest experience and manage RSVPs" />
 
-      <div className="grid grid-cols-2 gap-7 mb-8">
+      <div className="grid grid-cols-2 gap-7 mb-8 items-start">
         {/* QR Code */}
-        <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 text-center">
-          <canvas ref={canvasRef} width={200} height={200} className="rounded-3xl mx-auto mb-4 block" style={{imageRendering:'pixelated'}} />
+        <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-8 text-center">
+          <canvas ref={canvasRef} width={160} height={160} className="rounded-2xl mx-auto mb-3 block" style={{imageRendering:'pixelated',width:160,height:160}} />
           <p className="text-base text-[#5a7057] mb-4 break-all">{RSVP_URL}</p>
-          <div className="flex flex-col gap-5">
-            <Btn onClick={() => { const c = canvasRef.current; if(c){const a=document.createElement('a');a.download='rsvp-qr.png';a.href=c.toDataURL();a.click()} }} className="w-full justify-center"><QrCode size={17}/>Download QR</Btn>
-            <Btn variant="ghost" onClick={() => { navigator.clipboard.writeText(RSVP_URL); setCopied(true); setTimeout(()=>setCopied(false),2000) }} className="w-full justify-center">
-              {copied ? <><Check size={19}/>Copied!</> : 'Copy link'}
+          <div className="flex flex-col gap-2">
+            <Btn onClick={() => { const c = canvasRef.current; if(c){const a=document.createElement('a');a.download='rsvp-qr.png';a.href=c.toDataURL();a.click()} }} style={{width:'100%',justifyContent:'center'}}><QrCode size={15}/>Download QR</Btn>
+            <Btn variant="ghost" onClick={() => { navigator.clipboard.writeText(RSVP_URL); setCopied(true); setTimeout(()=>setCopied(false),2000) }} style={{width:'100%',justifyContent:'center'}}>
+              {copied ? <><Check size={15}/>Copied!</> : 'Copy link'}
             </Btn>
-            <Btn variant="ghost" onClick={() => window.open(RSVP_URL,'_blank')} className="w-full justify-center"><ExternalLink size={19}/>Preview</Btn>
+            <Btn variant="ghost" onClick={() => window.open(RSVP_URL,'_blank')} style={{width:'100%',justifyContent:'center'}}><ExternalLink size={15}/>Preview</Btn>
           </div>
         </div>
 
         {/* Quick stats */}
-        <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7">
+        <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-8 flex flex-col justify-center">
           <p className="text-base font-semibold text-[#cde0ca] mb-4">RSVP stats</p>
           {(() => {
             const attending = guests.filter(g=>g.rsvpStatus==='attending').length
@@ -1066,7 +1065,7 @@ function TabRSVP() {
 
       {/* ── RSVP PAGE CUSTOMIZATION ── */}
       <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] mb-6">
-        <div className="flex items-center justify-between px-7 py-5 border-b border-[#202e1f]">
+        <div className="flex items-center justify-between px-8 py-6 border-b border-[#202e1f]">
           <div>
             <p className="font-semibold text-[#e8f0e6]">Customize RSVP page</p>
             <p className="text-base text-[#5a7057] mt-0.5">Changes appear live at your RSVP link</p>
@@ -1211,7 +1210,7 @@ function TabMenu() {
     <div>
       <PageHeader title="Menu & drinks" />
       <div className="grid grid-cols-2 gap-7">
-        <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7">
+        <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-8">
           <div className="flex items-center gap-5 mb-4"><UtensilsCrossed size={26} className="text-[var(--sage)]"/><h3 className="font-medium text-[#e8f0e6]">Menu</h3></div>
           {menu.map((c,i) => (
             <div key={i} className="border-b border-[#1a2419] pb-3 mb-3 last:border-0 last:mb-0">
@@ -1220,7 +1219,7 @@ function TabMenu() {
             </div>
           ))}
         </div>
-        <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7">
+        <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-8">
           <div className="flex items-center gap-5 mb-4"><Wine size={26} className="text-[var(--sage)]"/><h3 className="font-medium text-[#e8f0e6]">Drink calculator</h3></div>
           <div className="space-y-3 mb-5">
             <div><label className="text-base text-[#7a9878] mb-1 block">Guests: <strong>{guests}</strong></label><input type="range" min={20} max={500} step={5} value={guests} onChange={e=>setGuests(+e.target.value)} className="w-full"/></div>
@@ -1262,7 +1261,7 @@ function TabParty() {
             <div className="space-y-2">
               {list.length===0?<div className="border-2 border-dashed border-[#2a3829] rounded-3xl py-10 text-center text-[#5a7057] text-base">No members yet</div>
                 :list.map(m=>(
-                  <div key={m.id} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 group">
+                  <div key={m.id} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-8 group">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-5">
                         <div className="w-9 h-9 rounded-full bg-[var(--sage-light,#1e3a1e)] flex items-center justify-center text-base font-semibold text-[var(--sage)]">{m.name.split(' ').map((w:string)=>w[0]).join('').slice(0,2).toUpperCase()}</div>
@@ -1578,7 +1577,7 @@ function TabGifts() {
       <PageHeader title="Gifts & thank yous" sub={`${gifts.length} gifts · ${pending} thank you${pending!==1?'s':''} to send`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Log gift</Btn>} />
       <div className="grid grid-cols-3 gap-7 mb-6">
         {[{label:'Total gifts',val:String(gifts.length)},{label:'Thank yous pending',val:String(pending)},{label:'Est. value',val:fmt$(total)}].map(({label,val})=>(
-          <div key={label} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 text-center">
+          <div key={label} className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-8 text-center">
             <p className="text-2xl font-light" style={{fontFamily:'var(--font-display)'}}>{val}</p>
             <p className="text-base text-[#5a7057] mt-0.5">{label}</p>
           </div>
@@ -1680,7 +1679,7 @@ function TabSeating() {
       {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div> : (
         <div className="flex gap-7 h-[520px]">
           <div className="w-56 shrink-0 flex flex-col gap-5">
-            <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 flex-1 overflow-y-auto">
+            <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-8 flex-1 overflow-y-auto">
               <p className="text-base font-semibold text-[#5a7057] uppercase tracking-wider mb-3">Tables</p>
               {tables.map(t => {
                 const cnt = guests.filter(g=>g.tableId===t.id).length
@@ -1694,7 +1693,7 @@ function TabSeating() {
               })}
               {tables.length===0 && <p className="text-base text-[#5a7057]">No tables yet</p>}
             </div>
-            <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-7 flex-1 overflow-y-auto">
+            <div className="bg-[#1a2419] rounded-3xl border border-[#2a3829] p-8 flex-1 overflow-y-auto">
               <p className="text-base font-semibold text-[#5a7057] uppercase tracking-wider mb-3">Unassigned ({unassigned.length})</p>
               {unassigned.length===0 ? <p className="text-base text-[#5a7057]">Everyone seated 🎉</p> :
                 unassigned.map(g => <div key={g.id} className="flex items-center gap-5 py-1.5 border-b border-[#1a2419] last:border-0">
@@ -1793,7 +1792,7 @@ export default function DashboardPage() {
       </div>
       {/* Main content — on mobile add top padding for the fixed header bar */}
       <main style={{ flex:1, overflowY:"auto", overflowX:"hidden", background:"var(--bg)", minWidth:0 }}
-        className="pt-16 px-4 pb-6 md:pt-10 md:px-12 md:pb-10">
+        className="pt-16 px-4 pb-6 md:pt-10 md:pl-16 md:pr-12 md:pb-10">
         <TabComponent onTab={setTab} />
       </main>
     </div>
