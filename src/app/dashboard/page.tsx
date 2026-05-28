@@ -225,7 +225,7 @@ function TabGuests() {
   const [form, setForm] = useState({ name: '', email: '', side: 'bride', hasPlusOne: false, dietary: '' })
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => { $get('guests').then(d => { setGuests(Array.isArray(d) ? d : []); setLoading(false) }) }, [])
+  useEffect(() => { $get('guests').then(d => { setGuests(Array.isArray(d) ? d : []); setLoading(false) }) }, []) // guest list tab
 
   const save = async () => {
     if (!form.name.trim()) return
@@ -291,7 +291,7 @@ function TabGuests() {
                           <div>
                           <div className="flex items-center gap-1.5">
                             <p className="font-medium text-[#e8f0e6]">{g.name}</p>
-                            {g.isInvitee && <span className="text-[10px] px-1.5 py-0.5 bg-purple-950 text-purple-400 rounded-full font-medium">Invitee</span>}
+                            {g.isInvitee ? <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{background:'var(--sage-light,#1e3a1e)',color:'var(--sage)'}}>Invitee</span> : <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{background:'#1e1a3a',color:'#a5b4fc'}}>+1</span>}
                           </div>
                           {g.email && <p className="text-base text-[#5a7057]">{g.email}</p>}
                           {g.notes && <p className="text-base text-[#3a5038] italic">{g.notes}</p>}
@@ -1665,7 +1665,7 @@ function TabSeating() {
     return () => { window.removeEventListener('mousemove',move); window.removeEventListener('mouseup',up) }
   },[tables])
 
-  const assignGuest = async (guestId: string, tableId: string) => {
+  const assignGuest = async (guestId: string, tableId: string | null) => {
     await $patch('guest', { id:guestId, tableId: tableId||null })
     setGuests(p=>p.map(g=>g.id===guestId?{...g,tableId:tableId||null}:g))
     setAssignTarget(null)
@@ -1782,9 +1782,18 @@ export default function DashboardPage() {
   const TabComponent = TAB_COMPONENTS[tab] || TabHome
 
   return (
-    <div style={{ display:"flex", height:"100vh", overflow:"hidden", background:"var(--bg)", maxWidth:"100vw" }}>
-      <Sidebar activeTab={tab} onTab={setTab} />
-      <main style={{ flex:1, overflowY:"auto", padding:"40px 48px", background:"var(--bg)" }} className="md:pt-10">
+    <div style={{ display:"flex", height:"100vh", overflow:"hidden", background:"var(--bg)" }}>
+      {/* Sidebar — hidden on mobile, shown on desktop */}
+      <div className="hidden md:block flex-shrink-0">
+        <Sidebar activeTab={tab} onTab={setTab} />
+      </div>
+      {/* Mobile: full-screen drawer handled inside Sidebar */}
+      <div className="block md:hidden">
+        <Sidebar activeTab={tab} onTab={setTab} />
+      </div>
+      {/* Main content — on mobile add top padding for the fixed header bar */}
+      <main style={{ flex:1, overflowY:"auto", overflowX:"hidden", background:"var(--bg)", minWidth:0 }}
+        className="pt-16 px-4 pb-6 md:pt-10 md:px-12 md:pb-10">
         <TabComponent onTab={setTab} />
       </main>
     </div>
