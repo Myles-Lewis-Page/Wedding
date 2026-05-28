@@ -50,7 +50,7 @@ function NavLinks({ activeTab, onTab, onClose }: SidebarProps & { onClose?: () =
       <div style={{ padding:'20px 18px 12px', borderBottom:'1px solid #1e2e1c', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
           <Heart size={15} fill="var(--sage)" style={{ color:'var(--sage)', flexShrink:0 }} />
-          <span style={{ fontFamily:'var(--font-display)', fontSize:17, fontWeight:500, color:'#e8f0e6', letterSpacing:1 }}>Sage Planner</span>
+          <span style={{ fontFamily:'var(--font-display)', fontSize:17, fontWeight:500, color:'#e8f0e6', letterSpacing:1 }}>Wedding Planner</span>
         </div>
         {onClose && (
           <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'#5a7057', lineHeight:0, padding:4 }}>
@@ -139,7 +139,7 @@ export default function Sidebar({ activeTab, onTab }: SidebarProps) {
       }} className="flex md:hidden">
         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
           <Heart size={14} fill="var(--sage)" style={{ color:'var(--sage)', flexShrink:0 }} />
-          <span style={{ fontFamily:'var(--font-display)', fontSize:16, fontWeight:500, color:'#e8f0e6' }}>Sage Planner</span>
+          <span style={{ fontFamily:'var(--font-display)', fontSize:16, fontWeight:500, color:'#e8f0e6' }}>Wedding Planner</span>
         </div>
         <button
           type="button"

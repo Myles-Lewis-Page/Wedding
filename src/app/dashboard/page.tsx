@@ -55,7 +55,7 @@ const Tag = ({ color, children }: { color: string; children: React.ReactNode }) 
 )
 
 const PageHeader = ({ title, sub, action }: { title: string; sub?: string; action?: React.ReactNode }) => (
-  <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:32 }}>
+  <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:32, paddingTop:12 }}>
     <div>
       <h1 style={{ fontFamily:'var(--font-display)', fontSize:'clamp(24px, 4vw, 36px)', fontWeight:300, color:'#e8f0e6', marginBottom:4 }}>{title}</h1>
       {sub && <p style={{ fontSize:15, color:'#4a6448' }}>{sub}</p>}
@@ -145,14 +145,14 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
         </button>
       )}
 
-      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:16,marginBottom:24}}>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:28,marginBottom:28}}>
         {[
           { label:'Total guests', val:stats.total, sub:'on the list', color:'var(--sage)' },
           { label:'Attending', val:stats.attending, sub:`${rate}% responded`, color:'#00ff00' },
           { label:'Pending RSVP', val:stats.pending, sub:'no reply yet', color:'#f0b429' },
           { label:'Declined', val:stats.declined, sub:'unable to come', color:'#ff0000' },
         ].map(({ label, val, sub, color }) => (
-          <div key={label} style={{background:'#1a2419',borderRadius:16,padding:'22px 24px',border:'1px solid #202e1f'}}>
+          <div key={label} style={{background:'var(--bg3,#1a2419)',borderRadius:16,padding:'28px',border:'1px solid #202e1f'}}>
             <p style={{fontSize:12,color:'#3a5038',textTransform:'uppercase',letterSpacing:'0.1em',marginBottom:8}}>{label}</p>
             <p style={{fontFamily:'var(--font-display)',fontSize:40,fontWeight:300,color,lineHeight:1,marginBottom:4}}>{val}</p>
             <p style={{fontSize:13,color:'#3a5038'}}>{sub}</p>
@@ -161,7 +161,7 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
       </div>
 
       {/* RSVP progress */}
-      <div style={{background:'#1a2419',borderRadius:16,padding:'22px 24px',border:'1px solid #202e1f',marginBottom:24}}>
+      <div style={{background:'var(--bg3,#1a2419)',borderRadius:16,padding:'28px',border:'1px solid #202e1f',marginBottom:28}}>
         <div style={{display:'flex',justifyContent:'space-between',fontSize:15,marginBottom:14}}>
           <span style={{fontWeight:600,color:'#cde0ca'}}>RSVP progress</span>
           <span style={{color:'#3a5038'}}>{stats.attending + stats.declined} / {stats.total}</span>
@@ -178,7 +178,7 @@ function TabHome({ onTab }: { onTab?: (t: string) => void }) {
       </div>
 
       {/* Color customization */}
-      <div style={{background:'#1a2419',borderRadius:16,padding:'22px 24px',border:'1px solid #202e1f'}}>
+      <div style={{background:'var(--bg3,#1a2419)',borderRadius:16,padding:'28px',border:'1px solid #202e1f'}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:18}}>
           <div>
             <p style={{fontSize:15,fontWeight:600,color:'#cde0ca',marginBottom:3}}>Theme colors</p>
@@ -258,18 +258,18 @@ function TabGuests() {
 
       <div className="flex gap-5 mb-4 flex-wrap">
         {(['all','attending','declined','pending'] as const).map(f => (
-          <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-full text-base font-medium transition-all capitalize ${filter === f ? 'bg-[var(--accent)] text-white' : 'bg-[#1f2b1e] text-[#7a9878] hover:bg-[#243022]'}`}>
+          <button key={f} onClick={() => setFilter(f)} className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all capitalize ${filter === f ? 'bg-[var(--accent)] text-white' : 'bg-[var(--bg3,#1a2419)] text-[#7a9878] border border-[#2a3829] hover:border-[var(--sage)]'}`}>
             {f === 'all' ? `All (${stats.all})` : `${f.charAt(0).toUpperCase() + f.slice(1)} (${stats[f]})`}
           </button>
         ))}
       </div>
 
-      <div className="mb-4">
+      <div className="mb-7">
         <Input placeholder="Search guests…" value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
       {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#3a5038]" size={26} /></div> : (
-        <div className="bg-[#1a2419] rounded-2xl border border-[#2a3829] overflow-hidden">
+        <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-base min-w-[560px]">
               <thead><tr className="border-b border-[#202e1f] bg-[#141c13] text-left text-base text-[#5a7057] uppercase tracking-wider">
@@ -282,7 +282,7 @@ function TabGuests() {
                   const [label, color] = STATUS[g.rsvpStatus] ?? STATUS.pending
                   return (
                     <tr key={g.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#141c13] transition-colors">
-                      <td className="px-6 py-3.5.5">
+                      <td className="px-8 py-4">
                         <div className="flex items-center gap-5.5">
                           <div className="w-8 h-8 rounded-full bg-[var(--sage-light,#1e3a1e)] flex items-center justify-center text-base font-semibold text-[var(--sage)] shrink-0">
                             {g.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase()}
@@ -298,11 +298,11 @@ function TabGuests() {
                         </div>
                       </td>
                       <td className="px-6 py-3.5.5 text-[#7a9878] text-base capitalize">{g.side}</td>
-                      <td className="px-6 py-3.5.5"><Tag color={color}>{label}</Tag></td>
+                      <td className="px-8 py-4"><Tag color={color}>{label}</Tag></td>
                       <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.hasPlusOne ? (g.plusOneName || <span className="text-[var(--sage)]">✓ allowed</span>) : '—'}</td>
                       <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.dietary || '—'}</td>
-                      <td className="px-6 py-3.5.5"><Tag color={g.tableId ? '#2563eb' : '#78716c'}>{g.tableId ? 'Assigned' : 'Unassigned'}</Tag></td>
-                      <td className="px-6 py-3.5.5"><button onClick={() => del(g.id)} className="text-[#3a5038] hover:text-red-400 transition-colors"><Trash2 size={17} /></button></td>
+                      <td className="px-8 py-4"><Tag color={g.tableId ? '#2563eb' : '#78716c'}>{g.tableId ? 'Assigned' : 'Unassigned'}</Tag></td>
+                      <td className="px-8 py-4"><button onClick={() => del(g.id)} className="text-[#3a5038] hover:text-red-400 transition-colors"><Trash2 size={17} /></button></td>
                     </tr>
                   )
                 })}
@@ -419,7 +419,7 @@ function TabVenues() {
         action={<Btn onClick={() => setShowAdd(true)}><Plus size={17} />Add venue</Btn>} />
 
       {/* Date picker */}
-      <div className="bg-[#1a2419] rounded-2xl border border-[#2a3829] p-8 mb-6">
+      <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 mb-7">
         <p className="text-base font-medium text-[#cde0ca] mb-1">Wedding date</p>
         <p className="text-base text-[#5a7057] mb-3">{fmtDate || 'Pick your date — it shows across the whole app'}</p>
         <div className="flex gap-5">
@@ -451,14 +451,14 @@ function TabVenues() {
       {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#3a5038]" size={26} /></div>
       : venues.length === 0 ? (
         <div className="text-center py-20">
-          <MapPin size={36} className="text-[#2a3828] mx-auto mb-4" />
-          <p className="text-[#5a7057] mb-4">No venues yet — paste a website URL and we&apos;ll fill in the details</p>
+          <MapPin size={36} className="text-[#2a3828] mx-auto mb-7" />
+          <p className="text-[#5a7057] mb-7">No venues yet — paste a website URL and we&apos;ll fill in the details</p>
           <Btn onClick={() => setShowAdd(true)}><Plus size={17} />Add venue</Btn>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
           {venues.map(v => (
-            <button key={v.id} onClick={() => setDetail(v)} className="group bg-[#1a2419] rounded-2xl border border-[#2a3829] hover:border-[var(--sage)] hover:shadow-md transition-all text-left overflow-hidden">
+            <button key={v.id} onClick={() => setDetail(v)} className="group rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] hover:border-[var(--sage)] hover:shadow-md transition-all text-left overflow-hidden">
               <div className="relative h-44 bg-[#1f2b1e]">
                 {v.imageUrl ? <img src={v.imageUrl} alt={v.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /> : <div className="w-full h-full flex items-center justify-center"><MapPin size={30} className="text-[#3a5038]" /></div>}
                 {v.isSelected && <div className="absolute top-2 left-2 bg-[var(--accent)] text-white text-base px-2.5 py-1 rounded-full flex items-center gap-1"><Check size={10} />Selected</div>}
@@ -500,7 +500,7 @@ function TabVenues() {
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-[28px]">
               {form.imageUrl && <div className="h-32 rounded-xl overflow-hidden bg-[#1f2b1e]"><img src={form.imageUrl} alt="" className="w-full h-full object-cover" /></div>}
               <Field label="Venue name *"><Input value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} placeholder="The Barn at Stonegate" autoFocus /></Field>
               <div className="grid grid-cols-2 gap-5">
@@ -512,7 +512,7 @@ function TabVenues() {
                 <Field label="Phone"><Input value={form.phone} onChange={e => setForm(f=>({...f,phone:e.target.value}))} /></Field>
                 <Field label="Email"><Input value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} /></Field>
               </div>
-              <Field label="Description"><textarea value={form.description} onChange={e => setForm(f=>({...f,description:e.target.value}))} rows={2} className="w-full px-6 py-3.5.5 rounded-2xl border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)] resize-none" /></Field>
+              <Field label="Description"><textarea value={form.description} onChange={e => setForm(f=>({...f,description:e.target.value}))} rows={2} className="w-full px-6 py-3.5.5 rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] text-base focus:outline-none focus:border-[var(--sage)] resize-none" /></Field>
               <Field label="Image URL"><Input value={form.imageUrl} onChange={e => setForm(f=>({...f,imageUrl:e.target.value}))} placeholder="https://..." /></Field>
               <Field label="Amenities (comma separated)"><Input value={form.amenities} onChange={e => setForm(f=>({...f,amenities:e.target.value}))} placeholder="Parking, Bridal suite, Kitchen…" /></Field>
             </div>
@@ -534,10 +534,10 @@ function TabVenues() {
             <Field label="Phone"><Input value={editVenue.phone} onChange={e=>setEditVenue(f=>({...f,phone:e.target.value}))} /></Field>
             <Field label="Email"><Input value={editVenue.email} onChange={e=>setEditVenue(f=>({...f,email:e.target.value}))} /></Field>
           </div>
-          <Field label="Description"><textarea value={editVenue.description} onChange={e=>setEditVenue(f=>({...f,description:e.target.value}))} rows={3} className="w-full px-6 py-3.5.5 rounded-2xl border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)] resize-none" /></Field>
+          <Field label="Description"><textarea value={editVenue.description} onChange={e=>setEditVenue(f=>({...f,description:e.target.value}))} rows={3} className="w-full px-6 py-3.5.5 rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] text-base focus:outline-none focus:border-[var(--sage)] resize-none" /></Field>
           <Field label="Image URL"><Input value={editVenue.imageUrl} onChange={e=>setEditVenue(f=>({...f,imageUrl:e.target.value}))} placeholder="https://..." /></Field>
           <Field label="Amenities (comma separated)"><Input value={editVenue.amenities} onChange={e=>setEditVenue(f=>({...f,amenities:e.target.value}))} placeholder="Parking, Bridal suite…" /></Field>
-          <Field label="Notes"><textarea value={editVenue.notes} onChange={e=>setEditVenue(f=>({...f,notes:e.target.value}))} rows={2} className="w-full px-6 py-3.5.5 rounded-2xl border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)] resize-none" /></Field>
+          <Field label="Notes"><textarea value={editVenue.notes} onChange={e=>setEditVenue(f=>({...f,notes:e.target.value}))} rows={2} className="w-full px-6 py-3.5.5 rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] text-base focus:outline-none focus:border-[var(--sage)] resize-none" /></Field>
         </Modal>
       )}
 
@@ -637,14 +637,14 @@ function TabBudget() {
       <PageHeader title="Budget" sub="Track every dollar before you spend it"
         action={<Btn onClick={() => setShowAdd(true)}><Plus size={17}/>Add category</Btn>} />
 
-      <div className="grid grid-cols-4 gap-7 mb-6">
+      <div className="grid grid-cols-4 gap-7 mb-7">
         {[
           { label:'Total budget', val: total, editable: true },
           { label:'Allocated', val: allocated, sub: `${total ? Math.round(allocated/total*100) : 0}%` },
           { label:'Paid', val: paid, sub: `${allocated ? Math.round(paid/allocated*100) : 0}% of allocated` },
           { label:'Remaining', val: total - allocated, color: total - allocated < 0 ? '#dc2626' : undefined },
         ].map(({ label, val, sub, editable, color }) => (
-          <div key={label} className="bg-[#1a2419] rounded-2xl border border-[#2a3829] p-8">
+          <div key={label} className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8">
             <p className="text-base text-[#5a7057] uppercase tracking-wider mb-2">{label}</p>
             {editable
               ? <div className="flex items-baseline gap-0.5"><span className="text-[#5a7057]">$</span><input type="number" value={total} onChange={e => setTotal(+e.target.value)} className="text-2xl font-light w-full focus:outline-none" style={{ fontFamily: 'var(--font-display)' }} /></div>
@@ -655,7 +655,7 @@ function TabBudget() {
       </div>
 
       {/* Allocation bar */}
-      <div className="bg-[#1a2419] rounded-2xl border border-[#2a3829] p-8 mb-5">
+      <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 mb-7">
         <div className="flex justify-between text-base text-[#5a7057] mb-2"><span>Allocation</span><span>{fmt$(allocated)} of {fmt$(total)}</span></div>
         <div className="h-3 bg-[#1f2b1e] rounded-full overflow-hidden flex gap-px">
           {cats.filter(c => c.budgeted > 0).map(c => <div key={c.id} className="h-full transition-all" style={{ width: `${(c.budgeted/total)*100}%`, background: c.color }} />)}
@@ -666,7 +666,7 @@ function TabBudget() {
       </div>
 
       {loading ? <div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div> : (
-        <div className="bg-[#1a2419] rounded-2xl border border-[#2a3829] overflow-hidden">
+        <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
           <table className="w-full text-base">
             <thead><tr className="border-b border-[#202e1f] bg-[#141c13] text-left text-base text-[#5a7057] uppercase tracking-wider">
               <th className="px-6 py-3.5 font-medium">Category</th>
@@ -682,12 +682,12 @@ function TabBudget() {
                 const pct = c.budgeted > 0 ? Math.min(Math.round(c.paid/c.budgeted*100), 100) : 0
                 return (
                   <tr key={c.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#141c13] group">
-                    <td className="px-6 py-3.5.5"><div className="flex items-center gap-5.5"><div className="w-3 h-3 rounded-full" style={{ background: c.color }}/><span className="font-medium text-[#e8f0e6]">{c.name}</span></div></td>
-                    <td className="px-6 py-3.5.5.5"><div className="relative"><span className="absolute left-2 top-1.5 text-[#5a7057] text-base">$</span><input type="number" defaultValue={c.budgeted} onBlur={e => update(c.id,'budgeted',+e.target.value)} className="w-28 pl-5 pr-2 py-1.5 rounded-lg border border-transparent hover:border-[#2a3829] focus:border-[var(--sage)] focus:outline-none text-base bg-transparent focus:bg-[#1a2419]" /></div></td>
-                    <td className="px-6 py-3.5.5.5"><div className="relative"><span className="absolute left-2 top-1.5 text-[#5a7057] text-base">$</span><input type="number" defaultValue={c.paid} onBlur={e => update(c.id,'paid',+e.target.value)} className="w-28 pl-5 pr-2 py-1.5 rounded-lg border border-transparent hover:border-[#2a3829] focus:border-[var(--sage)] focus:outline-none text-base bg-transparent focus:bg-[#1a2419]" /></div></td>
+                    <td className="px-8 py-4"><div className="flex items-center gap-5.5"><div className="w-3 h-3 rounded-full" style={{ background: c.color }}/><span className="font-medium text-[#e8f0e6]">{c.name}</span></div></td>
+                    <td className="px-8 py-4"><div className="relative"><span className="absolute left-2 top-1.5 text-[#5a7057] text-base">$</span><input type="number" defaultValue={c.budgeted} onBlur={e => update(c.id,'budgeted',+e.target.value)} className="w-28 pl-5 pr-2 py-1.5 rounded-lg border border-transparent hover:border-[#2a3829] focus:border-[var(--sage)] focus:outline-none text-base bg-transparent focus:bg-[#1a2419]" /></div></td>
+                    <td className="px-8 py-4"><div className="relative"><span className="absolute left-2 top-1.5 text-[#5a7057] text-base">$</span><input type="number" defaultValue={c.paid} onBlur={e => update(c.id,'paid',+e.target.value)} className="w-28 pl-5 pr-2 py-1.5 rounded-lg border border-transparent hover:border-[#2a3829] focus:border-[var(--sage)] focus:outline-none text-base bg-transparent focus:bg-[#1a2419]" /></div></td>
                     <td className="px-6 py-3.5.5.5 text-base font-medium" style={{ color: rem < 0 ? '#dc2626' : '#1c1917' }}>{fmt$(rem)}</td>
-                    <td className="px-6 py-3.5.5.5"><div className="flex items-center gap-5"><div className="flex-1 h-1.5 bg-[#1f2b1e] rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width:`${pct}%`, background: c.color }}/></div><span className="text-base text-[#5a7057] w-8 text-right">{pct}%</span></div></td>
-                    <td className="px-6 py-3.5.5.5"><button onClick={() => del(c.id)} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={19}/></button></td>
+                    <td className="px-8 py-4"><div className="flex items-center gap-5"><div className="flex-1 h-1.5 bg-[#1f2b1e] rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width:`${pct}%`, background: c.color }}/></div><span className="text-base text-[#5a7057] w-8 text-right">{pct}%</span></div></td>
+                    <td className="px-8 py-4"><button onClick={() => del(c.id)} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={19}/></button></td>
                   </tr>
                 )
               })}
@@ -755,12 +755,12 @@ function TabVendors() {
       </div>
 
       {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div> : (
-        <div className="space-y-3">
+        <div className="space-y-[28px]">
           {filtered.length === 0 ? <div className="text-center py-16 text-[#5a7057]">No vendors yet</div> :
             filtered.map(v => {
               const [slabel, scolor] = VENDOR_STATUS[v.status] ?? VENDOR_STATUS.researching
               return (
-                <div key={v.id} className="bg-[#1a2419] rounded-2xl border border-[#2a3829] hover:border-[var(--sage)] transition-colors overflow-hidden">
+                <div key={v.id} className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] hover:border-[var(--sage)] transition-colors overflow-hidden">
                   {/* Top bar */}
                   <div className="flex items-center justify-between px-6 py-4 border-b border-[#202e1f]">
                     <div className="flex items-center gap-3 min-w-0">
@@ -801,7 +801,7 @@ function TabVendors() {
             <Field label="Website"><Input value={form.website} onChange={e=>setForm(f=>({...f,website:e.target.value}))} placeholder="https://..." /></Field>
             <Field label="Total cost ($)"><Input type="number" value={form.cost} onChange={e=>setForm(f=>({...f,cost:e.target.value}))} /></Field>
           </div>
-          <Field label="Notes"><textarea value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} rows={2} className="w-full px-6 py-3.5.5 rounded-2xl border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)] resize-none" /></Field>
+          <Field label="Notes"><textarea value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} rows={2} className="w-full px-6 py-3.5.5 rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] text-base focus:outline-none focus:border-[var(--sage)] resize-none" /></Field>
         </Modal>
       )}
     </div>
@@ -847,12 +847,12 @@ function TabTasks() {
       <PageHeader title="Tasks" sub={`${done} of ${tasks.length} complete`}
         action={<Btn onClick={() => setShowAdd(true)}><Plus size={17}/>Add task</Btn>} />
 
-      <div className="bg-[#1a2419] rounded-2xl border border-[#2a3829] p-8 mb-5">
+      <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 mb-7">
         <div className="flex justify-between text-base text-[#5a7057] mb-1.5"><span>Progress</span><span>{tasks.length ? Math.round(done/tasks.length*100) : 0}%</span></div>
         <div className="h-2 bg-[#1f2b1e] rounded-full overflow-hidden"><div className="h-full bg-[var(--accent)] rounded-full transition-all" style={{ width: `${tasks.length ? done/tasks.length*100 : 0}%` }}/></div>
       </div>
 
-      <div className="flex gap-5 mb-4">
+      <div className="flex gap-5 mb-7">
         {(['pending','all','done'] as const).map(f => <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-full text-base font-medium transition-all ${filter===f?'bg-[var(--accent)] text-white':'bg-[#1f2b1e] text-[#7a9878] hover:bg-[#243022]'}`}>{f==='pending'?`To do (${tasks.filter(t=>!t.completed).length})`:f==='done'?`Done (${done})`:`All (${tasks.length})`}</button>)}
       </div>
 
@@ -860,7 +860,7 @@ function TabTasks() {
         <div className="space-y-2">
           {shown.length === 0 ? <div className="text-center py-12 text-[#5a7057]">{filter==='done'?'No completed tasks':'All caught up! 🎉'}</div> :
             shown.map(t => (
-              <div key={t.id} className={`bg-[#1a2419] rounded-2xl border border-[#2a3829] p-3.5 flex items-center gap-5 group transition-colors hover:border-stone-300 ${t.completed?'opacity-60':''}`}>
+              <div key={t.id} className={`rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-3.5 flex items-center gap-5 group transition-colors hover:border-stone-300 ${t.completed?'opacity-60':''}`}>
                 <button onClick={() => toggle(t)} className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${t.completed?'border-[var(--sage)] bg-[var(--accent)]':'border-stone-300 hover:border-[var(--sage)]'}`}>
                   {t.completed && <Check size={11} className="text-white"/>}
                 </button>
@@ -912,13 +912,13 @@ function TabChecklist() {
   return (
     <div>
       <PageHeader title="Checklist" sub={`${done.size} of ${total} complete`} />
-      <div className="bg-[#1a2419] rounded-2xl border border-[#2a3829] p-8 mb-5">
+      <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 mb-7">
         <div className="h-2 bg-[#1f2b1e] rounded-full overflow-hidden"><div className="h-full bg-[var(--accent)] rounded-full transition-all" style={{ width:`${(done.size/total)*100}%` }}/></div>
         <p className="text-base text-[#5a7057] text-right mt-1">{Math.round(done.size/total*100)}%</p>
       </div>
       <div className="space-y-4">
         {Object.entries(ITEMS).map(([section, items]) => (
-          <div key={section} className="bg-[#1a2419] rounded-2xl border border-[#2a3829] overflow-hidden">
+          <div key={section} className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
             <div className="flex justify-between px-6 py-3.5 border-b border-[#202e1f] bg-[#141c13]">
               <p className="text-base font-medium text-[#cde0ca]">{section}</p>
               <span className="text-base text-[#5a7057]">{items.filter(i=>done.has(`${section}-${i}`)).length}/{items.length}</span>
@@ -1018,7 +1018,7 @@ function TabRSVP() {
   const SF = ({ label, field, type = 'text', rows }: { label: string; field: keyof typeof settings; type?: string; rows?: number }) => (
     <Field label={label}>
       {rows
-        ? <textarea value={String(settings[field])} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))} rows={rows} className="w-full px-6 py-3.5.5 rounded-2xl border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)] resize-none" />
+        ? <textarea value={String(settings[field])} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))} rows={rows} className="w-full px-6 py-3.5.5 rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] text-base focus:outline-none focus:border-[var(--sage)] resize-none" />
         : <Input type={type} value={String(settings[field])} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))} />}
     </Field>
   )
@@ -1027,9 +1027,9 @@ function TabRSVP() {
     <div>
       <PageHeader title="RSVP portal" sub="Customize the guest experience and manage RSVPs" />
 
-      <div className="grid grid-cols-2 gap-7 mb-8 items-start">
+      <div className="grid grid-cols-2 gap-7 mb-7 items-start">
         {/* QR Code */}
-        <div className="bg-[#1a2419] rounded-2xl border border-[#2a3829] p-8 text-center">
+        <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 text-center">
           <canvas ref={canvasRef} width={160} height={160} className="rounded-2xl mx-auto mb-3 block" style={{imageRendering:'pixelated',width:160,height:160}} />
           <p className="text-base text-[#5a7057] mb-4 break-all">{RSVP_URL}</p>
           <div className="flex flex-col gap-2">
@@ -1042,15 +1042,15 @@ function TabRSVP() {
         </div>
 
         {/* Quick stats */}
-        <div className="bg-[#1a2419] rounded-2xl border border-[#2a3829] p-8 flex flex-col justify-center">
-          <p className="text-base font-semibold text-[#cde0ca] mb-4">RSVP stats</p>
+        <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 flex flex-col justify-center">
+          <p className="text-base font-semibold text-[#cde0ca] mb-7">RSVP stats</p>
           {(() => {
             const attending = guests.filter(g=>g.rsvpStatus==='attending').length
             const declined = guests.filter(g=>g.rsvpStatus==='declined').length
             const pending = guests.filter(g=>g.rsvpStatus==='pending').length
             const total = guests.length
             return (
-              <div className="space-y-3">
+              <div className="space-y-[28px]">
                 {[['Attending',attending,'#00ff00'],['Declined',declined,'#ff0000'],['Pending',pending,'#f0b429']].map(([l,v,c])=>(
                   <div key={String(l)} className="flex items-center gap-5">
                     <div className="flex-1 h-2 bg-[#1f2b1e] rounded-full overflow-hidden">
@@ -1067,7 +1067,7 @@ function TabRSVP() {
       </div>
 
       {/* ── RSVP PAGE CUSTOMIZATION ── */}
-      <div className="bg-[#1a2419] rounded-2xl border border-[#2a3829] mb-6">
+      <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] mb-7">
         <div className="flex items-center justify-between px-8 py-6 border-b border-[#202e1f]">
           <div>
             <p className="font-semibold text-[#e8f0e6]">Customize RSVP page</p>
@@ -1112,9 +1112,9 @@ function TabRSVP() {
       </div>
 
       {/* ── GUEST RSVP RECORDS ── */}
-      <h2 className="text-xl font-light text-[#cde0ca] mb-4" style={{ fontFamily: 'var(--font-display)' }}>Guest RSVP records</h2>
+      <h2 className="text-xl font-light text-[#cde0ca] mb-7" style={{ fontFamily: 'var(--font-display)' }}>Guest RSVP records</h2>
       {loadingGuests ? <div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div> : (
-        <div className="bg-[#1a2419] rounded-2xl border border-[#2a3829] overflow-hidden">
+        <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-base min-w-[520px]">
               <thead><tr className="border-b border-[#202e1f] bg-[#141c13] text-left text-base text-[#5a7057] uppercase tracking-wider">
@@ -1127,11 +1127,11 @@ function TabRSVP() {
                   return (
                     <tr key={g.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#141c13]">
                       <td className="px-6 py-3.5.5 font-medium text-[#e8f0e6]">{g.name}</td>
-                      <td className="px-6 py-3.5.5"><span className="text-base px-2.5 py-1 rounded-full font-medium capitalize" style={{color,background:bg}}>{g.rsvpStatus}</span></td>
+                      <td className="px-8 py-4"><span className="text-base px-2.5 py-1 rounded-full font-medium capitalize" style={{color,background:bg}}>{g.rsvpStatus}</span></td>
                       <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.email||'—'}</td>
                       <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.dietary||'—'}</td>
                       <td className="px-6 py-3.5.5 text-base text-[#7a9878]">{g.plusOneName||(g.hasPlusOne?<span className="text-[var(--sage)]">allowed</span>:'—')}</td>
-                      <td className="px-6 py-3.5.5"><button onClick={()=>openEdit(g)} className="text-base text-[#5a7057] hover:text-[var(--sage)] flex items-center gap-1"><Edit3 size={26}/>Edit</button></td>
+                      <td className="px-8 py-4"><button onClick={()=>openEdit(g)} className="text-base text-[#5a7057] hover:text-[var(--sage)] flex items-center gap-1"><Edit3 size={26}/>Edit</button></td>
                     </tr>
                   )
                 })}
@@ -1175,7 +1175,7 @@ function TabMoodboard() {
     <div>
       <PageHeader title="Mood board" sub="Pin anything that inspires your vision" action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add image</Btn>} />
       {items.length === 0
-        ? <div className="text-center py-20 text-[#5a7057]"><p className="mb-4">Paste image URLs from Pinterest, Instagram, or anywhere</p><Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add first image</Btn></div>
+        ? <div className="text-center py-20 text-[#5a7057]"><p className="mb-7">Paste image URLs from Pinterest, Instagram, or anywhere</p><Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add first image</Btn></div>
         : <div className="columns-2 md:columns-3 gap-7 space-y-4">
             {items.map(item => (
               <div key={item.id} className="break-inside-avoid group relative rounded-3xl overflow-hidden border border-[#2a3829]">
@@ -1213,8 +1213,8 @@ function TabMenu() {
     <div>
       <PageHeader title="Menu & drinks" />
       <div className="grid grid-cols-2 gap-7">
-        <div className="bg-[#1a2419] rounded-2xl border border-[#2a3829] p-8">
-          <div className="flex items-center gap-5 mb-4"><UtensilsCrossed size={26} className="text-[var(--sage)]"/><h3 className="font-medium text-[#e8f0e6]">Menu</h3></div>
+        <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8">
+          <div className="flex items-center gap-5 mb-7"><UtensilsCrossed size={26} className="text-[var(--sage)]"/><h3 className="font-medium text-[#e8f0e6]">Menu</h3></div>
           {menu.map((c,i) => (
             <div key={i} className="border-b border-[#1a2419] pb-3 mb-3 last:border-0 last:mb-0">
               <p className="text-base font-semibold text-[#5a7057] uppercase tracking-wider mb-1">{c.course}</p>
@@ -1222,9 +1222,9 @@ function TabMenu() {
             </div>
           ))}
         </div>
-        <div className="bg-[#1a2419] rounded-2xl border border-[#2a3829] p-8">
-          <div className="flex items-center gap-5 mb-4"><Wine size={26} className="text-[var(--sage)]"/><h3 className="font-medium text-[#e8f0e6]">Drink calculator</h3></div>
-          <div className="space-y-3 mb-5">
+        <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8">
+          <div className="flex items-center gap-5 mb-7"><Wine size={26} className="text-[var(--sage)]"/><h3 className="font-medium text-[#e8f0e6]">Drink calculator</h3></div>
+          <div className="space-y-3 mb-7">
             <div><label className="text-base text-[#7a9878] mb-1 block">Guests: <strong>{guests}</strong></label><input type="range" min={20} max={500} step={5} value={guests} onChange={e=>setGuests(+e.target.value)} className="w-full"/></div>
             <div><label className="text-base text-[#7a9878] mb-1 block">Open bar hours: <strong>{hours}h</strong></label><input type="range" min={1} max={8} step={0.5} value={hours} onChange={e=>setHours(+e.target.value)} className="w-full"/></div>
           </div>
@@ -1264,7 +1264,7 @@ function TabParty() {
             <div className="space-y-2">
               {list.length===0?<div className="border-2 border-dashed border-[#2a3829] rounded-3xl py-10 text-center text-[#5a7057] text-base">No members yet</div>
                 :list.map(m=>(
-                  <div key={m.id} className="bg-[#1a2419] rounded-2xl border border-[#2a3829] p-8 group">
+                  <div key={m.id} className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 group">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-5">
                         <div className="w-9 h-9 rounded-full bg-[var(--sage-light,#1e3a1e)] flex items-center justify-center text-base font-semibold text-[var(--sage)]">{m.name.split(' ').map((w:string)=>w[0]).join('').slice(0,2).toUpperCase()}</div>
@@ -1390,7 +1390,7 @@ function TabDecor() {
       <div className="space-y-2">
         {items.length===0?<div className="text-center py-16 text-[#5a7057]">Track florals, centrepieces, lighting and décor items here</div>:
           items.map(i=>(
-            <div key={i.id} className={`bg-[#1a2419] rounded-2xl border border-[#2a3829] p-3.5 flex items-center gap-5 group ${i.done?'opacity-60':''}`}>
+            <div key={i.id} className={`rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-3.5 flex items-center gap-5 group ${i.done?'opacity-60':''}`}>
               <button onClick={()=>setItems(p=>p.map(x=>x.id===i.id?{...x,done:!x.done}:x))} className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${i.done?'border-[var(--sage)] bg-[var(--accent)]':'border-stone-300'}`}>{i.done&&<Check size={11} className="text-white"/>}</button>
               <div className="flex-1"><p className={`text-base font-medium ${i.done?'line-through text-[#5a7057]':'text-[#e8f0e6]'}`}>{i.desc}</p><p className="text-base text-[#5a7057]">{i.area}{i.vendor?` · ${i.vendor}`:''}{i.cost?` · $${i.cost}`:''}</p></div>
               <button onClick={()=>setItems(p=>p.filter(x=>x.id!==i.id))} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100"><Trash2 size={19}/></button>
@@ -1426,7 +1426,7 @@ function TabAttire() {
   return (
     <div>
       <PageHeader title="Attire" action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add item</Btn>} />
-      <div className="bg-[#1a2419] rounded-2xl border border-[#2a3829] overflow-x-auto">
+      <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-x-auto">
         <table className="w-full text-base min-w-[560px]">
           <thead><tr className="border-b border-[#202e1f] bg-[#141c13] text-left text-base text-[#5a7057] uppercase tracking-wider">{['Person','Item','Shop','Status','Notes',''].map(h=><th key={h} className="px-6 py-3.5.5 font-medium">{h}</th>)}</tr></thead>
           <tbody>
@@ -1474,7 +1474,7 @@ function TabPhotoshoot() {
       <PageHeader title="Photoshoot" sub={`${shots.filter(s=>s.done).length}/${shots.length} shots done`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Add shot</Btn>} />
       <div className="space-y-4">
         {grouped.map(({g,shots:gs})=>(
-          <div key={g} className="bg-[#1a2419] rounded-2xl border border-[#2a3829] overflow-hidden">
+          <div key={g} className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
             <div className="flex justify-between px-6 py-3.5 border-b border-[#202e1f] bg-[#141c13]"><p className="text-base font-medium text-[#cde0ca]">{g}</p><span className="text-base text-[#5a7057]">{gs.filter(s=>s.done).length}/{gs.length}</span></div>
             <div className="p-2">
               {gs.map(s=>(
@@ -1524,7 +1524,7 @@ function TabPlaylist() {
           const ss=songs.filter(s=>s.section===sec)
           const [bg,color]=COLORS[sec]||['#f5f5f4','#78716c']
           return (
-            <div key={sec} className="bg-[#1a2419] rounded-2xl border border-[#2a3829] overflow-hidden">
+            <div key={sec} className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
               <div className="flex items-center justify-between px-6 py-3.5 border-b border-[#202e1f]" style={{background:bg}}>
                 <div className="flex items-center gap-5"><Music size={19} style={{color}}/><h3 className="font-medium text-base" style={{color}}>{label}</h3><span className="text-base opacity-60" style={{color}}>({ss.length})</span></div>
                 <button onClick={()=>setAdding(adding===sec?null:sec)} className="text-base px-2.5 py-1 rounded-full font-medium" style={{background:color+'22',color}}><Plus size={26} className="inline mr-1"/>Add</button>
@@ -1578,16 +1578,16 @@ function TabGifts() {
   return (
     <div>
       <PageHeader title="Gifts & thank yous" sub={`${gifts.length} gifts · ${pending} thank you${pending!==1?'s':''} to send`} action={<Btn onClick={()=>setShowAdd(true)}><Plus size={17}/>Log gift</Btn>} />
-      <div className="grid grid-cols-3 gap-7 mb-6">
+      <div className="grid grid-cols-3 gap-7 mb-7">
         {[{label:'Total gifts',val:String(gifts.length)},{label:'Thank yous pending',val:String(pending)},{label:'Est. value',val:fmt$(total)}].map(({label,val})=>(
-          <div key={label} className="bg-[#1a2419] rounded-2xl border border-[#2a3829] p-8 text-center">
+          <div key={label} className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 text-center">
             <p className="text-2xl font-light" style={{fontFamily:'var(--font-display)'}}>{val}</p>
             <p className="text-base text-[#5a7057] mt-0.5">{label}</p>
           </div>
         ))}
       </div>
       {loading?<div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div>:(
-        <div className="bg-[#1a2419] rounded-2xl border border-[#2a3829] overflow-hidden">
+        <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
           {gifts.length===0?<div className="text-center py-14 text-[#5a7057]">No gifts logged yet</div>:(
             <table className="w-full text-base">
               <thead><tr className="border-b border-[#202e1f] bg-[#141c13] text-left text-base text-[#5a7057] uppercase tracking-wider">{['From','Gift','Value','Thank you'].map(h=><th key={h} className="px-6 py-3.5.5 font-medium">{h}</th>)}</tr></thead>
@@ -1595,8 +1595,8 @@ function TabGifts() {
                 <tr key={g.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#141c13]">
                   <td className="px-6 py-3.5.5 font-medium text-[#e8f0e6]">{g.fromName}</td>
                   <td className="px-6 py-3.5.5 text-[#7a9878] text-base">{g.description||'—'}</td>
-                  <td className="px-6 py-3.5.5">{g.value?`$${g.value.toLocaleString()}`:'—'}</td>
-                  <td className="px-6 py-3.5.5"><button onClick={()=>toggle(g.id,g.thankYouSent)} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-base font-medium ${g.thankYouSent?'bg-emerald-950 text-emerald-400':'bg-amber-950 text-amber-400'}`}>{g.thankYouSent?<><Check size={11}/>Sent</>:'Mark sent'}</button></td>
+                  <td className="px-8 py-4">{g.value?`$${g.value.toLocaleString()}`:'—'}</td>
+                  <td className="px-8 py-4"><button onClick={()=>toggle(g.id,g.thankYouSent)} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-base font-medium ${g.thankYouSent?'bg-emerald-950 text-emerald-400':'bg-amber-950 text-amber-400'}`}>{g.thankYouSent?<><Check size={11}/>Sent</>:'Mark sent'}</button></td>
                 </tr>
               ))}</tbody>
             </table>
@@ -1682,7 +1682,7 @@ function TabSeating() {
       {loading ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[#3a5038]" size={26}/></div> : (
         <div className="flex gap-7 h-[520px]">
           <div className="w-56 shrink-0 flex flex-col gap-5">
-            <div className="bg-[#1a2419] rounded-2xl border border-[#2a3829] p-8 flex-1 overflow-y-auto">
+            <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 flex-1 overflow-y-auto">
               <p className="text-base font-semibold text-[#5a7057] uppercase tracking-wider mb-3">Tables</p>
               {tables.map(t => {
                 const cnt = guests.filter(g=>g.tableId===t.id).length
@@ -1696,7 +1696,7 @@ function TabSeating() {
               })}
               {tables.length===0 && <p className="text-base text-[#5a7057]">No tables yet</p>}
             </div>
-            <div className="bg-[#1a2419] rounded-2xl border border-[#2a3829] p-8 flex-1 overflow-y-auto">
+            <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 flex-1 overflow-y-auto">
               <p className="text-base font-semibold text-[#5a7057] uppercase tracking-wider mb-3">Unassigned ({unassigned.length})</p>
               {unassigned.length===0 ? <p className="text-base text-[#5a7057]">Everyone seated 🎉</p> :
                 unassigned.map(g => <div key={g.id} className="flex items-center gap-5 py-1.5 border-b border-[#1a2419] last:border-0">
