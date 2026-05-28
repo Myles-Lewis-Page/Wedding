@@ -1087,13 +1087,17 @@ function TabRSVP() {
     setTimeout(() => setSettingsSaved(false), 2000)
   }
 
-  const SF = ({ label, field, type = 'text', rows }: { label: string; field: keyof typeof settings; type?: string; rows?: number }) => (
+  const handleSettingChange = useCallback((field: string, value: string) => {
+    setSettings(s => ({ ...s, [field]: value }))
+  }, [])
+  const SF = useCallback(({ label, field, type = 'text', rows }: { label: string; field: keyof typeof settings; type?: string; rows?: number }) => (
     <Field label={label}>
       {rows
-        ? <textarea value={String(settings[field])} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))} rows={rows} className="w-full px-6 py-3.5.5 rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] text-base focus:outline-none focus:border-[var(--sage)] resize-none" />
-        : <Input type={type} value={String(settings[field])} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))} />}
+        ? <textarea value={String(settings[field] ?? '')} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))} rows={rows} className="w-full px-6 py-3.5 rounded-2xl border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)] resize-none text-white" style={{background:'var(--bg3,#1a2419)'}} />
+        : <Input type={type} value={String(settings[field] ?? '')} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))} />}
     </Field>
-  )
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [settings])
 
   return (
     <div>
@@ -1974,133 +1978,210 @@ function TabSeating() {
 
 
 // ─── COLORS ──────────────────────────────────────────────────────────────────
+type ColorSet = { accent:string; sage:string; bg:string; tertiary:string; title:string; subheader:string; body:string; name?:string }
+
+const DEFAULT_COLORS: ColorSet = { accent:'#4a7a44', sage:'#8fb882', bg:'#111714', tertiary:'#1a2419', title:'#ffffff', subheader:'#000000', body:'#9ca3af' }
+
 function TabColors() {
-  const [accentColor, setAccentColor] = useState('#4a7a44')
-  const [secondaryColor, setSecondaryColor] = useState('#8fb882')
-  const [bgColor, setBgColor] = useState('#111714')
-  const [tertiaryColor, setTertiaryColor] = useState('#1a2419')
-  const [titleColor, setTitleColor] = useState('#ffffff')
-  const [subheaderColor, setSubheaderColor] = useState('#000000')
-  const [bodyColor, setBodyColor] = useState('#9ca3af')
-  const [saved, setSaved] = useState(false)
+  const [colors, setColors] = useState<ColorSet>(DEFAULT_COLORS)
+  const [saving, setSaving] = useState(false)
+  const [saveMsg, setSaveMsg] = useState('')
+  const [presets, setPresets] = useState<(ColorSet & {name:string})[]>([
+    { name:'Preset 1', ...DEFAULT_COLORS },
+    { name:'Preset 2', ...DEFAULT_COLORS },
+    { name:'Preset 3', ...DEFAULT_COLORS },
+    { name:'Preset 4', ...DEFAULT_COLORS },
+    { name:'Preset 5', ...DEFAULT_COLORS },
+  ])
 
   useEffect(() => {
-    // Load from localStorage first
     try {
       const stored = localStorage.getItem('weddingColors')
-      if (stored) {
-        const p = JSON.parse(stored)
-        if (p.accent) setAccentColor(p.accent)
-        if (p.sage) setSecondaryColor(p.sage)
-        if (p.bg) setBgColor(p.bg)
-        if (p.tertiary) setTertiaryColor(p.tertiary)
-        if (p.title) setTitleColor(p.title)
-        if (p.subheader) setSubheaderColor(p.subheader)
-        if (p.body) setBodyColor(p.body)
-      }
+      if (stored) { const p = JSON.parse(stored); setColors(c => ({ ...c, ...p })) }
+      const ps = localStorage.getItem('colorPresets')
+      if (ps) setPresets(JSON.parse(ps))
     } catch {}
-    // Then sync from DB
     $get('rsvp-settings').then(rs => {
       if (!rs || rs.error) return
-      if (rs.accentColor) setAccentColor(rs.accentColor)
-      if (rs.secondaryColor) setSecondaryColor(rs.secondaryColor)
-      if (rs.bgColor) setBgColor(rs.bgColor)
-      if (rs.tertiaryColor) setTertiaryColor(rs.tertiaryColor)
-      if (rs.titleColor) setTitleColor(rs.titleColor)
-      if (rs.subheaderColor) setSubheaderColor(rs.subheaderColor)
-      if (rs.bodyColor) setBodyColor(rs.bodyColor)
+      setColors(c => ({
+        ...c,
+        ...(rs.accentColor && { accent: rs.accentColor }),
+        ...(rs.secondaryColor && { sage: rs.secondaryColor }),
+        ...(rs.bgColor && { bg: rs.bgColor }),
+        ...(rs.tertiaryColor && { tertiary: rs.tertiaryColor }),
+        ...(rs.titleColor && { title: rs.titleColor }),
+        ...(rs.subheaderColor && { subheader: rs.subheaderColor }),
+        ...(rs.bodyColor && { body: rs.bodyColor }),
+      }))
     })
   }, [])
 
-  const applyColors = (colors: { accent:string; sage:string; bg:string; tertiary:string; title:string; subheader:string; body:string }) => {
-    document.documentElement.style.setProperty('--accent', colors.accent)
-    document.documentElement.style.setProperty('--sage', colors.sage)
-    document.documentElement.style.setProperty('--bg', colors.bg)
-    document.documentElement.style.setProperty('--bg2', colors.bg)
-    document.documentElement.style.setProperty('--bg3', colors.tertiary)
-    document.documentElement.style.setProperty('--text', colors.title)
-    document.documentElement.style.setProperty('--text-sub', colors.subheader)
-    document.documentElement.style.setProperty('--text-body', colors.body)
+  const apply = (col: ColorSet) => {
+    document.documentElement.style.setProperty('--accent', col.accent)
+    document.documentElement.style.setProperty('--sage', col.sage)
+    document.documentElement.style.setProperty('--bg', col.bg)
+    document.documentElement.style.setProperty('--bg2', col.bg)
+    document.documentElement.style.setProperty('--bg3', col.tertiary)
+    document.documentElement.style.setProperty('--text', col.title)
+    document.documentElement.style.setProperty('--text-sub', col.subheader)
+    document.documentElement.style.setProperty('--text-body', col.body)
   }
 
-  const saveAll = async () => {
-    const colors = { accent: accentColor, sage: secondaryColor, bg: bgColor, tertiary: tertiaryColor, title: titleColor, subheader: subheaderColor, body: bodyColor }
-    localStorage.setItem('weddingColors', JSON.stringify(colors))
-    applyColors(colors)
-    await $patch('rsvp-settings', { id: 'main', accentColor, secondaryColor, bgColor, tertiaryColor, titleColor, subheaderColor, bodyColor })
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+  const persist = async (col: ColorSet) => {
+    localStorage.setItem('weddingColors', JSON.stringify(col))
+    apply(col)
+    setSaving(true)
+    await $patch('rsvp-settings', { id:'main', accentColor:col.accent, secondaryColor:col.sage, bgColor:col.bg, tertiaryColor:col.tertiary, titleColor:col.title, subheaderColor:col.subheader, bodyColor:col.body })
+    setSaving(false)
+    setSaveMsg('Saved')
+    setTimeout(() => setSaveMsg(''), 1500)
   }
 
-  const resetDefaults = () => {
-    setTitleColor('#ffffff'); setSubheaderColor('#000000'); setBodyColor('#9ca3af')
+  // Auto-save when color picker loses focus
+  const handleBlur = (updated: ColorSet) => { persist(updated) }
+
+  const updateColor = (key: keyof ColorSet, val: string) => {
+    const updated = { ...colors, [key]: val }
+    setColors(updated)
+    apply(updated) // apply live as you drag
   }
 
-  const ColorPicker = ({ label, desc, val, set }: { label: string; desc: string; val: string; set: (v: string) => void }) => (
-    <div style={{ background:'var(--bg3,#1a2419)', borderRadius:12, padding:20, border:'1px solid #202e1f' }}>
-      <p style={{ fontSize:13, fontWeight:700, color:'#000000', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4 }}>{label}</p>
-      <p style={{ fontSize:12, color:'#9ca3af', marginBottom:12 }}>{desc}</p>
-      <div style={{ display:'flex', gap:10, alignItems:'center', marginBottom:10 }}>
-        <input type="color" value={val} onChange={e => set(e.target.value)}
-          style={{ width:44, height:44, borderRadius:10, border:'1px solid #2a3829', cursor:'pointer', padding:2, background:'#141c13', flexShrink:0 }} />
-        <input type="text" value={val} onChange={e => set(e.target.value)}
-          style={{ flex:1, padding:'10px 14px', borderRadius:10, border:'1px solid #2a3829', fontSize:14, background:'#141c13', color:'#e8f0e6', outline:'none' }} />
+  const loadPreset = (p: ColorSet & {name:string}) => {
+    const updated = { ...p }
+    setColors(updated)
+    persist(updated)
+  }
+
+  const saveToPreset = (idx: number) => {
+    const updated = [...presets]
+    updated[idx] = { ...colors, name: presets[idx].name }
+    setPresets(updated)
+    localStorage.setItem('colorPresets', JSON.stringify(updated))
+    setSaveMsg(`Saved to ${presets[idx].name}`)
+    setTimeout(() => setSaveMsg(''), 1500)
+  }
+
+  const renamePreset = (idx: number, name: string) => {
+    const updated = [...presets]
+    updated[idx] = { ...updated[idx], name }
+    setPresets(updated)
+    localStorage.setItem('colorPresets', JSON.stringify(updated))
+  }
+
+  const ColorPicker = useCallback(({ label, desc, colorKey }: { label:string; desc:string; colorKey: keyof ColorSet }) => {
+    const val = colors[colorKey] as string
+    return (
+      <div style={{ background:'var(--bg3,#1a2419)', borderRadius:12, padding:20, border:'1px solid #202e1f' }}>
+        <p style={{ fontSize:12, fontWeight:700, color:'#000', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:3 }}>{label}</p>
+        <p style={{ fontSize:11, color:'#9ca3af', marginBottom:12 }}>{desc}</p>
+        <div style={{ display:'flex', gap:10, alignItems:'center', marginBottom:10 }}>
+          <div style={{ position:'relative', flexShrink:0 }}>
+            <div style={{ width:44, height:44, borderRadius:10, border:'2px solid #2a3829', background:val, cursor:'pointer' }}
+              onClick={e => { (e.currentTarget.nextSibling as HTMLInputElement)?.click() }} />
+            <input type="color" value={val}
+              onChange={e => updateColor(colorKey, e.target.value)}
+              onBlur={e => handleBlur({ ...colors, [colorKey]: e.target.value })}
+              style={{ position:'absolute', top:0, left:0, width:44, height:44, opacity:0, cursor:'pointer', zIndex:10 }} />
+          </div>
+          <input type="text" value={val}
+            onChange={e => updateColor(colorKey, e.target.value)}
+            onBlur={e => handleBlur({ ...colors, [colorKey]: e.target.value })}
+            style={{ flex:1, padding:'10px 14px', borderRadius:10, border:'1px solid #2a3829', fontSize:14, background:'#141c13', color:'#e8f0e6', outline:'none' }} />
+        </div>
+        <div style={{ height:5, borderRadius:3, background:val }} />
       </div>
-      <div style={{ height:6, borderRadius:3, background:val }} />
-    </div>
-  )
+    )
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [colors])
 
   return (
     <div>
-      <PageHeader title="Colors" sub="Control every color across the dashboard and RSVP page"
-        action={<Btn onClick={saveAll} style={{ background: saved ? 'var(--sage)' : 'var(--accent)' }}>
-          {saved ? <><Check size={17}/>Saved!</> : 'Save all colors'}
-        </Btn>} />
+      <PageHeader title="Color scheme" sub="Colors auto-save when you close the picker"
+        action={(saving || saveMsg) ? (
+          <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:13, color:'var(--sage)', padding:'8px 14px', background:'var(--bg3,#1a2419)', borderRadius:8, border:'1px solid #202e1f' }}>
+            {saving ? <><Loader2 size={13} className="animate-spin"/>Saving…</> : <><Check size={13}/>{saveMsg}</>}
+          </div>
+        ) : undefined} />
+
+      {/* Presets */}
+      <div style={{ marginBottom:28 }}>
+        <p className="text-base font-bold text-black uppercase tracking-wider mb-4">Presets</p>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:12 }}>
+          {presets.map((p, i) => (
+            <div key={i} style={{ background:'var(--bg3,#1a2419)', borderRadius:12, border:'1px solid #202e1f', overflow:'hidden' }}>
+              {/* Color preview strips */}
+              <div style={{ display:'flex', height:32 }}>
+                {[p.accent, p.sage, p.bg, p.tertiary].map((col, j) => (
+                  <div key={j} style={{ flex:1, background:col }} />
+                ))}
+              </div>
+              <div style={{ padding:'10px 12px' }}>
+                <input value={p.name} onChange={e => renamePreset(i, e.target.value)}
+                  style={{ width:'100%', background:'transparent', border:'none', outline:'none', fontSize:12, fontWeight:600, color:'#ffffff', marginBottom:8 }} />
+                <div style={{ display:'flex', gap:6 }}>
+                  <button onClick={() => loadPreset(p)}
+                    style={{ flex:1, padding:'5px 0', borderRadius:6, background:'var(--accent)', color:'#fff', border:'none', fontSize:11, fontWeight:600, cursor:'pointer' }}>
+                    Apply
+                  </button>
+                  <button onClick={() => saveToPreset(i)}
+                    style={{ flex:1, padding:'5px 0', borderRadius:6, background:'#1f2b1e', color:'var(--sage)', border:'1px solid #2a3829', fontSize:11, fontWeight:600, cursor:'pointer' }}>
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Theme colors */}
       <div style={{ marginBottom:28 }}>
-        <p className="text-base font-bold text-black uppercase tracking-wider mb-5">Theme colors</p>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))', gap:16 }}>
-          <ColorPicker label="Primary / buttons" desc="Buttons, RSVP button, active states" val={accentColor} set={setAccentColor} />
-          <ColorPicker label="Secondary / highlights" desc="Icons, tags, nav highlights, accents" val={secondaryColor} set={setSecondaryColor} />
-          <ColorPicker label="Background" desc="Main app & RSVP page background" val={bgColor} set={setBgColor} />
-          <ColorPicker label="Card / surface" desc="All card backgrounds, RSVP card" val={tertiaryColor} set={setTertiaryColor} />
+        <p className="text-base font-bold text-black uppercase tracking-wider mb-4">Theme colors</p>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))', gap:16 }}>
+          <ColorPicker label="Primary / buttons" desc="Buttons, active states" colorKey="accent" />
+          <ColorPicker label="Secondary / highlights" desc="Icons, tags, nav accents" colorKey="sage" />
+          <ColorPicker label="Background" desc="App & RSVP background" colorKey="bg" />
+          <ColorPicker label="Card / surface" desc="Card backgrounds" colorKey="tertiary" />
         </div>
       </div>
 
       {/* Text colors */}
       <div style={{ marginBottom:28 }}>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
           <p className="text-base font-bold text-black uppercase tracking-wider">Text colors</p>
-          <button onClick={resetDefaults} style={{ fontSize:13, color:'#9ca3af', background:'none', border:'none', cursor:'pointer', textDecoration:'underline' }}>
-            Reset to defaults
+          <button onClick={() => { const u = {...colors,title:'#ffffff',subheader:'#000000',body:'#9ca3af'}; setColors(u); persist(u) }}
+            style={{ fontSize:12, color:'#9ca3af', background:'none', border:'none', cursor:'pointer', textDecoration:'underline' }}>
+            Reset text defaults
           </button>
         </div>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))', gap:16 }}>
-          <ColorPicker label="Page titles" desc="Section headings, card main titles" val={titleColor} set={setTitleColor} />
-          <ColorPicker label="Sub-headers" desc="Labels, table headers, category names" val={subheaderColor} set={setSubheaderColor} />
-          <ColorPicker label="Body text" desc="Descriptions, helper text, counts, legends" val={bodyColor} set={setBodyColor} />
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))', gap:16 }}>
+          <ColorPicker label="Page titles" desc="Section headings, card titles" colorKey="title" />
+          <ColorPicker label="Sub-headers" desc="Labels, table headers" colorKey="subheader" />
+          <ColorPicker label="Body text" desc="Descriptions, helper text" colorKey="body" />
         </div>
       </div>
 
       {/* Live preview */}
       <div style={{ background:'var(--bg3,#1a2419)', borderRadius:16, padding:28, border:'1px solid #202e1f' }}>
-        <p style={{ fontSize:15, fontWeight:600, color:titleColor, marginBottom:16 }}>Preview</p>
+        <p style={{ fontSize:13, fontWeight:700, color:'#000', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:16 }}>Live preview</p>
         <div style={{ display:'flex', gap:16, flexWrap:'wrap' }}>
-          <div style={{ flex:1, minWidth:200, background:bgColor, borderRadius:12, padding:20, border:'1px solid #202e1f' }}>
-            <p style={{ fontSize:11, fontWeight:700, color:subheaderColor, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:4 }}>Sub-header</p>
-            <p style={{ fontSize:22, color:titleColor, fontFamily:'var(--font-display)', marginBottom:6 }}>Page Title</p>
-            <p style={{ fontSize:13, color:bodyColor, marginBottom:12 }}>Body text, descriptions and helper copy look like this.</p>
-            <button style={{ padding:'8px 16px', borderRadius:8, background:accentColor, color:titleColor, border:'none', fontSize:13, fontWeight:600, cursor:'pointer' }}>Primary button</button>
+          <div style={{ flex:1, minWidth:200, background:colors.bg, borderRadius:12, padding:20, border:'1px solid #202e1f' }}>
+            <p style={{ fontSize:11, fontWeight:700, color:colors.subheader, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:4 }}>Sub-header label</p>
+            <p style={{ fontSize:22, color:colors.title, fontFamily:'var(--font-display)', marginBottom:6 }}>Page Title</p>
+            <p style={{ fontSize:13, color:colors.body, marginBottom:12 }}>Body text and helper copy looks like this across the app.</p>
+            <button style={{ padding:'8px 16px', borderRadius:8, background:colors.accent, color:colors.title, border:'none', fontSize:13, fontWeight:600, cursor:'pointer' }}>Primary button</button>
           </div>
-          <div style={{ flex:1, minWidth:200, background:tertiaryColor, borderRadius:12, padding:20, border:'1px solid #202e1f' }}>
-            <p style={{ fontSize:11, fontWeight:700, color:subheaderColor, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:8 }}>Card surface</p>
-            <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-              <div style={{ width:32, height:32, borderRadius:'50%', background:accentColor }} />
+          <div style={{ flex:1, minWidth:200, background:colors.tertiary, borderRadius:12, padding:20, border:'1px solid #202e1f' }}>
+            <p style={{ fontSize:11, fontWeight:700, color:colors.subheader, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:8 }}>Card surface</p>
+            <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:12 }}>
+              <div style={{ width:32, height:32, borderRadius:'50%', background:colors.accent }} />
               <div>
-                <p style={{ fontSize:13, fontWeight:600, color:titleColor }}>Guest name</p>
-                <p style={{ fontSize:11, color:secondaryColor }}>Attending</p>
+                <p style={{ fontSize:13, fontWeight:600, color:colors.title }}>Guest name</p>
+                <p style={{ fontSize:11, color:colors.sage }}>Attending</p>
               </div>
+            </div>
+            <div style={{ height:6, borderRadius:3, background:colors.bg, overflow:'hidden' }}>
+              <div style={{ height:'100%', width:'70%', background:colors.accent, borderRadius:3 }} />
             </div>
           </div>
         </div>
