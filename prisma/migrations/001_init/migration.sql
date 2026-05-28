@@ -124,3 +124,8 @@ ALTER TABLE guests ADD COLUMN IF NOT EXISTS "address" TEXT DEFAULT '';
 
 -- Add partyRole to guests
 ALTER TABLE guests ADD COLUMN IF NOT EXISTS "partyRole" TEXT DEFAULT '';
+
+-- Add text color columns
+ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "titleColor" TEXT NOT NULL DEFAULT '#ffffff';
+ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "subheaderColor" TEXT NOT NULL DEFAULT '#000000';
+ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "bodyColor" TEXT NOT NULL DEFAULT '#9ca3af';

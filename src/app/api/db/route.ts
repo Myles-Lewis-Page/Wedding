@@ -136,7 +136,7 @@ export async function PATCH(req: NextRequest) {
       case 'timeline-item': return ok(await prisma.timelineItem.update({ where: { id }, data }))
       case 'rsvp-settings': {
         // Only pass known fields to avoid errors from missing columns
-        const allowed = ['accentColor','secondaryColor','bgColor','tertiaryColor','swatchBridesmaids','swatchSuits','swatchVenue','swatchFlowers','heroImage','photo1','photo2','photo3','heading','subheading','dateText','venueText','searchLabel','attendingLabel','declineLabel','confirmedMessage','declinedMessage','contactEmail','weddingDate','coupleNames','ourStory','dressCode','dressCodeNote','ceremonyTime','receptionTime']
+        const allowed = ['accentColor','secondaryColor','bgColor','tertiaryColor','titleColor','subheaderColor','bodyColor','swatchBridesmaids','swatchSuits','swatchVenue','swatchFlowers','heroImage','photo1','photo2','photo3','heading','subheading','dateText','venueText','searchLabel','attendingLabel','declineLabel','confirmedMessage','declinedMessage','contactEmail','weddingDate','coupleNames','ourStory','dressCode','dressCodeNote','ceremonyTime','receptionTime']
         const safe: Record<string,unknown> = {}
         for (const k of allowed) { if (k in data) safe[k] = data[k] }
         // Try full upsert first, fall back to raw SQL for new columns
@@ -150,6 +150,9 @@ export async function PATCH(req: NextRequest) {
           await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "photo1" TEXT NOT NULL DEFAULT ''`)
           await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "photo2" TEXT NOT NULL DEFAULT ''`)
           await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "photo3" TEXT NOT NULL DEFAULT ''`)
+          await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "titleColor" TEXT NOT NULL DEFAULT '#ffffff'`)
+          await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "subheaderColor" TEXT NOT NULL DEFAULT '#000000'`)
+          await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "bodyColor" TEXT NOT NULL DEFAULT '#9ca3af'`)
           await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "swatchBridesmaids" TEXT NOT NULL DEFAULT '#9bb89a'`)
           await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "swatchSuits" TEXT NOT NULL DEFAULT '#4a5568'`)
           await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "swatchVenue" TEXT NOT NULL DEFAULT '#8b7355'`)
