@@ -2068,53 +2068,44 @@ function TabColors() {
     localStorage.setItem('colorPresets', JSON.stringify(updated))
   }
 
-  // Debounce save — fires 800ms after last color change
-  const saveTimer = useRef<ReturnType<typeof setTimeout>|null>(null)
-  const debouncedSave = useCallback((col: ColorSet) => {
-    if (saveTimer.current) clearTimeout(saveTimer.current)
-    saveTimer.current = setTimeout(() => { persist(col) }, 800)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const ColorPicker = useCallback(({ label, desc, colorKey }: { label:string; desc:string; colorKey: keyof ColorSet }) => {
+  const ColorPicker = ({ label, desc, colorKey }: { label:string; desc:string; colorKey: keyof ColorSet }) => {
     const val = colors[colorKey] as string
-    const onColorChange = (v: string) => {
-      const updated = { ...colors, [colorKey]: v }
-      setColors(updated)
-      apply(updated)
-      debouncedSave(updated)
+    const [btnSaved, setBtnSaved] = useState(false)
+    const saveSingle = async () => {
+      apply(colors)
+      await persist(colors)
+      setBtnSaved(true)
+      setTimeout(() => setBtnSaved(false), 1500)
     }
     return (
       <div style={{ background:'var(--bg3,#1a2419)', borderRadius:12, border:'1px solid #202e1f', overflow:'hidden' }}>
-        <div style={{ padding:'20px 20px 12px' }}>
+        <div style={{ padding:'14px' }}>
           <p style={{ fontSize:12, fontWeight:700, color:'#000', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:3 }}>{label}</p>
-          <p style={{ fontSize:11, color:'#9ca3af', marginBottom:12 }}>{desc}</p>
-          <div style={{ display:'flex', gap:10, alignItems:'center' }}>
-            <div style={{ position:'relative', flexShrink:0, width:44, height:44 }}>
-              <div style={{ width:44, height:44, borderRadius:10, border:'2px solid rgba(0,0,0,0.3)', background:val, cursor:'pointer', position:'absolute', inset:0 }} />
-              <input type="color" defaultValue={val} key={val}
-                onInput={e => onColorChange((e.target as HTMLInputElement).value)}
-                style={{ position:'absolute', inset:0, width:'100%', height:'100%', opacity:0, cursor:'pointer', border:'none', padding:0 }} />
-            </div>
+          <p style={{ fontSize:11, color:'#9ca3af', marginBottom:10 }}>{desc}</p>
+          <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+            <input type="color" value={val}
+              onChange={e => setColors(p => ({ ...p, [colorKey]: e.target.value }))}
+              style={{ width:40, height:40, borderRadius:8, border:'2px solid #2a3829', cursor:'pointer', padding:2, background:'transparent', flexShrink:0 }} />
             <input type="text" value={val}
-              onChange={e => onColorChange(e.target.value)}
-              onBlur={e => persist({ ...colors, [colorKey]: e.target.value })}
-              style={{ flex:1, padding:'10px 14px', borderRadius:10, border:'1px solid #2a3829', fontSize:14, background:'#141c13', color:'#e8f0e6', outline:'none' }} />
+              onChange={e => setColors(p => ({ ...p, [colorKey]: e.target.value }))}
+              style={{ flex:1, minWidth:0, padding:'8px 10px', borderRadius:8, border:'1px solid #2a3829', fontSize:13, background:'#141c13', color:'#e8f0e6', outline:'none', overflow:'hidden' }} />
+            <button onClick={saveSingle}
+              style={{ flexShrink:0, padding:'8px 12px', borderRadius:8, background: btnSaved ? 'var(--sage)' : 'var(--accent)', color:'#fff', border:'none', fontSize:12, fontWeight:700, cursor:'pointer' }}>
+              {btnSaved ? '✓' : 'Save'}
+            </button>
           </div>
         </div>
-        <div style={{ height:6, background:val, marginTop:12 }} />
+        <div style={{ height:5, background:val }} />
       </div>
     )
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [colors])
+  }
 
   return (
     <div>
-      <PageHeader title="Color scheme" sub="Colors auto-save when you close the picker"
-        action={(saving || saveMsg) ? (
-          <div style={{ display:'flex', alignItems:'center', gap:6, fontSize:13, color:'var(--sage)', padding:'8px 14px', background:'var(--bg3,#1a2419)', borderRadius:8, border:'1px solid #202e1f' }}>
-            {saving ? <><Loader2 size={13} className="animate-spin"/>Saving…</> : <><Check size={13}/>{saveMsg}</>}
-          </div>
-        ) : undefined} />
+      <PageHeader title="Color scheme" sub="Pick your colors then hit Save"
+        action={<Btn onClick={() => persist(colors)} style={{ background: saveMsg ? 'var(--sage)' : 'var(--accent)' }}>
+          {saving ? <><Loader2 size={17} className="animate-spin"/>Saving…</> : saveMsg ? <><Check size={17}/>Saved!</> : 'Save colors'}
+        </Btn>} />
 
       {/* Presets */}
       <div style={{ marginBottom:28 }}>
