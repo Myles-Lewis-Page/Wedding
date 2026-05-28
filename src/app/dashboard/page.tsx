@@ -969,6 +969,10 @@ function TabRSVP() {
     receptionTime: '6:00 PM',
     dressCode: 'Garden Formal',
     dressCodeNote: 'We would love for you to celebrate with us in attire that feels elegant and true to your style.',
+    swatchBridesmaids: '#9bb89a',
+    swatchSuits: '#4a5568',
+    swatchVenue: '#8b7355',
+    swatchFlowers: '#e8b4bc',
   })
   const [savingSettings, setSavingSettings] = useState(false)
   const [settingsSaved, setSettingsSaved] = useState(false)
@@ -1083,6 +1087,24 @@ function TabRSVP() {
             {settings.photo2 && <div className="h-20 rounded-3xl overflow-hidden bg-[#1f2b1e]"><img src={settings.photo2} alt="" className="w-full h-full object-cover"/></div>}
             <SF label="Photo 3 URL" field="photo3" />
             {settings.photo3 && <div className="h-20 rounded-3xl overflow-hidden bg-[#1f2b1e]"><img src={settings.photo3} alt="" className="w-full h-full object-cover"/></div>}
+
+            <p className="text-base font-bold text-[#5a7057] uppercase tracking-wider pt-2 pb-1 border-b border-[#202e1f]">Dress Code Colors</p>
+            <p className="text-xs text-[#5a7057]">These 4 dots appear on the RSVP details page under dress code</p>
+            {([
+              { label: 'Bridesmaid dresses', field: 'swatchBridesmaids' as const },
+              { label: "Men's suits", field: 'swatchSuits' as const },
+              { label: 'Venue colors', field: 'swatchVenue' as const },
+              { label: 'Floral colors', field: 'swatchFlowers' as const },
+            ] as const).map(({ label, field }) => (
+              <Field key={field} label={label}>
+                <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                  <input type="color" value={String(settings[field])} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))}
+                    style={{ width:44, height:44, borderRadius:10, border:'1px solid #2a3829', cursor:'pointer', padding:2, background:'transparent', flexShrink:0 }} />
+                  <Input value={String(settings[field])} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))} />
+                  <div style={{ width:28, height:28, borderRadius:'50%', background:String(settings[field]), flexShrink:0, boxShadow:'0 0 0 2px #2a3829' }} />
+                </div>
+              </Field>
+            ))}
           </div>
         </div>
       </div>
