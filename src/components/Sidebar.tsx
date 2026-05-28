@@ -7,6 +7,7 @@ const TABS = [
   { section: 'Overview', links: [
     { tab: 'home', label: 'Dashboard' },
     { tab: 'moodboard', label: 'Mood board' },
+    { tab: 'colors',    label: 'Color scheme' },
   ]},
   { section: 'Guests', links: [
     { tab: 'guests', label: 'Guest list' },
