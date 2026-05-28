@@ -322,17 +322,19 @@ function TabGuests() {
                   </tr>
                   {/* Plus-one row — tabbed in */}
                   {p && (
-                    <tr key={p.id} className="border-b border-black/10 last:border-0 hover:bg-black/10 transition-colors opacity-80">
-                      <td className="py-2" colSpan={4}>
-                        <div className="flex items-center gap-2 pl-10 pr-4">
-                          <div className="w-1 h-6 rounded-full bg-[#2a3829] shrink-0" />
-                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 bg-[#1e1a3a] text-[#a5b4fc]">
+                    <tr key={p.id} className="border-b border-black/10 last:border-0 bg-black/5">
+                      <td className="pl-10 pr-2 py-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-1 h-5 rounded-full bg-[#2a3829] shrink-0" />
+                          <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 bg-[#1e1a3a] text-[#a5b4fc]">
                             {p.name.split(' ').map((w:string) => w[0]).join('').slice(0,2).toUpperCase()}
                           </div>
-                          <p className="text-xs text-[#9ca3af] flex-1 truncate">{p.name}</p>
-                          <Tag color={STATUS[p.rsvpStatus]?.[1] ?? '#f0b429'}>{STATUS[p.rsvpStatus]?.[0] ?? 'Pending'}</Tag>
+                          <p className="text-[11px] text-[#9ca3af] truncate">{p.name}</p>
                         </div>
                       </td>
+                      <td className="px-4 py-2"><Tag color={STATUS[p.rsvpStatus]?.[1] ?? '#f0b429'}>{STATUS[p.rsvpStatus]?.[0] ?? 'Pending'}</Tag></td>
+                      <td className="px-4 py-2 text-center">{p.address ? <Check size={13} className="text-[#00ff00] mx-auto" /> : <span className="text-[#9ca3af] text-xs">—</span>}</td>
+                      <td className="px-2 py-2"></td>
                     </tr>
                   )}
                 </>
@@ -1299,6 +1301,36 @@ function TabMenu() {
 }
 
 // ─── WEDDING PARTY ──────────────────────────────────────────────────────────
+// Guest search component for party modal
+function GuestSearch({ guests, value, onChange }: { guests: Guest[]; value: string; onChange: (id: string) => void }) {
+  const [search, setSearch] = useState('')
+  const filtered = guests.filter(g => g.name.toLowerCase().includes(search.toLowerCase()) || g.email?.toLowerCase().includes(search.toLowerCase()))
+  return (
+    <div className="space-y-2">
+      <Input placeholder="Search by name or email…" value={search} onChange={e => setSearch(e.target.value)} autoFocus />
+      <div className="max-h-48 overflow-y-auto rounded-xl border border-[#2a3829] divide-y divide-[#2a3829]">
+        {filtered.length === 0
+          ? <p className="text-xs text-[#9ca3af] text-center py-4">No guests found</p>
+          : filtered.map(g => (
+            <button key={g.id} type="button" onClick={() => onChange(g.id)}
+              className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-black/20 transition-colors"
+              style={{background: value === g.id ? 'var(--accent)22' : 'transparent'}}>
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{background:'var(--accent)',color:'#fff'}}>
+                {g.name.split(' ').map((w:string) => w[0]).join('').slice(0,2).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-white truncate">{g.name}</p>
+                {g.email && <p className="text-[10px] text-[#9ca3af] truncate">{g.email}</p>}
+              </div>
+              <span className="text-xs text-[#9ca3af] capitalize shrink-0">{g.side}</span>
+              {value === g.id && <Check size={14} className="text-[var(--sage)] shrink-0" />}
+            </button>
+          ))}
+      </div>
+    </div>
+  )
+}
+
 function TabParty() {
   const [guests, setGuests] = useState<Guest[]>([])
   const [loading, setLoading] = useState(true)
@@ -1310,10 +1342,10 @@ function TabParty() {
 
   useEffect(() => { $get('guests').then(d => { setGuests(Array.isArray(d)?d:[]); setLoading(false) }) }, [])
 
-  const partyMembers = guests.filter(g => g.partyRole)
-  const bride = partyMembers.filter(m => m.side === 'bride')
-  const groom = partyMembers.filter(m => m.side === 'groom')
-  const available = guests.filter(g => g.isInvitee && !g.partyRole)
+  const partyMembers = guests.filter(g => g.partyRole && g.partyRole.trim() !== '')
+  const bride = partyMembers.filter(m => BRIDE_ROLES.includes(m.partyRole||''))
+  const groom = partyMembers.filter(m => GROOM_ROLES.includes(m.partyRole||'') || m.partyRole === 'Officiant')
+  const available = guests.filter(g => g.isInvitee && (!g.partyRole || g.partyRole.trim() === ''))
 
   const addMember = async () => {
     if (!selectedGuest) return
@@ -1367,11 +1399,8 @@ function TabParty() {
       {showAdd && (
         <Modal title="Add to wedding party" onClose={() => setShowAdd(false)}
           footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={addMember} disabled={saving || !selectedGuest}>{saving ? <><Loader2 size={17} className="animate-spin"/>Saving…</> : <><Plus size={17}/>Add</>}</Btn></>}>
-          <Field label="Select guest">
-            <Select value={selectedGuest} onChange={e => setSelectedGuest(e.target.value)}>
-              <option value="">— Choose a guest —</option>
-              {available.map(g => <option key={g.id} value={g.id}>{g.name} ({g.side}&apos;s side)</option>)}
-            </Select>
+          <Field label="Search guest">
+            <GuestSearch guests={available} value={selectedGuest} onChange={setSelectedGuest} />
           </Field>
           <Field label="Role">
             <Select value={selectedRole} onChange={e => setSelectedRole(e.target.value)}>
