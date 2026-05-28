@@ -1080,24 +1080,28 @@ function TabRSVP() {
     setEditTarget(null); setSavingEdit(false)
   }
 
+  const settingsRef = useRef(settings)
+  useEffect(() => { settingsRef.current = settings }, [settings])
   const saveSettings = async () => {
     setSavingSettings(true)
-    await $patch('rsvp-settings', { id: 'main', ...settings })
+    await $patch('rsvp-settings', { id: 'main', ...settingsRef.current })
     setSavingSettings(false); setSettingsSaved(true)
     setTimeout(() => setSettingsSaved(false), 2000)
   }
 
-  const handleSettingChange = useCallback((field: string, value: string) => {
-    setSettings(s => ({ ...s, [field]: value }))
-  }, [])
-  const SF = useCallback(({ label, field, type = 'text', rows }: { label: string; field: keyof typeof settings; type?: string; rows?: number }) => (
+  // SF: uncontrolled inputs so typing never loses focus
+  // Uses defaultValue + key (stable per field) + onBlur to sync back to state
+  const SF = ({ label, field, type = 'text', rows }: { label: string; field: keyof typeof settings; type?: string; rows?: number }) => (
     <Field label={label}>
       {rows
-        ? <textarea value={String(settings[field] ?? '')} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))} rows={rows} className="w-full px-6 py-3.5 rounded-2xl border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)] resize-none text-white" style={{background:'var(--bg3,#1a2419)'}} />
-        : <Input type={type} value={String(settings[field] ?? '')} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))} />}
+        ? <textarea key={field} defaultValue={String(settingsRef.current[field] ?? '')}
+            onBlur={e => setSettings(s => ({ ...s, [field]: e.target.value }))}
+            rows={rows} className="w-full px-6 py-3.5 rounded-2xl border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)] resize-none text-white" style={{background:'var(--bg3,#1a2419)'}} />
+        : <input key={field} type={type} defaultValue={String(settingsRef.current[field] ?? '')}
+            onBlur={e => setSettings(s => ({ ...s, [field]: e.target.value }))}
+            className="w-full px-6 py-3.5 rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] text-base text-white focus:outline-none focus:border-[var(--sage)]" />}
     </Field>
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  ), [settings])
+  )
 
   return (
     <div>
@@ -1171,23 +1175,7 @@ function TabRSVP() {
             <SF label="Photo 3 URL" field="photo3" />
             {settings.photo3 && <div className="h-20 rounded-xl overflow-hidden bg-[#1f2b1e]"><img src={settings.photo3} alt="" className="w-full h-full object-cover"/></div>}
 
-            <p className="text-base font-bold text-[#5a7057] uppercase tracking-wider pt-2 pb-1 border-b border-[#202e1f]">Dress Code Colors</p>
-            <p className="text-xs text-[#9ca3af]">These 4 dots appear on the RSVP details page under dress code</p>
-            {([
-              { label: 'Bridesmaid dresses', field: 'swatchBridesmaids' as const },
-              { label: "Men's suits", field: 'swatchSuits' as const },
-              { label: 'Venue colors', field: 'swatchVenue' as const },
-              { label: 'Floral colors', field: 'swatchFlowers' as const },
-            ] as const).map(({ label, field }) => (
-              <Field key={field} label={label}>
-                <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-                  <input type="color" value={String(settings[field])} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))}
-                    style={{ width:44, height:44, borderRadius:10, border:'1px solid #2a3829', cursor:'pointer', padding:2, background:'transparent', flexShrink:0 }} />
-                  <Input value={String(settings[field])} onChange={e => setSettings(s => ({ ...s, [field]: e.target.value }))} />
-                  <div style={{ width:28, height:28, borderRadius:'50%', background:String(settings[field]), flexShrink:0, boxShadow:'0 0 0 2px #2a3829' }} />
-                </div>
-              </Field>
-            ))}
+
           </div>
         </div>
       </div>
@@ -1978,9 +1966,9 @@ function TabSeating() {
 
 
 // ─── COLORS ──────────────────────────────────────────────────────────────────
-type ColorSet = { accent:string; sage:string; bg:string; tertiary:string; title:string; subheader:string; body:string; name?:string }
+type ColorSet = { accent:string; sage:string; bg:string; tertiary:string; title:string; subheader:string; body:string; swatchBridesmaids?:string; swatchSuits?:string; swatchVenue?:string; swatchFlowers?:string; name?:string }
 
-const DEFAULT_COLORS: ColorSet = { accent:'#4a7a44', sage:'#8fb882', bg:'#111714', tertiary:'#1a2419', title:'#ffffff', subheader:'#000000', body:'#9ca3af' }
+const DEFAULT_COLORS: ColorSet = { accent:'#4a7a44', sage:'#8fb882', bg:'#111714', tertiary:'#1a2419', title:'#ffffff', subheader:'#000000', body:'#9ca3af', swatchBridesmaids:'#9bb89a', swatchSuits:'#4a5568', swatchVenue:'#8b7355', swatchFlowers:'#e8b4bc' }
 
 function TabColors() {
   const [colors, setColors] = useState<ColorSet>(DEFAULT_COLORS)
@@ -2031,7 +2019,7 @@ function TabColors() {
     localStorage.setItem('weddingColors', JSON.stringify(col))
     apply(col)
     setSaving(true)
-    await $patch('rsvp-settings', { id:'main', accentColor:col.accent, secondaryColor:col.sage, bgColor:col.bg, tertiaryColor:col.tertiary, titleColor:col.title, subheaderColor:col.subheader, bodyColor:col.body })
+    await $patch('rsvp-settings', { id:'main', accentColor:col.accent, secondaryColor:col.sage, bgColor:col.bg, tertiaryColor:col.tertiary, titleColor:col.title, subheaderColor:col.subheader, bodyColor:col.body, swatchBridesmaids:col.swatchBridesmaids||'#9bb89a', swatchSuits:col.swatchSuits||'#4a5568', swatchVenue:col.swatchVenue||'#8b7355', swatchFlowers:col.swatchFlowers||'#e8b4bc' })
     setSaving(false)
     setSaveMsg('Saved')
     setTimeout(() => setSaveMsg(''), 1500)
@@ -2070,32 +2058,52 @@ function TabColors() {
 
   const ColorPicker = ({ label, desc, colorKey }: { label:string; desc:string; colorKey: keyof ColorSet }) => {
     const val = colors[colorKey] as string
+    const [localHex, setLocalHex] = useState(val)
     const [btnSaved, setBtnSaved] = useState(false)
+    const inputRef = useRef<HTMLInputElement>(null)
+
+    // Keep local in sync when external changes (e.g. preset load)
+    useEffect(() => { setLocalHex(val) }, [val])
+
     const saveSingle = async () => {
-      apply(colors)
-      await persist(colors)
+      // validate hex
+      const clean = localHex.startsWith('#') ? localHex : '#' + localHex
+      const updated = { ...colors, [colorKey]: clean }
+      setColors(updated)
+      apply(updated)
+      await persist(updated)
       setBtnSaved(true)
       setTimeout(() => setBtnSaved(false), 1500)
     }
+
     return (
       <div style={{ background:'var(--bg3,#1a2419)', borderRadius:12, border:'1px solid #202e1f', overflow:'hidden' }}>
         <div style={{ padding:'14px' }}>
           <p style={{ fontSize:12, fontWeight:700, color:'#000', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:3 }}>{label}</p>
           <p style={{ fontSize:11, color:'#9ca3af', marginBottom:10 }}>{desc}</p>
           <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-            <input type="color" value={val}
-              onChange={e => setColors(p => ({ ...p, [colorKey]: e.target.value }))}
-              style={{ width:40, height:40, borderRadius:8, border:'2px solid #2a3829', cursor:'pointer', padding:2, background:'transparent', flexShrink:0 }} />
-            <input type="text" value={val}
-              onChange={e => setColors(p => ({ ...p, [colorKey]: e.target.value }))}
-              style={{ flex:1, minWidth:0, padding:'8px 10px', borderRadius:8, border:'1px solid #2a3829', fontSize:13, background:'#141c13', color:'#e8f0e6', outline:'none', overflow:'hidden' }} />
+            {/* Colored swatch — click to focus the hex input */}
+            <div
+              onClick={() => inputRef.current?.focus()}
+              style={{ width:40, height:40, borderRadius:8, border:'2px solid rgba(0,0,0,0.25)', background:localHex, cursor:'pointer', flexShrink:0 }}
+            />
+            <input
+              ref={inputRef}
+              type="text"
+              value={localHex}
+              onChange={e => setLocalHex(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && saveSingle()}
+              placeholder="#000000"
+              style={{ flex:1, minWidth:0, padding:'8px 10px', borderRadius:8, border:'1px solid #2a3829', fontSize:13, background:'#141c13', color:'#e8f0e6', outline:'none' }}
+            />
             <button onClick={saveSingle}
               style={{ flexShrink:0, padding:'8px 12px', borderRadius:8, background: btnSaved ? 'var(--sage)' : 'var(--accent)', color:'#fff', border:'none', fontSize:12, fontWeight:700, cursor:'pointer' }}>
               {btnSaved ? '✓' : 'Save'}
             </button>
           </div>
+          {/* Color preview strip */}
         </div>
-        <div style={{ height:5, background:val }} />
+        <div style={{ height:5, background:localHex }} />
       </div>
     )
   }
@@ -2162,6 +2170,36 @@ function TabColors() {
           <ColorPicker label="Page titles" desc="Section headings, card titles" colorKey="title" />
           <ColorPicker label="Sub-headers" desc="Labels, table headers" colorKey="subheader" />
           <ColorPicker label="Body text" desc="Descriptions, helper text" colorKey="body" />
+        </div>
+      </div>
+
+      {/* Dress code colors */}
+      <div style={{ marginBottom:28 }}>
+        <p className="text-base font-bold text-black uppercase tracking-wider mb-2">Dress code colors</p>
+        <p className="text-xs text-[#9ca3af] mb-4">These 4 dots appear on the RSVP details page under dress code</p>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))', gap:16 }}>
+          {([
+            { label:'Bridesmaid dresses', key:'swatchBridesmaids' },
+            { label:"Men's suits",        key:'swatchSuits' },
+            { label:'Venue colors',        key:'swatchVenue' },
+            { label:'Floral colors',       key:'swatchFlowers' },
+          ] as {label:string; key: keyof ColorSet}[]).map(({ label, key }) => (
+            <div key={key} style={{ background:'var(--bg3,#1a2419)', borderRadius:12, border:'1px solid #202e1f', overflow:'hidden' }}>
+              <div style={{ padding:'14px' }}>
+                <p style={{ fontSize:12, fontWeight:700, color:'#000', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:10 }}>{label}</p>
+                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                  <input type="color" value={colors[key] as string}
+                    onChange={e => setColors(p => ({ ...p, [key]: e.target.value }))}
+                    style={{ width:40, height:40, borderRadius:8, border:'1px solid #2a3829', cursor:'pointer', padding:2, background:'transparent', flexShrink:0 }} />
+                  <input type="text" value={colors[key] as string}
+                    onChange={e => setColors(p => ({ ...p, [key]: e.target.value }))}
+                    style={{ flex:1, minWidth:0, padding:'8px 10px', borderRadius:8, border:'1px solid #2a3829', fontSize:13, background:'#141c13', color:'#e8f0e6', outline:'none' }} />
+                  <div style={{ width:28, height:28, borderRadius:'50%', background:colors[key] as string, flexShrink:0, boxShadow:'0 0 0 2px #2a3829' }} />
+                </div>
+              </div>
+              <div style={{ height:5, background:colors[key] as string }} />
+            </div>
+          ))}
         </div>
       </div>
 
