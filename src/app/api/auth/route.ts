@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 export async function POST(req: NextRequest) {
   const { password } = await req.json()
-  const correct = process.env.DASHBOARD_PASSWORD || 'jennifer2026'
+  const correct = process.env.DASHBOARD_PASSWORD || process.env.DASHBOARD_PASSWORD || 'wedding2026'
   if (password === correct) {
     const res = NextResponse.json({ ok: true })
     res.cookies.set('auth', 'true', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 60*60*24*30, path: '/' })

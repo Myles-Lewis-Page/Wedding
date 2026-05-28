@@ -1,10 +1,22 @@
 import { Heart, MapPin, Clock, Shirt } from 'lucide-react'
-export default function InfoPage() {
+import { prisma } from '@/lib/prisma'
+export const dynamic = 'force-dynamic'
+
+async function getCoupleNames() {
+  try {
+    const s = await prisma.rsvpSettings.findUnique({ where: { id: 'main' } }) as Record<string, string> | null
+    if (s?.brideName && s?.groomName) return `${s.brideName} & ${s.groomName}`
+    return s?.heading || 'Our Wedding'
+  } catch { return 'Our Wedding' }
+}
+
+export default async function InfoPage() {
+  const coupleName = await getCoupleNames()
   return (
     <div style={{minHeight:'100vh',background:'#FAF8F4',fontFamily:'var(--font-body)'}}>
       <div style={{textAlign:'center',padding:'60px 24px 40px',background:'linear-gradient(180deg,#EDF4EA,#FAF8F4)'}}>
         <Heart size={20} fill="#7A9C6E" style={{color:'#7A9C6E',margin:'0 auto 16px'}} />
-        <h1 style={{fontFamily:'var(--font-display)',fontSize:'clamp(2rem,6vw,3.5rem)',fontWeight:300,color:'#2d2825',lineHeight:1.1}}>Jennifer & Myles</h1>
+        <h1 style={{fontFamily:'var(--font-display)',fontSize:'clamp(2rem,6vw,3.5rem)',fontWeight:300,color:'#2d2825',lineHeight:1.1}}>{coupleName}</h1>
         <p style={{color:'#7A9C6E',marginTop:8,letterSpacing:'3px',fontSize:13,textTransform:'uppercase'}}>May 11, 2027</p>
       </div>
       <div style={{maxWidth:640,margin:'0 auto',padding:'0 24px 60px'}}>
@@ -22,7 +34,7 @@ export default function InfoPage() {
         </div>
         <div style={{textAlign:'center',paddingTop:24,borderTop:'1px solid #e7e2da'}}>
           <Heart size={16} fill="#7A9C6E" style={{color:'#7A9C6E',margin:'0 auto 8px'}} />
-          <p style={{color:'#aaa',fontSize:13}}>With love, Jennifer & Myles</p>
+          <p style={{color:'#aaa',fontSize:13}}>With love, the couple</p>
         </div>
       </div>
     </div>

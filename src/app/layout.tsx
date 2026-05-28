@@ -6,7 +6,7 @@ const cormorant = Cormorant_Garamond({ subsets: ['latin'], weight: ['300','400',
 const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-body' })
 
 export const metadata: Metadata = {
-  title: 'Jennifer & Myles · Wedding Planner',
+  title: 'Wedding Planner',
   description: 'Private wedding planner',
 }
 

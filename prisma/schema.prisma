@@ -124,7 +124,9 @@ model Gift {
 
 model RsvpSettings {
   id               String @id @default("main")
-  heading          String @default("Jennifer & Myles")
+  brideName        String @default("")
+  groomName        String @default("")
+  heading          String @default("Our Wedding")
   subheading       String @default("Join us as we celebrate our wedding day")
   dateText         String @default("")
   venueText        String @default("")

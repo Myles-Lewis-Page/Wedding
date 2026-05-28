@@ -37,6 +37,24 @@ const TABS = [
 
 interface SidebarProps { activeTab: string; onTab: (t: string) => void }
 
+function CoupleName() {
+  const [name, setName] = useState('Our Wedding')
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('coupleName')
+      if (stored) setName(stored)
+    } catch {}
+    fetch('/api/db?t=rsvp-settings').then(r=>r.json()).then(d=>{
+      if (d && !d.error) {
+        const n = (d.brideName && d.groomName) ? `${d.brideName} & ${d.groomName}` : (d.heading || 'Our Wedding')
+        setName(n)
+        try { localStorage.setItem('coupleName', n) } catch {}
+      }
+    }).catch(()=>{})
+  }, [])
+  return <>{name}</>
+}
+
 function NavLinks({ activeTab, onTab, onClose }: SidebarProps & { onClose?: () => void }) {
   const router = useRouter()
   const logout = async () => {
@@ -59,7 +77,7 @@ function NavLinks({ activeTab, onTab, onClose }: SidebarProps & { onClose?: () =
           </button>
         )}
       </div>
-      <p style={{ fontSize:11, color:'#4a6448', padding:'6px 18px 0', flexShrink:0 }}>Jennifer & Myles</p>
+      <p style={{ fontSize:11, color:'#4a6448', padding:'6px 18px 0', flexShrink:0 }}><CoupleName /></p>
 
       {/* Nav */}
       <nav style={{ flex:1, overflowY:'auto', padding:'10px 10px' }}>

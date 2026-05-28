@@ -25,13 +25,13 @@ type Page = 'envelope' | 'invite' | 'details' | 'story' | 'rsvp-search' | 'rsvp-
 const DIETARY = ['', 'Vegetarian', 'Vegan', 'Gluten-free', 'Nut allergy', 'Halal', 'Kosher', 'Other']
 
 const DEFAULT: Settings = {
-  heading: 'Jennifer & Myles', subheading: 'Together with their families',
+  heading: 'Our Wedding', subheading: 'Together with their families',
   heroImage: '', accentColor: '#4a7a44',
   searchLabel: 'Enter your name as it appears on your invitation',
   attendingLabel: "Yes, I'll be there!", declineLabel: 'Regretfully no',
   confirmedMessage: "We can't wait to celebrate with you!",
   declinedMessage: "Thank you for letting us know. We'll be thinking of you!",
-  contactEmail: '', coupleNames: 'Jennifer & Myles', secondaryColor: '#8fb882', bgColor: '#111714', tertiaryColor: '#1a2419',
+  contactEmail: '', coupleNames: 'Our Wedding', secondaryColor: '#8fb882', bgColor: '#111714', tertiaryColor: '#1a2419',
   ourStory: "We didn't expect our story to begin the way it did, but from the very first moment something just felt right.\n\nWhat started with simple conversations quickly turned into something deeper, and little by little we realised we had found someone truly special.\n\nSince then, we've shared so many memories — the quiet moments, the big laughs, the small adventures that somehow become the ones you cherish most.",
   photo1: '', photo2: '', dressCode: 'Garden Formal',
   swatchBridesmaids: '#9bb89a', swatchSuits: '#4a5568', swatchVenue: '#8b7355', swatchFlowers: '#e8b4bc',

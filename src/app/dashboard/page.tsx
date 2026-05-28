@@ -957,7 +957,7 @@ function TabTasks() {
             </Select></Field>
             <Field label="Due date"><Input type="date" value={form.dueDate} onChange={e=>setForm(f=>({...f,dueDate:e.target.value}))} /></Field>
             <Field label="Assigned to"><Select value={form.assignedTo} onChange={e=>setForm(f=>({...f,assignedTo:e.target.value}))}>
-              {['Both','Jennifer','Myles','Planner'].map(a=><option key={a}>{a}</option>)}
+              {['Both','Bride','Groom','Planner'].map(a=><option key={a}>{a}</option>)}
             </Select></Field>
           </div>
         </Modal>
@@ -1020,7 +1020,9 @@ function TabRSVP() {
 
   // RSVP page settings
   const [settings, setSettings] = useState({
-    heading: 'Jennifer & Myles',
+    brideName: 'Partner 1',
+    groomName: 'Partner 2',
+    heading: 'Partner 1 & Partner 2',
     subheading: 'Together with their families',
     dateText: 'September 24, 2026',
     venueText: '4:00 PM · The Glass House Garden, Austin TX',
@@ -1032,7 +1034,7 @@ function TabRSVP() {
     confirmedMessage: "We can't wait to celebrate with you!",
     declinedMessage: "Thank you for letting us know. We'll be thinking of you!",
     contactEmail: '',
-    coupleNames: 'Jennifer & Myles',
+    coupleNames: 'Partner 1 & Partner 2',
     ourStory: "We didn't expect our story to begin the way it did...",
     photo1: '',
     photo2: '',
@@ -1150,7 +1152,12 @@ function TabRSVP() {
 
         <div className="p-7" style={{maxWidth: 520}}>
           <div className="space-y-4">
-            <p className="text-base font-bold text-black uppercase tracking-wider pb-1 border-b border-[#000000]/20">Photos</p>
+            <p className="text-base font-bold text-black uppercase tracking-wider pb-1 border-b border-[#000000]/20">Couple names</p>
+            <div className="grid grid-cols-2 gap-5">
+              <SF label="Bride / Partner 1 name" field="brideName" />
+              <SF label="Groom / Partner 2 name" field="groomName" />
+            </div>
+            <p className="text-base font-bold text-black uppercase tracking-wider pt-3 pb-1 border-b border-[#000000]/20">Photos</p>
             <SF label="Hero image URL" field="heroImage" />
             {settings.heroImage && <div className="h-24 rounded-xl overflow-hidden bg-[#1f2b1e]"><img src={settings.heroImage} alt="" className="w-full h-full object-cover"/></div>}
             <SF label="Photo 1 URL (invite card + story)" field="photo1" />
@@ -1542,13 +1549,13 @@ function TabDecor() {
 function TabAttire() {
   const STATUSES = ['Shopping','Ordered','In alterations','Fitting 1','Fitting 2','Ready','Picked up']
   const [items, setItems] = useState([
-    {id:'1',person:'Jennifer',item:'Wedding gown',shop:'',status:'Shopping',notes:''},
-    {id:'2',person:'Jennifer',item:'Veil & accessories',shop:'',status:'Shopping',notes:''},
-    {id:'3',person:'Myles',item:'Suit / tuxedo',shop:'',status:'Shopping',notes:''},
+    {id:'1',person:'Bride',item:'Wedding gown',shop:'',status:'Shopping',notes:''},
+    {id:'2',person:'Bride',item:'Veil & accessories',shop:'',status:'Shopping',notes:''},
+    {id:'3',person:'Groom',item:'Suit / tuxedo',shop:'',status:'Shopping',notes:''},
   ])
   const [showAdd, setShowAdd] = useState(false)
-  const [form, setForm] = useState({person:'Jennifer',item:'',shop:'',notes:''})
-  const add = () => { if(!form.item.trim()) return; setItems(p=>[...p,{id:Date.now().toString(),...form,status:'Shopping'}]); setForm({person:'Jennifer',item:'',shop:'',notes:''}); setShowAdd(false) }
+  const [form, setForm] = useState({person:'Bride',item:'',shop:'',notes:''})
+  const add = () => { if(!form.item.trim()) return; setItems(p=>[...p,{id:Date.now().toString(),...form,status:'Shopping'}]); setForm({person:'Bride',item:'',shop:'',notes:''}); setShowAdd(false) }
   const upd = (id:string,f:string,v:string) => setItems(p=>p.map(i=>i.id===id?{...i,[f]:v}:i))
   return (
     <div>
@@ -1572,7 +1579,7 @@ function TabAttire() {
       </div>
       {showAdd&&(
         <Modal title="Add attire item" onClose={()=>setShowAdd(false)} footer={<><Btn variant="ghost" onClick={()=>setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.item.trim()}><Plus size={17}/>Add</Btn></>}>
-          <Field label="Person"><Select value={form.person} onChange={e=>setForm(f=>({...f,person:e.target.value}))}>{['Jennifer','Myles','Maid of Honor','Bridesmaid','Best Man','Groomsman','Flower Girl'].map(p=><option key={p}>{p}</option>)}</Select></Field>
+          <Field label="Person"><Select value={form.person} onChange={e=>setForm(f=>({...f,person:e.target.value}))}>{['Bride','Groom','Maid of Honor','Bridesmaid','Best Man','Groomsman','Flower Girl'].map(p=><option key={p}>{p}</option>)}</Select></Field>
           <Field label="Item *"><Input value={form.item} onChange={e=>setForm(f=>({...f,item:e.target.value}))} placeholder="Wedding gown, Suit…" autoFocus /></Field>
           <Field label="Shop / Designer"><Input value={form.shop} onChange={e=>setForm(f=>({...f,shop:e.target.value}))} /></Field>
           <Field label="Notes"><Input value={form.notes} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} /></Field>
@@ -1584,13 +1591,13 @@ function TabAttire() {
 
 // ─── PHOTOSHOOT ───────────────────────────────────────────────────────────────
 function TabPhotoshoot() {
-  const GROUPS = ['Couples','Ceremony','Family — Jennifer','Family — Myles','Wedding party','Details','Getting ready','Reception']
+  const GROUPS = ['Couples','Ceremony','Family — Bride','Family — Groom','Wedding party','Details','Getting ready','Reception']
   const [shots, setShots] = useState([
     {id:'1',group:'Couples',desc:'First look reveal',mustHave:true,done:false},
     {id:'2',group:'Ceremony',desc:'Bride walking down the aisle',mustHave:true,done:false},
     {id:'3',group:'Ceremony',desc:'First kiss',mustHave:true,done:false},
-    {id:'4',group:'Family — Jennifer',desc:'Jennifer with both parents',mustHave:true,done:false},
-    {id:'5',group:'Family — Myles',desc:'Myles with both parents',mustHave:true,done:false},
+    {id:'4',group:'Family — Bride',desc:'Bride with both parents',mustHave:true,done:false},
+    {id:'5',group:'Family — Groom',desc:'Groom with both parents',mustHave:true,done:false},
   ])
   const [showAdd, setShowAdd] = useState(false)
   const [form, setForm] = useState({group:'Couples',desc:'',mustHave:false})
