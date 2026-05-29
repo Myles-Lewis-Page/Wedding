@@ -330,59 +330,38 @@ export default function RSVPPage() {
               <h2 style={{ fontFamily: font, fontSize: 40, fontWeight: 400, color: tc }}>Love Story</h2>
             </div>
             <div style={{ ...card, padding: '28px' }}>
-              {(() => {
-                const paras = s.ourStory.split('\n\n').filter(Boolean)
-                const p1 = s.photo1
-                const p2 = s.photo2
-                const p3 = s.photo3
+              <div style={{ fontSize: 15, fontStyle: 'italic', color: bc, lineHeight: 1.9, fontFamily: font }}>
 
-                const pStyle: React.CSSProperties = {
-                  fontFamily: font,
-                  fontStyle: 'italic',
-                  fontSize: 15,
-                  color: bc,
-                  lineHeight: 1.9,
-                  margin: 0,
-                  flex: 1,
-                }
-
-                const polar = (src: string, rot: number) => (
-                  <div style={{ background: '#fff', padding: 6, boxShadow: '0 8px 28px rgba(0,0,0,0.5)', transform: 'rotate(' + rot + 'deg)', display: 'inline-block', flexShrink: 0 }}>
-                    <img src={src} alt="" style={{ width: 130, height: 100, objectFit: 'cover', display: 'block' }} />
+                {/* Photo 1 - floats left, text flows right */}
+                {s.photo1 && (
+                  <div style={{ float: 'left', margin: '4px 18px 12px 0', background: '#fff', padding: 6, boxShadow: '0 8px 28px rgba(0,0,0,0.5)', transform: 'rotate(-2deg)' }}>
+                    <img src={s.photo1} alt="" style={{ width: 140, height: 105, objectFit: 'cover', display: 'block' }} />
                   </div>
-                )
+                )}
 
-                return (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-
-                    {(p1 || paras[0]) && (
-                      <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
-                        {p1 && polar(p1, -2)}
-                        {paras[0] && <p style={pStyle}>{paras[0]}</p>}
-                      </div>
-                    )}
-
-                    {(paras[1] || p2) && (
-                      <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
-                        {paras[1] && <p style={pStyle}>{paras[1]}</p>}
-                        {p2 && polar(p2, 1.5)}
-                      </div>
-                    )}
-
-                    {(p3 || paras[2]) && (
-                      <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
-                        {p3 && polar(p3, -1)}
-                        {paras[2] && <p style={pStyle}>{paras[2]}</p>}
-                      </div>
-                    )}
-
-                    {paras.slice(3).map((p, i) => (
-                      <p key={i} style={pStyle}>{p}</p>
-                    ))}
-
+                {/* Photo 2 - floats right, text flows left */}
+                {s.photo2 && (
+                  <div style={{ float: 'right', margin: '4px 0 12px 18px', background: '#fff', padding: 6, boxShadow: '0 8px 28px rgba(0,0,0,0.5)', transform: 'rotate(1.5deg)' }}>
+                    <img src={s.photo2} alt="" style={{ width: 140, height: 105, objectFit: 'cover', display: 'block' }} />
                   </div>
-                )
-              })()}
+                )}
+
+                {/* Photo 3 - floats left again lower down */}
+                {s.photo3 && (
+                  <div style={{ float: 'left', margin: '4px 18px 12px 0', background: '#fff', padding: 6, boxShadow: '0 8px 28px rgba(0,0,0,0.5)', transform: 'rotate(-1deg)', clear: 'left' }}>
+                    <img src={s.photo3} alt="" style={{ width: 140, height: 105, objectFit: 'cover', display: 'block' }} />
+                  </div>
+                )}
+
+                {/* All story text flows around the photos naturally */}
+                <span style={{ display: 'block', overflow: 'hidden' }}>
+                  {s.ourStory.split('\n\n').filter(Boolean).map((para, i) => (
+                    <p key={i} style={{ margin: '0 0 12px 0' }}>{para}</p>
+                  ))}
+                </span>
+
+                <div style={{ clear: 'both' }} />
+              </div>
             </div>
             <button onClick={() => setPage('rsvp-search')} style={{ width: '100%', padding: '14px', borderRadius: 14, background: ac, color: tc, border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: font }}>RSVP now</button>
           </div>
