@@ -2056,54 +2056,37 @@ function TabColors() {
     localStorage.setItem('colorPresets', JSON.stringify(updated))
   }
 
+  const [cpSaved, setCpSaved] = useState<string|null>(null)
+  const saveSingleColor = async (key: keyof ColorSet, val: string) => {
+    const updated = { ...colors, [key]: val }
+    setColors(updated)
+    apply(updated)
+    await persist(updated)
+    setCpSaved(String(key))
+    setTimeout(() => setCpSaved(null), 1500)
+  }
   const ColorPicker = ({ label, desc, colorKey }: { label:string; desc:string; colorKey: keyof ColorSet }) => {
     const val = colors[colorKey] as string
-    const [localHex, setLocalHex] = useState(val)
-    const [btnSaved, setBtnSaved] = useState(false)
-    const inputRef = useRef<HTMLInputElement>(null)
-
-    // Keep local in sync when external changes (e.g. preset load)
-    useEffect(() => { setLocalHex(val) }, [val])
-
-    const saveSingle = async () => {
-      // validate hex
-      const clean = localHex.startsWith('#') ? localHex : '#' + localHex
-      const updated = { ...colors, [colorKey]: clean }
-      setColors(updated)
-      apply(updated)
-      await persist(updated)
-      setBtnSaved(true)
-      setTimeout(() => setBtnSaved(false), 1500)
-    }
-
+    const saved = cpSaved === colorKey
     return (
       <div style={{ background:'var(--bg3,#1a2419)', borderRadius:12, border:'1px solid #202e1f', overflow:'hidden' }}>
         <div style={{ padding:'14px' }}>
           <p style={{ fontSize:12, fontWeight:700, color:'#000', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:3 }}>{label}</p>
           <p style={{ fontSize:11, color:'#9ca3af', marginBottom:10 }}>{desc}</p>
-          <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-            {/* Colored swatch — click to focus the hex input */}
-            <div
-              onClick={() => inputRef.current?.focus()}
-              style={{ width:40, height:40, borderRadius:8, border:'2px solid rgba(0,0,0,0.25)', background:localHex, cursor:'pointer', flexShrink:0 }}
-            />
-            <input
-              ref={inputRef}
-              type="text"
-              value={localHex}
-              onChange={e => setLocalHex(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && saveSingle()}
-              placeholder="#000000"
-              style={{ flex:1, minWidth:0, padding:'8px 10px', borderRadius:8, border:'1px solid #2a3829', fontSize:13, background:'#141c13', color:'#e8f0e6', outline:'none' }}
-            />
-            <button onClick={saveSingle}
-              style={{ flexShrink:0, padding:'8px 12px', borderRadius:8, background: btnSaved ? 'var(--sage)' : 'var(--accent)', color:'#fff', border:'none', fontSize:12, fontWeight:700, cursor:'pointer' }}>
-              {btnSaved ? '✓' : 'Save'}
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <input type="color" value={val}
+              onChange={e => setColors(p => ({ ...p, [colorKey]: e.target.value }))}
+              style={{ width:40, height:40, borderRadius:8, border:'1px solid #2a3829', cursor:'pointer', padding:2, background:'transparent', flexShrink:0 }} />
+            <input type="text" value={val}
+              onChange={e => setColors(p => ({ ...p, [colorKey]: e.target.value }))}
+              style={{ flex:1, minWidth:0, padding:'8px 10px', borderRadius:8, border:'1px solid #2a3829', fontSize:13, background:'#141c13', color:'#e8f0e6', outline:'none' }} />
+            <button onClick={() => saveSingleColor(colorKey, val)}
+              style={{ flexShrink:0, padding:'8px 12px', borderRadius:8, background: saved ? 'var(--sage)' : 'var(--accent)', color:'#fff', border:'none', fontSize:12, fontWeight:700, cursor:'pointer' }}>
+              {saved ? '✓' : 'Save'}
             </button>
           </div>
-          {/* Color preview strip */}
         </div>
-        <div style={{ height:5, background:localHex }} />
+        <div style={{ height:5, background:val }} />
       </div>
     )
   }
@@ -2194,7 +2177,10 @@ function TabColors() {
                   <input type="text" value={colors[key] as string}
                     onChange={e => setColors(p => ({ ...p, [key]: e.target.value }))}
                     style={{ flex:1, minWidth:0, padding:'8px 10px', borderRadius:8, border:'1px solid #2a3829', fontSize:13, background:'#141c13', color:'#e8f0e6', outline:'none' }} />
-                  <div style={{ width:28, height:28, borderRadius:'50%', background:colors[key] as string, flexShrink:0, boxShadow:'0 0 0 2px #2a3829' }} />
+                  <button onClick={() => saveSingleColor(key, colors[key] as string)}
+                    style={{ flexShrink:0, padding:'8px 12px', borderRadius:8, background: cpSaved===key ? 'var(--sage)' : 'var(--accent)', color:'#fff', border:'none', fontSize:12, fontWeight:700, cursor:'pointer' }}>
+                    {cpSaved===key ? '✓' : 'Save'}
+                  </button>
                 </div>
               </div>
               <div style={{ height:5, background:colors[key] as string }} />
