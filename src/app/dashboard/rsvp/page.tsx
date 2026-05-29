@@ -101,7 +101,7 @@ function TextField({ label, desc, field, value, multiline, rows = 2, onSave }: T
               transition: 'background 0.2s',
             }}
           >
-            {saving ? '…' : saved ? '✓' : 'Save'}
+            {saving ? '...' : saved ? 'Saved' : 'Save'}
           </button>
         </div>
       </div>
