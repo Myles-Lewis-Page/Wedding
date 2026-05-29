@@ -41,22 +41,22 @@ const DEF: S = {
   titleColor: '#ffffff', bodyColor: '#9ca3af',
 }
 
-//  Timeline icon mapping 
+// Timeline icon mapping - using unicode escapes so file stays ASCII
 function timelineIcon(title: string): string {
   const t = title.toLowerCase()
-  if (t.includes('arrive') || t.includes('guest'))    return ''
-  if (t.includes('ceremony') || t.includes('processional')) return ''
-  if (t.includes('first kiss') || t.includes('vow'))  return ''
-  if (t.includes('cocktail'))                         return ''
-  if (t.includes('reception') || t.includes('opens')) return ''
-  if (t.includes('first dance') || t.includes('dance')) return ''
-  if (t.includes('toast') || t.includes('speech'))    return ''
-  if (t.includes('dinner') || t.includes('meal') || t.includes('service')) return ''
-  if (t.includes('cake'))                             return ''
-  if (t.includes('send') || t.includes('exit') || t.includes('last')) return ''
-  if (t.includes('photo') || t.includes('portrait'))  return ''
-  if (t.includes('music') || t.includes('dj') || t.includes('band')) return ''
-  return ''
+  if (t.includes('arrive') || t.includes('guest'))                        return '\uD83C\uDF3F' // leaf
+  if (t.includes('ceremony') || t.includes('processional'))               return '\uD83D\uDC8D' // ring
+  if (t.includes('first kiss') || t.includes('vow'))                      return '\uD83D\uDC8B' // kiss
+  if (t.includes('cocktail'))                                              return '\uD83E\uDD42' // champagne
+  if (t.includes('reception') || t.includes('opens'))                     return '\u2728'        // sparkles
+  if (t.includes('first dance') || t.includes('dance'))                   return '\uD83D\uDC83' // dancer
+  if (t.includes('toast') || t.includes('speech'))                        return '\uD83E\uDD42' // champagne
+  if (t.includes('dinner') || t.includes('meal') || t.includes('service')) return '\uD83C\uDF7D' // plate
+  if (t.includes('cake'))                                                  return '\uD83C\uDF82' // cake
+  if (t.includes('send') || t.includes('exit') || t.includes('last'))     return '\uD83C\uDF87' // fireworks
+  if (t.includes('photo') || t.includes('portrait'))                      return '\uD83D\uDCF8' // camera
+  if (t.includes('music') || t.includes('dj') || t.includes('band'))      return '\uD83C\uDFB5' // music
+  return '\uD83D\uDC9A'                                                                          // green heart
 }
 
 //  Nav back button 
@@ -330,38 +330,59 @@ export default function RSVPPage() {
               <h2 style={{ fontFamily: font, fontSize: 40, fontWeight: 400, color: tc }}>Love Story</h2>
             </div>
             <div style={{ ...card, padding: '28px' }}>
-              <div style={{ fontSize: 15, fontStyle: 'italic', color: bc, lineHeight: 1.9, fontFamily: font }}>
+              {(() => {
+                const paras = s.ourStory.split('\n\n').filter(Boolean)
+                const third = Math.ceil(paras.length / 3)
+                const chunk1 = paras.slice(0, third)
+                const chunk2 = paras.slice(third, third * 2)
+                const chunk3 = paras.slice(third * 2)
 
-                {/* Photo 1 - floats left, text flows right */}
-                {s.photo1 && (
-                  <div style={{ float: 'left', margin: '4px 18px 12px 0', background: '#fff', padding: 6, boxShadow: '0 8px 28px rgba(0,0,0,0.5)', transform: 'rotate(-2deg)' }}>
-                    <img src={s.photo1} alt="" style={{ width: 140, height: 105, objectFit: 'cover', display: 'block' }} />
+                const pStyle: React.CSSProperties = {
+                  margin: '0 0 14px 0',
+                  fontSize: 15,
+                  fontStyle: 'italic',
+                  color: bc,
+                  lineHeight: 1.9,
+                  fontFamily: font,
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                }
+
+                const polar = (src: string, rot: number, dir: 'left' | 'right') => (
+                  <div style={{
+                    float: dir,
+                    margin: dir === 'left' ? '4px 18px 14px 0' : '4px 0 14px 18px',
+                    background: '#fff',
+                    padding: 6,
+                    boxShadow: '0 8px 28px rgba(0,0,0,0.5)',
+                    transform: 'rotate(' + rot + 'deg)',
+                  }}>
+                    <img src={src} alt="" style={{ width: 130, height: 100, objectFit: 'cover', display: 'block' }} />
                   </div>
-                )}
+                )
 
-                {/* Photo 2 - floats right, text flows left */}
-                {s.photo2 && (
-                  <div style={{ float: 'right', margin: '4px 0 12px 18px', background: '#fff', padding: 6, boxShadow: '0 8px 28px rgba(0,0,0,0.5)', transform: 'rotate(1.5deg)' }}>
-                    <img src={s.photo2} alt="" style={{ width: 140, height: 105, objectFit: 'cover', display: 'block' }} />
+                return (
+                  <div>
+                    {/* Block 1: photo1 floats left, first third of text wraps right */}
+                    <div style={{ overflow: 'hidden' }}>
+                      {s.photo1 && polar(s.photo1, -2, 'left')}
+                      {chunk1.map((p, i) => <p key={i} style={pStyle}>{p}</p>)}
+                    </div>
+
+                    {/* Block 2: photo2 floats right, second third of text wraps left */}
+                    <div style={{ overflow: 'hidden', marginTop: 4 }}>
+                      {s.photo2 && polar(s.photo2, 1.5, 'right')}
+                      {chunk2.map((p, i) => <p key={i} style={pStyle}>{p}</p>)}
+                    </div>
+
+                    {/* Block 3: photo3 floats left, final third of text wraps right */}
+                    <div style={{ overflow: 'hidden', marginTop: 4 }}>
+                      {s.photo3 && polar(s.photo3, -1, 'left')}
+                      {chunk3.map((p, i) => <p key={i} style={pStyle}>{p}</p>)}
+                    </div>
                   </div>
-                )}
-
-                {/* Photo 3 - floats left again lower down */}
-                {s.photo3 && (
-                  <div style={{ float: 'left', margin: '4px 18px 12px 0', background: '#fff', padding: 6, boxShadow: '0 8px 28px rgba(0,0,0,0.5)', transform: 'rotate(-1deg)', clear: 'left' }}>
-                    <img src={s.photo3} alt="" style={{ width: 140, height: 105, objectFit: 'cover', display: 'block' }} />
-                  </div>
-                )}
-
-                {/* All story text flows around the photos naturally */}
-                <span style={{ display: 'block', overflow: 'hidden' }}>
-                  {s.ourStory.split('\n\n').filter(Boolean).map((para, i) => (
-                    <p key={i} style={{ margin: '0 0 12px 0' }}>{para}</p>
-                  ))}
-                </span>
-
-                <div style={{ clear: 'both' }} />
-              </div>
+                )
+              })()}
             </div>
             <button onClick={() => setPage('rsvp-search')} style={{ width: '100%', padding: '14px', borderRadius: 14, background: ac, color: tc, border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: font }}>RSVP now</button>
           </div>
