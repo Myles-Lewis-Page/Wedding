@@ -119,6 +119,18 @@ export default function RSVPPage() {
       if (Array.isArray(tl)) setTimeline(tl)
       setLoading(false)
     }).catch(()=>setLoading(false))
+
+    // Listen for live name updates from dashboard Settings tab
+    const handler = (e: StorageEvent) => {
+      if (e.key === 'coupleName' && e.newValue) {
+        // Re-fetch settings to get latest brideName/groomName
+        fetch('/api/db?t=rsvp-settings').then(r=>r.json()).then(d=>{
+          if (d && !d.error) setS(prev => ({ ...prev, brideName: d.brideName||'', groomName: d.groomName||'', coupleNames: d.coupleNames||'' }))
+        }).catch(()=>{})
+      }
+    }
+    window.addEventListener('storage', handler)
+    return () => window.removeEventListener('storage', handler)
   }, [])
 
   // Derived values

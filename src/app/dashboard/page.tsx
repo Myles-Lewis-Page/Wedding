@@ -2033,9 +2033,15 @@ function TabColors() {
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
           <p className="text-base font-bold text-[var(--subheader)] uppercase tracking-wider">Wedding names</p>
           <button onClick={async () => {
-            await $patch('rsvp-settings', { id:'main', brideName: weddingNames.brideName, groomName: weddingNames.groomName, lastName: weddingNames.lastName,
-              coupleNames: [weddingNames.brideName, weddingNames.groomName].filter(Boolean).join(' & ') || 'Our Wedding' })
-            try { localStorage.setItem('coupleName', [weddingNames.brideName, weddingNames.groomName].filter(Boolean).join(' & ') || 'Our Wedding') } catch {}
+            const coupled = [weddingNames.brideName, weddingNames.groomName].filter(Boolean).join(' & ') || 'Our Wedding'
+            const full = coupled + (weddingNames.lastName ? ' ' + weddingNames.lastName : '')
+            await $patch('rsvp-settings', { id:'main', brideName: weddingNames.brideName, groomName: weddingNames.groomName, lastName: weddingNames.lastName, coupleNames: coupled })
+            // Update localStorage so sidebar + RSVP page pick it up immediately
+            try {
+              localStorage.setItem('coupleName', full)
+              // Dispatch storage event so Sidebar CoupleName component re-reads
+              window.dispatchEvent(new StorageEvent('storage', { key:'coupleName', newValue:full }))
+            } catch {}
             setNamesSaved(true); setTimeout(()=>setNamesSaved(false),2000)
           }} style={{ padding:'8px 16px', borderRadius:8, background: namesSaved ? 'var(--sage)' : 'var(--accent)', color:'#fff', border:'none', fontSize:13, fontWeight:700, cursor:'pointer' }}>
             {namesSaved ? '✓ Saved' : 'Save names'}

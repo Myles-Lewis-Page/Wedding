@@ -39,18 +39,33 @@ interface SidebarProps { activeTab: string; onTab: (t: string) => void }
 
 function CoupleName() {
   const [name, setName] = useState('Our Wedding')
-  useEffect(() => {
+
+  const refreshName = () => {
     try {
       const stored = localStorage.getItem('coupleName')
       if (stored) setName(stored)
     } catch {}
+  }
+
+  useEffect(() => {
+    // Load from localStorage immediately
+    refreshName()
+    // Fetch from DB
     fetch('/api/db?t=rsvp-settings').then(r=>r.json()).then(d=>{
       if (d && !d.error) {
-        const n = (d.brideName && d.groomName) ? `${d.brideName} & ${d.groomName}` : (d.heading || 'Our Wedding')
-        setName(n)
-        try { localStorage.setItem('coupleName', n) } catch {}
+        const bride = d.brideName || ''
+        const groom = d.groomName || ''
+        const last  = d.lastName  || ''
+        const coupled = bride && groom ? `${bride} & ${groom}` : bride || groom || d.heading || 'Our Wedding'
+        const full = coupled + (last ? ' ' + last : '')
+        setName(full)
+        try { localStorage.setItem('coupleName', full) } catch {}
       }
     }).catch(()=>{})
+    // Listen for live updates from the Settings tab Save
+    const handler = (e: StorageEvent) => { if (e.key === 'coupleName' && e.newValue) setName(e.newValue) }
+    window.addEventListener('storage', handler)
+    return () => window.removeEventListener('storage', handler)
   }, [])
   return <>{name}</>
 }
