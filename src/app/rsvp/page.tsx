@@ -8,7 +8,7 @@ interface Settings {
   brideName: string; groomName: string
   searchLabel: string; attendingLabel: string; declineLabel: string
   confirmedMessage: string; declinedMessage: string; contactEmail: string
-  coupleNames: string; ourStory: string; photo1: string; photo2: string
+  coupleNames: string; ourStory: string; photo1: string; photo2: string; photo3: string
   dressCode: string; dressCodeNote: string; weddingDate: string
   swatchBridesmaids: string; swatchSuits: string; swatchVenue: string; swatchFlowers: string
 }
@@ -34,7 +34,7 @@ const DEFAULT: Settings = {
   declinedMessage: "Thank you for letting us know. We'll be thinking of you!",
   contactEmail: '', coupleNames: 'Our Wedding', brideName: '', groomName: '', secondaryColor: '#8fb882', bgColor: '#111714', tertiaryColor: '#1a2419',
   ourStory: "We didn't expect our story to begin the way it did, but from the very first moment something just felt right.\n\nWhat started with simple conversations quickly turned into something deeper, and little by little we realised we had found someone truly special.\n\nSince then, we've shared so many memories — the quiet moments, the big laughs, the small adventures that somehow become the ones you cherish most.",
-  photo1: '', photo2: '', dressCode: 'Garden Formal',
+  photo1: '', photo2: '', photo3: '', dressCode: 'Garden Formal',
   swatchBridesmaids: '#9bb89a', swatchSuits: '#4a5568', swatchVenue: '#8b7355', swatchFlowers: '#e8b4bc',
   dressCodeNote: 'We would love for you to celebrate with us in attire that feels elegant and true to your style.',
   weddingDate: '',
@@ -203,7 +203,7 @@ export default function RSVPPage() {
       {page === 'envelope' && (
         <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'48px 24px' }}>
           <p style={{ fontSize:12, letterSpacing:'0.25em', textTransform:'uppercase', color:sage+'aa', marginBottom:8 }}>You&apos;ve got mail from</p>
-          <h1 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:42, fontWeight:300, color:titleCol, marginBottom:48 }}>{displayNames}</h1>
+          <h1 style={{ fontFamily:'Runethia,Palatino,Georgia,serif', fontSize:48, fontWeight:400, color:titleCol, marginBottom:48 }}>{displayNames}</h1>
 
           <div style={{ position:'relative', width:320, height:210, cursor:'pointer' }} onClick={openEnvelope}>
             {/* Body */}
@@ -245,7 +245,7 @@ export default function RSVPPage() {
             {/* Content */}
             <div style={{ padding:'28px 32px', textAlign:'center' }}>
               <p style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:accent, marginBottom:6 }}>{s.subheading}</p>
-              <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:32, fontWeight:300, color:titleCol, marginBottom:12 }}>{displayNames}</h2>
+              <h2 style={{ fontFamily:'Runethia,Palatino,Georgia,serif', fontSize:36, fontWeight:400, color:titleCol, marginBottom:12 }}>{displayNames}</h2>
               <div style={{ width:40, height:1, background:'#2a3829', margin:'0 auto 16px' }}/>
               <p style={{ fontSize:11, fontWeight:700, letterSpacing:'0.2em', textTransform:'uppercase', color:sage, marginBottom:6 }}>DATE</p>
               <p style={{ fontFamily:'Palatino,serif', fontSize:18, color:titleCol, marginBottom:12 }}>{dateDisplay}</p>
@@ -330,13 +330,16 @@ export default function RSVPPage() {
         <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', padding:'32px 20px' }}>
           <Nav onBack={() => setPage('invite')} sage={sage} />
           <div style={{ width:'100%', maxWidth:380, marginTop:12 }}>
-            <div style={{ ...cardStyle, padding:'24px', textAlign:'center', marginBottom:12, borderStyle:'solid', borderWidth:8, borderColor:'#1e2e1c' }}>
+            <div style={{ ...cardStyle, padding:'28px', textAlign:'center', marginBottom:12 }}>
               <p style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:accent, marginBottom:4 }}>Our</p>
-              <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontStyle:'italic', fontSize:30, fontWeight:300, color:titleCol, marginBottom:16 }}>Love Story</h2>
-              {(s.photo2 || s.photo1) && (
-                <div style={{ display:'inline-block', background:'#fff', padding:8, boxShadow:'0 12px 32px rgba(0,0,0,0.5)', transform:'rotate(-1deg)', marginBottom:12 }}>
-                  <img src={s.photo2||s.photo1} alt="" style={{ width:180, height:130, objectFit:'cover' }} />
-                  <p style={{ textAlign:'center', fontSize:10, color:bodyCol, marginTop:6, fontStyle:'italic' }}>a new adventure will begin</p>
+              <h2 style={{ fontFamily:'Runethia,Palatino,Georgia,serif', fontSize:34, fontWeight:400, color:titleCol, marginBottom:20 }}>Love Story</h2>
+              {(s.photo1 || s.photo2 || s.photo3) && (
+                <div style={{ display:'grid', gridTemplateColumns: s.photo3 ? 'repeat(3,1fr)' : s.photo2 ? 'repeat(2,1fr)' : '1fr', gap:8, marginBottom:16 }}>
+                  {[s.photo1, s.photo2, s.photo3].filter(Boolean).map((photo, i) => (
+                    <div key={i} style={{ background:'#fff', padding:5, boxShadow:'0 6px 20px rgba(0,0,0,0.4)', transform: i===0 ? 'rotate(-1.5deg)' : i===1 ? 'rotate(1deg)' : 'rotate(-0.5deg)' }}>
+                      <img src={photo} alt="" style={{ width:'100%', aspectRatio:'1/1', objectFit:'cover', display:'block' }} />
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -486,7 +489,7 @@ export default function RSVPPage() {
             <div style={{ width:64, height:64, borderRadius:'50%', background:accentLight, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 24px' }}>
               {attending ? <Heart size={28} fill={accent} style={{ color:accent }} /> : <Check size={28} style={{ color:accent }} />}
             </div>
-            <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:32, fontWeight:300, color:titleCol, marginBottom:12 }}>
+            <h2 style={{ fontFamily:'Runethia,Palatino,Georgia,serif', fontSize:36, fontWeight:400, color:titleCol, marginBottom:12 }}>
               {attending ? "We'll see you there! 🌿" : "We'll miss you!"}
             </h2>
             <p style={{ fontSize:14, color:sage+'aa', lineHeight:1.7, marginBottom:28 }}>

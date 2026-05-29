@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'Runethia';
+  src: url('/Runethia.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 @import "tailwindcss";
 
 :root {
@@ -14,10 +21,14 @@
   --text: #e8f0e6;
   --text2: #8fa88c;
   --text3: #5a7057;
+  /* User-controlled text colors */
+  --title: #ffffff;
+  --subheader: #000000;
+  --body: #9ca3af;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--font-body); background: var(--bg); color: var(--text); font-size: 15px; }
+body { font-family: var(--font-body); background: var(--bg); color: var(--title); font-size: 15px; }
 h1,h2,h3 { font-family: var(--font-display); font-weight: 400; }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }

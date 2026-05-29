@@ -1020,9 +1020,9 @@ function TabRSVP() {
 
   // RSVP page settings
   const [settings, setSettings] = useState({
-    brideName: 'Partner 1',
-    groomName: 'Partner 2',
-    heading: 'Partner 1 & Partner 2',
+    brideName: '',
+    groomName: '',
+    heading: 'Our Wedding',
     subheading: 'Together with their families',
     dateText: 'September 24, 2026',
     venueText: '4:00 PM · The Glass House Garden, Austin TX',
@@ -1034,7 +1034,7 @@ function TabRSVP() {
     confirmedMessage: "We can't wait to celebrate with you!",
     declinedMessage: "Thank you for letting us know. We'll be thinking of you!",
     contactEmail: '',
-    coupleNames: 'Partner 1 & Partner 2',
+    coupleNames: 'Our Wedding',
     ourStory: "We didn't expect our story to begin the way it did...",
     photo1: '',
     photo2: '',
@@ -1097,31 +1097,42 @@ function TabRSVP() {
   // PhotoField: file upload → base64 stored in DB, or paste URL
   const PhotoField = ({ label, field, height }: { label: string; field: keyof typeof settings; height: number }) => {
     const [uploading, setUploading] = useState(false)
-    const current = String(settingsRef.current[field] ?? '')
+    const [saving, setSaving] = useState(false)
+    const current = String(settings[field] ?? '')
+    const savePhoto = async (val: string) => {
+      setSaving(true)
+      const n = {...settingsRef.current, [field]: val}
+      setSettings(n); settingsRef.current = n
+      await $patch('rsvp-settings', { id: 'main', [field]: val })
+      setSaving(false)
+    }
     const handleFile = (file: File) => {
       if (!file.type.startsWith('image/')) return
       setUploading(true)
       const reader = new FileReader()
-      reader.onload = e => {
+      reader.onload = async e => {
         const b64 = e.target?.result as string
-        setSettings(s => { const n = {...s, [field]: b64}; settingsRef.current = n; return n })
         setUploading(false)
+        await savePhoto(b64)
       }
       reader.readAsDataURL(file)
     }
     return (
       <Field label={label}>
         <div className="space-y-2">
-          {current && <div style={{height, borderRadius:10, overflow:'hidden'}}><img src={current} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}} /></div>}
+          {current && <div style={{height, borderRadius:10, overflow:'hidden', position:'relative'}}>
+            <img src={current} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}} />
+            {saving && <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center'}}><Loader2 size={20} className="animate-spin text-white"/></div>}
+          </div>}
           <div style={{display:'flex',gap:8,alignItems:'center'}}>
             <label style={{flexShrink:0,padding:'8px 14px',borderRadius:10,background:'var(--accent)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:6}}>
               {uploading ? <><Loader2 size={14} className="animate-spin"/>Uploading…</> : <><Upload size={14}/>Upload image</>}
               <input type="file" accept="image/*" style={{display:'none'}} onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
             </label>
-            <input defaultValue={current.startsWith('data:') ? '' : current} placeholder="or paste URL…"
-              onBlur={e => { if (e.target.value) { setSettings(s => { const n = {...s, [field]: e.target.value}; settingsRef.current = n; return n }) }}}
+            <input placeholder="or paste URL…"
+              onBlur={e => { if (e.target.value.trim()) savePhoto(e.target.value.trim()) }}
               style={{flex:1,padding:'8px 12px',borderRadius:10,border:'1px solid #2a3829',background:'var(--bg3,#1a2419)',color:'var(--title)',fontSize:13,outline:'none'}} />
-            {current && <button onClick={() => { setSettings(s => { const n = {...s, [field]: ''}; settingsRef.current = n; return n }) }}
+            {current && <button onClick={() => savePhoto('')}
               style={{flexShrink:0,padding:'8px 10px',borderRadius:10,background:'#1f2b1e',border:'1px solid #2a3829',color:'var(--body)',fontSize:12,cursor:'pointer'}}>✕</button>}
           </div>
         </div>
