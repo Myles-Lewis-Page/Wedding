@@ -24,8 +24,6 @@ interface RsvpSettings {
 
 const RSVP_URL = 'https://wedding-production-7483.up.railway.app/rsvp'
 
-// -- TextField --------------------------------------------------------------
-// Defined at module level so hooks are never called inside another render
 interface TextFieldProps {
   label: string
   desc?: string
@@ -68,9 +66,7 @@ function TextField({ label, desc, field, value, multiline, rows = 2, onSave }: T
         <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--subheader)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: desc ? 3 : 10 }}>
           {label}
         </p>
-        {desc && (
-          <p style={{ fontSize: 11, color: 'var(--body)', marginBottom: 10 }}>{desc}</p>
-        )}
+        {desc && <p style={{ fontSize: 11, color: 'var(--body)', marginBottom: 10 }}>{desc}</p>}
         <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
           {multiline ? (
             <textarea
@@ -98,10 +94,9 @@ function TextField({ label, desc, field, value, multiline, rows = 2, onSave }: T
               fontSize: 12,
               fontWeight: 700,
               cursor: 'pointer',
-              transition: 'background 0.2s',
             }}
           >
-            {saving ? '...' : saved ? 'Saved' : 'Save'}
+            {saving ? 'Saving' : saved ? 'Saved' : 'Save'}
           </button>
         </div>
       </div>
@@ -109,7 +104,6 @@ function TextField({ label, desc, field, value, multiline, rows = 2, onSave }: T
   )
 }
 
-// -- PhotoField -------------------------------------------------------------
 interface PhotoFieldProps {
   field: string
   label: string
@@ -139,10 +133,9 @@ function PhotoField({ field, label, desc, value, saving, saved, uploading, onSav
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--title)', marginBottom: 3 }}>{label}</p>
         <p style={{ fontSize: 12, color: 'var(--body)', marginBottom: 12 }}>{desc}</p>
-
         <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '9px 16px', borderRadius: 10, background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', marginBottom: 10 }}>
           {isUploading ? (
-            <><Loader2 size={14} className="animate-spin" />Uploading...</>
+            <><Loader2 size={14} className="animate-spin" />Uploading</>
           ) : (
             <><Upload size={14} />Upload JPG / PNG</>
           )}
@@ -153,13 +146,12 @@ function PhotoField({ field, label, desc, value, saving, saved, uploading, onSav
             onChange={e => e.target.files?.[0] && onUpload(field, e.target.files[0])}
           />
         </label>
-
         <div style={{ display: 'flex', gap: 8 }}>
           <input
             value={urlInput}
             onChange={e => setUrlInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleUrl()}
-            placeholder="or paste image URL..."
+            placeholder="or paste image URL"
             style={{ flex: 1, minWidth: 0, padding: '8px 12px', borderRadius: 10, border: '1px solid #2a3829', background: '#141c13', color: 'var(--title)', fontSize: 13, outline: 'none' }}
           />
           <button
@@ -170,7 +162,6 @@ function PhotoField({ field, label, desc, value, saving, saved, uploading, onSav
             Save
           </button>
         </div>
-
         {value && (
           <button
             onClick={() => onSave(field, '')}
@@ -180,7 +171,6 @@ function PhotoField({ field, label, desc, value, saving, saved, uploading, onSav
           </button>
         )}
       </div>
-
       <div style={{ flexShrink: 0, width: 130 }}>
         {value ? (
           <div style={{ width: 130, height: 100, borderRadius: 10, overflow: 'hidden', border: '2px solid var(--accent)', position: 'relative' }}>
@@ -188,7 +178,7 @@ function PhotoField({ field, label, desc, value, saving, saved, uploading, onSav
             {(isSaving || isSaved) && (
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {isSaving
-                  ? <Loader2 size={20} style={{ color: '#fff', animation: 'spin 1s linear infinite' }} />
+                  ? <Loader2 size={20} style={{ color: '#fff' }} />
                   : <Check size={22} style={{ color: '#4ade80' }} />}
               </div>
             )}
@@ -203,7 +193,6 @@ function PhotoField({ field, label, desc, value, saving, saved, uploading, onSav
   )
 }
 
-// -- Page -------------------------------------------------------------------
 export default function RsvpDashboardPage() {
   const [s, setS] = useState<RsvpSettings | null>(null)
   const [loading, setLoading] = useState(true)
@@ -241,7 +230,7 @@ export default function RsvpDashboardPage() {
     if (!canvas) return
     const img = new Image()
     img.crossOrigin = 'anonymous'
-    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(RSVP_URL)}&bgcolor=ffffff&color=3d6b2e&margin=10`
+    img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(RSVP_URL) + '&bgcolor=ffffff&color=3d6b2e&margin=10'
     img.onload = () => {
       const ctx = canvas.getContext('2d')
       if (ctx) ctx.drawImage(img, 0, 0, 160, 160)
@@ -296,19 +285,14 @@ export default function RsvpDashboardPage() {
               ref={canvasRef}
               width={160}
               height={160}
-              style={{ borderRadius: 12, display: 'block', imageRendering: 'pixelated', width: 160, height: 160 }}
+              style={{ borderRadius: 12, display: 'block', width: 160, height: 160 }}
             />
             <p style={{ fontSize: 11, color: 'var(--body)', wordBreak: 'break-all', textAlign: 'center', maxWidth: 160 }}>{RSVP_URL}</p>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flex: 1, minWidth: 180, paddingTop: 8 }}>
             <Btn onClick={() => {
               const cv = canvasRef.current
-              if (cv) {
-                const a = document.createElement('a')
-                a.download = 'rsvp-qr.png'
-                a.href = cv.toDataURL()
-                a.click()
-              }
+              if (cv) { const a = document.createElement('a'); a.download = 'rsvp-qr.png'; a.href = cv.toDataURL(); a.click() }
             }}>
               <QrCode size={15} />Download QR
             </Btn>
@@ -333,7 +317,7 @@ export default function RsvpDashboardPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <TextField label="Page heading"       field="heading"          value={s.heading}          desc="Main title on the invite card"         onSave={saveField} />
             <TextField label="Subheading"         field="subheading"       value={s.subheading}       desc="Tagline below the heading"             onSave={saveField} />
-            <TextField label="Contact email"      field="contactEmail"     value={s.contactEmail}     desc="Shown if guests can't find their name" onSave={saveField} />
+            <TextField label="Contact email"      field="contactEmail"     value={s.contactEmail}     desc="Shown if guests cannot find their name" onSave={saveField} />
             <TextField label="Guest search label" field="searchLabel"      value={s.searchLabel}      desc="Hint text on the name search field"    onSave={saveField} />
           </div>
         </div>
@@ -341,8 +325,8 @@ export default function RsvpDashboardPage() {
         <div>
           <SectionLabel>RSVP labels</SectionLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <TextField label="Attending button"  field="attendingLabel"   value={s.attendingLabel}   desc='e.g. "Yes, I\'ll be there!"' onSave={saveField} />
-            <TextField label="Decline button"    field="declineLabel"     value={s.declineLabel}     desc='e.g. "Regretfully no"'       onSave={saveField} />
+            <TextField label="Attending button"  field="attendingLabel"   value={s.attendingLabel}   desc="e.g. Yes, I will be there!"  onSave={saveField} />
+            <TextField label="Decline button"    field="declineLabel"     value={s.declineLabel}     desc="e.g. Regretfully no"         onSave={saveField} />
             <TextField label="Confirmed message" field="confirmedMessage" value={s.confirmedMessage} desc="Shown after guest RSVPs yes"  onSave={saveField} />
             <TextField label="Declined message"  field="declinedMessage"  value={s.declinedMessage}  desc="Shown after guest RSVPs no"   onSave={saveField} />
           </div>
@@ -351,12 +335,11 @@ export default function RsvpDashboardPage() {
         <div>
           <SectionLabel>Dress code</SectionLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <TextField label="Dress code"      field="dressCode"     value={s.dressCode}     desc='e.g. "Garden Formal", "Black Tie"'    onSave={saveField} />
+            <TextField label="Dress code"      field="dressCode"     value={s.dressCode}     desc="e.g. Garden Formal, Black Tie"        onSave={saveField} />
             <TextField label="Dress code note" field="dressCodeNote" value={s.dressCodeNote} desc="Extended description shown to guests" multiline rows={3} onSave={saveField} />
           </div>
           <p style={{ fontSize: 12, color: 'var(--body)', marginTop: 8 }}>
-            Dress code color swatches are managed in{' '}
-            <strong style={{ color: 'var(--sage)' }}>Settings &gt; Dress code colors</strong>
+            Dress code color swatches are managed in Settings
           </p>
         </div>
 
@@ -368,7 +351,7 @@ export default function RsvpDashboardPage() {
             value={s.ourStory}
             multiline
             rows={8}
-            desc="Shown on the 'Our Story' page. Separate paragraphs with a blank line."
+            desc="Shown on the Our Story page. Separate paragraphs with a blank line."
             onSave={saveField}
           />
         </div>
