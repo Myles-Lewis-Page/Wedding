@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
         return ok(s)
       }
 
-      // Public endpoint — returns everything the RSVP/info pages need in one call
+      // Public endpoint  returns everything the RSVP/info pages need in one call
       case 'public-data': {
         const [rs, vs, tl, ws] = await Promise.all([
           prisma.rsvpSettings.findUnique({ where: { id: 'main' } }),
@@ -221,7 +221,7 @@ export async function PATCH(req: NextRequest) {
         try {
           return ok(await prisma.rsvpSettings.upsert({ where: { id: 'main' }, update: safe, create: { id: 'main', ...safe } }))
         } catch {
-          // Columns may not exist yet — run migrations then retry
+          // Columns may not exist yet  run migrations then retry
           await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "ourStory" TEXT NOT NULL DEFAULT ''`)
           await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "dressCode" TEXT NOT NULL DEFAULT 'Garden Formal'`)
           await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "dressCodeNote" TEXT NOT NULL DEFAULT ''`)

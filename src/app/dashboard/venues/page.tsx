@@ -73,7 +73,7 @@ export default function VenuesPage() {
     <div>
       <PageHeader
         title="Venues"
-        sub={`${venues.length} venue${venues.length !== 1 ? 's' : ''}${selected ? ` · "${selected.name}" selected` : ''}`}
+        sub={`${venues.length} venue${venues.length !== 1 ? 's' : ''}${selected ? `  "${selected.name}" selected` : ''}`}
         action={<Btn onClick={() => setShowAdd(true)}><Plus size={17} />Add venue</Btn>}
       />
 
@@ -101,7 +101,7 @@ export default function VenuesPage() {
           ? (
             <div className="text-center py-20">
               <MapPin size={36} className="text-[#2a3828] mx-auto mb-4" />
-              <p className="text-[#5a7057] mb-4">No venues yet — paste a website URL and we&apos;ll fill in the details</p>
+              <p className="text-[#5a7057] mb-4">No venues yet  paste a website URL and we&apos;ll fill in the details</p>
               <Btn onClick={() => setShowAdd(true)}><Plus size={17} />Add venue</Btn>
             </div>
           )
@@ -138,10 +138,10 @@ export default function VenuesPage() {
           onClose={() => { setShowAdd(false); setStep('url'); setUrl('') }}
           footer={step === 'form' ? (
             <>
-              <Btn variant="ghost" onClick={() => setStep('url')}>← Back</Btn>
+              <Btn variant="ghost" onClick={() => setStep('url')}> Back</Btn>
               <Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn>
               <Btn onClick={saveVenue} disabled={saving || !form.name.trim()}>
-                {saving ? <><Loader2 size={17} className="animate-spin" />Saving…</> : <><Plus size={17} />Add venue</>}
+                {saving ? <><Loader2 size={17} className="animate-spin" />Saving</> : <><Plus size={17} />Add venue</>}
               </Btn>
             </>
           ) : undefined}
@@ -157,7 +157,7 @@ export default function VenuesPage() {
               </Card>
               <div className="flex gap-3">
                 <Btn onClick={scrape} disabled={scraping || !url.trim()}>
-                  {scraping ? <><Loader2 size={17} className="animate-spin" />Fetching…</> : <><Globe size={17} />Fetch info</>}
+                  {scraping ? <><Loader2 size={17} className="animate-spin" />Fetching</> : <><Globe size={17} />Fetch info</>}
                 </Btn>
                 <Btn variant="ghost" onClick={() => setStep('form')}>Enter manually</Btn>
               </div>
@@ -179,7 +179,7 @@ export default function VenuesPage() {
                 <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} rows={2} className="w-full px-4 py-3 rounded-xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] text-sm focus:outline-none focus:border-[var(--sage)] resize-none" style={{ color: 'var(--title)' }} />
               </Field>
               <Field label="Image URL"><Input value={form.imageUrl} onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))} placeholder="https://..." /></Field>
-              <Field label="Amenities (comma separated)"><Input value={form.amenities} onChange={e => setForm(f => ({ ...f, amenities: e.target.value }))} placeholder="Parking, Bridal suite, Kitchen…" /></Field>
+              <Field label="Amenities (comma separated)"><Input value={form.amenities} onChange={e => setForm(f => ({ ...f, amenities: e.target.value }))} placeholder="Parking, Bridal suite, Kitchen" /></Field>
             </div>
           )}
         </Modal>
@@ -188,7 +188,7 @@ export default function VenuesPage() {
       {/* Edit modal */}
       {showEdit && detail && (
         <Modal
-          title={`Edit — ${detail.name}`}
+          title={`Edit  ${detail.name}`}
           onClose={() => setShowEdit(false)}
           footer={<><Btn variant="ghost" onClick={() => setShowEdit(false)}>Cancel</Btn><Btn onClick={saveEdit} disabled={!editVenue.name.trim()}><Check size={17} />Save changes</Btn></>}
         >
@@ -230,7 +230,7 @@ export default function VenuesPage() {
             <div className="p-6 space-y-5 flex-1">
               <div className="grid grid-cols-3 gap-3">
                 <div className="bg-[#1e3a1e] rounded-xl p-3 text-center"><p className="text-base font-semibold text-[var(--sage)]">{fmt$(detail.cost)}</p><p className="text-xs text-[var(--sage)]">Rental</p></div>
-                <div className="bg-[#1a2419] rounded-xl p-3 text-center"><p className="text-base font-semibold text-[var(--title)]">{detail.capacity ?? '—'}</p><p className="text-xs text-[var(--body)]">Capacity</p></div>
+                <div className="bg-[#1a2419] rounded-xl p-3 text-center"><p className="text-base font-semibold text-[var(--title)]">{detail.capacity ?? ''}</p><p className="text-xs text-[var(--body)]">Capacity</p></div>
                 {detail.website && <a href={detail.website} target="_blank" rel="noreferrer" className="bg-[#1a2419] rounded-xl p-3 flex flex-col items-center justify-center gap-1 text-[#7a9878] hover:text-[var(--sage)] transition-colors"><ExternalLink size={16} /><span className="text-xs">Website</span></a>}
               </div>
               {detail.description && <div><p className="text-xs font-semibold text-[#7a9878] uppercase tracking-wider mb-2">About</p><p className="text-sm text-[#a8c4a4] leading-relaxed">{detail.description}</p></div>}

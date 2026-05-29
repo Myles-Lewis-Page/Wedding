@@ -27,7 +27,7 @@ const TABS = [
     { path: '/dashboard/party',      label: 'Wedding party' },
     { path: '/dashboard/timeline',   label: 'Timeline'      },
     { path: '/dashboard/menu',       label: 'Menu & drinks' },
-    { path: '/dashboard/decor',      label: 'Décor'         },
+    { path: '/dashboard/decor',      label: 'Dcor'         },
     { path: '/dashboard/attire',     label: 'Attire'        },
     { path: '/dashboard/photoshoot', label: 'Photoshoot'    },
     { path: '/dashboard/playlist',   label: 'Playlist'      },
@@ -35,7 +35,7 @@ const TABS = [
   ]},
 ]
 
-// ── Couple name (live from DB, cached in localStorage) ─────────────────────
+//  Couple name (live from DB, cached in localStorage) 
 function CoupleName() {
   const [name, setName] = useState('Our Wedding')
 
@@ -67,7 +67,7 @@ function CoupleName() {
   return <>{name}</>
 }
 
-// ── Countdown ──────────────────────────────────────────────────────────────
+//  Countdown 
 function Countdown() {
   const [days, setDays] = useState<number | null>(null)
 
@@ -82,18 +82,18 @@ function Countdown() {
     return () => window.removeEventListener('storage', handler)
   }, [])
 
-  if (days === null) return <p style={{ fontSize: 11, color: '#4a6448' }}>Set date in Settings →</p>
+  if (days === null) return <p style={{ fontSize: 11, color: '#4a6448' }}>Set date in Settings </p>
   return (
     <>
       <p style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 400, color: 'var(--sage)', lineHeight: 1 }}>
-        {days > 0 ? days : '🎉'}
+        {days > 0 ? days : ''}
       </p>
       <p style={{ fontSize: 11, color: '#4a6448', marginTop: 2 }}>{days > 0 ? 'days to go' : 'Today!'}</p>
     </>
   )
 }
 
-// ── Nav links ──────────────────────────────────────────────────────────────
+//  Nav links 
 function NavLinks({ onClose }: { onClose?: () => void }) {
   const router   = useRouter()
   const pathname = usePathname()
@@ -179,7 +179,7 @@ function NavLinks({ onClose }: { onClose?: () => void }) {
   )
 }
 
-// ── Sidebar ────────────────────────────────────────────────────────────────
+//  Sidebar 
 export default function Sidebar() {
   const [open, setOpen] = useState(false)
 

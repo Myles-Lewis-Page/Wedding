@@ -70,7 +70,7 @@ export default function TasksPage() {
         : (
           <div className="space-y-2">
             {shown.length === 0
-              ? <div className="text-center py-12 text-[var(--body)]">{filter === 'done' ? 'No completed tasks' : 'All caught up! 🎉'}</div>
+              ? <div className="text-center py-12 text-[var(--body)]">{filter === 'done' ? 'No completed tasks' : 'All caught up! '}</div>
               : shown.map(t => (
                 <div key={t.id} className={`rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-3.5 flex items-center gap-4 group transition-colors hover:border-[var(--sage)] ${t.completed ? 'opacity-60' : ''}`}>
                   <button
@@ -83,8 +83,8 @@ export default function TasksPage() {
                     <p className={`text-sm font-medium truncate ${t.completed ? 'line-through text-[#5a7057]' : 'text-[#e8f0e6]'}`}>{t.title}</p>
                     <p className="text-xs text-[var(--body)]">
                       {t.category}
-                      {t.dueDate ? ` · Due ${new Date(t.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}
-                      {t.assignedTo ? ` · ${t.assignedTo}` : ''}
+                      {t.dueDate ? `  Due ${new Date(t.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}
+                      {t.assignedTo ? `  ${t.assignedTo}` : ''}
                     </p>
                   </div>
                   <Tag color={PRIORITY_COLOR[t.priority] || '#78716c'}>{t.priority}</Tag>
@@ -100,7 +100,7 @@ export default function TasksPage() {
         <Modal
           title="Add task"
           onClose={() => setShowAdd(false)}
-          footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={save} disabled={saving || !form.title.trim()}>{saving ? <><Loader2 size={17} className="animate-spin" />Saving…</> : <><Plus size={17} />Add</>}</Btn></>}
+          footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={save} disabled={saving || !form.title.trim()}>{saving ? <><Loader2 size={17} className="animate-spin" />Saving</> : <><Plus size={17} />Add</>}</Btn></>}
         >
           <Field label="Task *">
             <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} onKeyDown={e => e.key === 'Enter' && save()} placeholder="Book venue walkthrough" autoFocus />

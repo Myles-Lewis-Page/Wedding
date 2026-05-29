@@ -31,7 +31,7 @@ export default function LoginPage() {
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
           <Heart size={24} fill="var(--sage)" style={{ color: 'var(--sage)', margin: '0 auto 16px' }} />
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 42, fontWeight: 300, color: '#e8f0e6', marginBottom: 6 }}>Our Wedding</h1>
-          <p style={{ fontSize: 14, color: '#4a6448' }}>Wedding planner · Private</p>
+          <p style={{ fontSize: 14, color: '#4a6448' }}>Wedding planner  Private</p>
         </div>
 
         <div style={{ background: '#1a2419', borderRadius: 20, padding: 36, border: '1px solid #2a3829', boxShadow: '0 30px 80px rgba(0,0,0,0.5)' }}>
@@ -62,11 +62,11 @@ export default function LoginPage() {
             disabled={loading || !password.trim()}
             style={{ width: '100%', padding: 14, borderRadius: 12, background: loading || !password.trim() ? '#2a3829' : 'var(--accent)', color: '#e8f0e6', border: 'none', fontSize: 15, fontWeight: 600, cursor: loading || !password.trim() ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s' }}
           >
-            {loading ? <><Loader2 size={17} style={{ animation: 'spin 1s linear infinite' }} />Signing in…</> : 'Sign in'}
+            {loading ? <><Loader2 size={17} style={{ animation: 'spin 1s linear infinite' }} />Signing in</> : 'Sign in'}
           </button>
         </div>
 
-        <p style={{ textAlign: 'center', fontSize: 13, color: '#2a3828', marginTop: 24 }}>This planner is private — for our wedding only.</p>
+        <p style={{ textAlign: 'center', fontSize: 13, color: '#2a3828', marginTop: 24 }}>This planner is private  for our wedding only.</p>
       </div>
     </div>
   )

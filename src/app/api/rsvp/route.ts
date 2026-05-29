@@ -76,7 +76,7 @@ async function sendEmail(to: string, name: string, plusOne?: string) {
     body: JSON.stringify({
       from:    'Wedding <onboarding@resend.dev>',
       to,
-      subject: '🌿 RSVP confirmed — Our Wedding',
+      subject: ' RSVP confirmed  Our Wedding',
       html: `<div style="font-family:Georgia,serif;max-width:560px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e7e2da">
         <div style="background:#7A9C6E;padding:40px 32px;text-align:center">
           <h1 style="color:#fff;font-size:32px;font-weight:300;margin:0">Our Wedding</h1>
@@ -85,11 +85,11 @@ async function sendEmail(to: string, name: string, plusOne?: string) {
           <p style="font-size:15px;color:#5a5044;line-height:1.7">Dear ${name},<br><br>
           We can't wait to celebrate with you!${plusOne ? ` We've noted that ${plusOne} will be joining you.` : ''}</p>
           <div style="text-align:center;margin:28px 0">
-            <a href="${appUrl}/info" style="display:inline-block;background:#7A9C6E;color:#fff;text-decoration:none;padding:14px 32px;border-radius:50px;font-size:14px">View wedding info →</a>
+            <a href="${appUrl}/info" style="display:inline-block;background:#7A9C6E;color:#fff;text-decoration:none;padding:14px 32px;border-radius:50px;font-size:14px">View wedding info </a>
           </div>
         </div>
         <div style="background:#FAF8F4;padding:16px;text-align:center">
-          <p style="font-size:11px;color:#aaa;margin:0">With love 💚</p>
+          <p style="font-size:11px;color:#aaa;margin:0">With love </p>
         </div>
       </div>`,
     }),

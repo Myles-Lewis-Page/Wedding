@@ -85,7 +85,7 @@ export default function PlaylistPage() {
                     <div key={s.id} className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-black/10 group">
                       <div className="flex-1">
                         <p className="text-sm font-medium text-[#e8f0e6]">{s.title}</p>
-                        <p className="text-xs text-[var(--body)]">{s.artist}{s.note ? ` · ${s.note}` : ''}</p>
+                        <p className="text-xs text-[var(--body)]">{s.artist}{s.note ? `  ${s.note}` : ''}</p>
                       </div>
                       <button onClick={() => del(s.id)} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={15} /></button>
                     </div>

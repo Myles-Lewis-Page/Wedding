@@ -37,7 +37,7 @@ export default function DecorPage() {
   return (
     <div>
       <PageHeader
-        title="Décor"
+        title="Dcor"
         sub={`${ordered}/${items.length} ordered`}
         action={<Btn onClick={() => setShowAdd(true)}><Plus size={17} />Add item</Btn>}
       />
@@ -47,7 +47,7 @@ export default function DecorPage() {
         : (
           <div className="space-y-2">
             {items.length === 0
-              ? <div className="text-center py-16 text-[var(--body)]">Track florals, centrepieces, lighting and décor items here</div>
+              ? <div className="text-center py-16 text-[var(--body)]">Track florals, centrepieces, lighting and dcor items here</div>
               : items.map(item => (
                 <div key={item.id} className={`rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-3.5 flex items-center gap-4 group ${item.done ? 'opacity-60' : ''}`}>
                   <button
@@ -58,7 +58,7 @@ export default function DecorPage() {
                   </button>
                   <div className="flex-1">
                     <p className={`text-sm font-medium ${item.done ? 'line-through text-[#5a7057]' : 'text-[#e8f0e6]'}`}>{item.desc}</p>
-                    <p className="text-xs text-[var(--body)]">{item.area}{item.vendor ? ` · ${item.vendor}` : ''}{item.cost ? ` · $${item.cost}` : ''}</p>
+                    <p className="text-xs text-[var(--body)]">{item.area}{item.vendor ? `  ${item.vendor}` : ''}{item.cost ? `  $${item.cost}` : ''}</p>
                   </div>
                   <button onClick={() => del(item.id)} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={15} /></button>
                 </div>
@@ -68,7 +68,7 @@ export default function DecorPage() {
 
       {showAdd && (
         <Modal
-          title="Add décor item"
+          title="Add dcor item"
           onClose={() => setShowAdd(false)}
           footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.desc.trim()}><Plus size={17} />Add</Btn></>}
         >

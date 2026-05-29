@@ -7,8 +7,8 @@ import { $get, $patch } from '@/lib/utils'
 interface Guest { id: string; name: string; email: string | null; side: string; isInvitee: boolean; partyRole: string | null }
 
 const ROLE_ICONS: Record<string, string> = {
-  'Maid of Honor': '👑', 'Bridesmaid': '💐', 'Flower Girl': '🌸', 'Junior Bridesmaid': '🎀',
-  'Best Man': '🎩', 'Groomsman': '🤵', 'Usher': '🚪', 'Ring Bearer': '💍', 'Officiant': '📖',
+  'Maid of Honor': '', 'Bridesmaid': '', 'Flower Girl': '', 'Junior Bridesmaid': '',
+  'Best Man': '', 'Groomsman': '', 'Usher': '', 'Ring Bearer': '', 'Officiant': '',
 }
 const BRIDE_ROLES = ['Maid of Honor','Bridesmaid','Flower Girl','Junior Bridesmaid']
 const GROOM_ROLES = ['Best Man','Groomsman','Usher','Ring Bearer']
@@ -18,7 +18,7 @@ function GuestSearch({ guests, value, onChange }: { guests: Guest[]; value: stri
   const filtered = guests.filter(g => g.name.toLowerCase().includes(search.toLowerCase()) || g.email?.toLowerCase().includes(search.toLowerCase()))
   return (
     <div className="space-y-2">
-      <Input placeholder="Search by name or email…" value={search} onChange={e => setSearch(e.target.value)} autoFocus />
+      <Input placeholder="Search by name or email" value={search} onChange={e => setSearch(e.target.value)} autoFocus />
       <div className="max-h-48 overflow-y-auto rounded-xl border border-[#2a3829] divide-y divide-[#2a3829]">
         {filtered.length === 0
           ? <p className="text-xs text-[var(--body)] text-center py-4">No guests found</p>
@@ -75,7 +75,7 @@ export default function PartyPage() {
 
   const MemberCard = ({ m }: { m: Guest }) => (
     <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-4 group flex items-center gap-3">
-      <div className="text-2xl">{ROLE_ICONS[m.partyRole || ''] || '⭐'}</div>
+      <div className="text-2xl">{ROLE_ICONS[m.partyRole || ''] || ''}</div>
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-[var(--title)] text-sm truncate">{m.name}</p>
         <p className="text-xs text-[var(--sage)]">{m.partyRole}</p>
@@ -116,7 +116,7 @@ export default function PartyPage() {
         <Modal
           title="Add to wedding party"
           onClose={() => setShowAdd(false)}
-          footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={addMember} disabled={saving || !selectedGuest}>{saving ? <><Loader2 size={17} className="animate-spin" />Saving…</> : <><Plus size={17} />Add</>}</Btn></>}
+          footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={addMember} disabled={saving || !selectedGuest}>{saving ? <><Loader2 size={17} className="animate-spin" />Saving</> : <><Plus size={17} />Add</>}</Btn></>}
         >
           <Field label="Search guest">
             <GuestSearch guests={available} value={selectedGuest} onChange={setSelected} />
@@ -128,7 +128,7 @@ export default function PartyPage() {
               <option value="Officiant">Officiant</option>
             </Select>
           </Field>
-          {selectedRole && <p className="text-2xl text-center py-2">{ROLE_ICONS[selectedRole] || '⭐'} {selectedRole}</p>}
+          {selectedRole && <p className="text-2xl text-center py-2">{ROLE_ICONS[selectedRole] || ''} {selectedRole}</p>}
         </Modal>
       )}
     </div>

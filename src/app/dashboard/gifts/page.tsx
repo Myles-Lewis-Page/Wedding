@@ -65,7 +65,7 @@ export default function GiftsPage() {
     <div>
       <PageHeader
         title="Gifts & thank yous"
-        sub={`${gifts.length} gifts · ${pending} thank you${pending !== 1 ? 's' : ''} to send`}
+        sub={`${gifts.length} gifts  ${pending} thank you${pending !== 1 ? 's' : ''} to send`}
         action={<Btn onClick={() => setShowAdd(true)}><Plus size={17} />Log gift</Btn>}
       />
 
@@ -95,7 +95,7 @@ export default function GiftsPage() {
                     {gifts.map(g => (
                       <tr key={g.id} className="border-b border-black/10 last:border-0 hover:bg-black/10 group">
                         <td className="px-6 py-3 font-semibold text-[var(--title)]">{g.fromName}</td>
-                        <td className="px-6 py-3 text-[var(--body)]">{g.description || '—'}</td>
+                        <td className="px-6 py-3 text-[var(--body)]">{g.description || ''}</td>
                         <td className="px-6 py-3">
                           <button
                             onClick={() => toggle(g.id, g.thankYouSent)}
@@ -122,11 +122,11 @@ export default function GiftsPage() {
         <Modal
           title="Log a gift"
           onClose={() => { setShowAdd(false); setSelected([]); setGuestSearch('') }}
-          footer={<><Btn variant="ghost" onClick={() => { setShowAdd(false); setSelected([]); setGuestSearch('') }}>Cancel</Btn><Btn onClick={add} disabled={saving || selectedGuests.length === 0}>{saving ? <><Loader2 size={17} className="animate-spin" />Saving…</> : <><Plus size={17} />Save</>}</Btn></>}
+          footer={<><Btn variant="ghost" onClick={() => { setShowAdd(false); setSelected([]); setGuestSearch('') }}>Cancel</Btn><Btn onClick={add} disabled={saving || selectedGuests.length === 0}>{saving ? <><Loader2 size={17} className="animate-spin" />Saving</> : <><Plus size={17} />Save</>}</Btn></>}
         >
           <Field label={`Select guests (${selectedGuests.length} selected)`}>
             <div className="space-y-2">
-              <Input placeholder="Search guests…" value={guestSearch} onChange={e => setGuestSearch(e.target.value)} autoFocus />
+              <Input placeholder="Search guests" value={guestSearch} onChange={e => setGuestSearch(e.target.value)} autoFocus />
               <div className="max-h-52 overflow-y-auto rounded-xl border border-[#2a3829] divide-y divide-[#2a3829]">
                 {filteredGuests.length === 0
                   ? <p className="text-xs text-[var(--body)] text-center py-4">No guests found</p>
@@ -163,7 +163,7 @@ export default function GiftsPage() {
         <Modal
           title="Edit gift"
           onClose={() => setEditTarget(null)}
-          footer={<><Btn variant="ghost" onClick={() => setEditTarget(null)}>Cancel</Btn><Btn onClick={saveEdit} disabled={saving}>{saving ? <><Loader2 size={17} className="animate-spin" />Saving…</> : <><Check size={17} />Save</>}</Btn></>}
+          footer={<><Btn variant="ghost" onClick={() => setEditTarget(null)}>Cancel</Btn><Btn onClick={saveEdit} disabled={saving}>{saving ? <><Loader2 size={17} className="animate-spin" />Saving</> : <><Check size={17} />Save</>}</Btn></>}
         >
           <Field label="From"><Input value={editForm.fromName} onChange={e => setEditForm(f => ({ ...f, fromName: e.target.value }))} autoFocus /></Field>
           <Field label="Description"><Input value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} /></Field>

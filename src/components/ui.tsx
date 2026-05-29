@@ -2,7 +2,7 @@
 import { X, Loader2 } from 'lucide-react'
 import React from 'react'
 
-// ── Modal ──────────────────────────────────────────────────────────────────
+//  Modal 
 export function Modal({
   title,
   onClose,
@@ -36,7 +36,7 @@ export function Modal({
   )
 }
 
-// ── Field ──────────────────────────────────────────────────────────────────
+//  Field 
 export function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -48,7 +48,7 @@ export function Field({ label, children }: { label: string; children: React.Reac
   )
 }
 
-// ── Input ──────────────────────────────────────────────────────────────────
+//  Input 
 const inputBase: React.CSSProperties = {
   width: '100%',
   padding: '12px 16px',
@@ -71,7 +71,7 @@ export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   )
 }
 
-// ── Textarea ───────────────────────────────────────────────────────────────
+//  Textarea 
 export function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
@@ -83,7 +83,7 @@ export function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement
   )
 }
 
-// ── Select ─────────────────────────────────────────────────────────────────
+//  Select 
 export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement> & { children: React.ReactNode }) {
   return (
     <select
@@ -93,7 +93,7 @@ export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement> & { 
   )
 }
 
-// ── Btn ────────────────────────────────────────────────────────────────────
+//  Btn 
 export function Btn({
   children,
   variant = 'primary',
@@ -121,7 +121,7 @@ export function Btn({
   return <button {...p} style={styles[variant]}>{children}</button>
 }
 
-// ── Tag ────────────────────────────────────────────────────────────────────
+//  Tag 
 export function Tag({ color, children }: { color: string; children: React.ReactNode }) {
   return (
     <span style={{ fontSize: 13, padding: '4px 12px', borderRadius: 20, fontWeight: 600, background: color + '25', color, display: 'inline-block' }}>
@@ -130,7 +130,7 @@ export function Tag({ color, children }: { color: string; children: React.ReactN
   )
 }
 
-// ── PageHeader ─────────────────────────────────────────────────────────────
+//  PageHeader 
 export function PageHeader({ title, sub, action }: { title: string; sub?: string; action?: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 28, paddingTop: 16 }}>
@@ -145,17 +145,17 @@ export function PageHeader({ title, sub, action }: { title: string; sub?: string
   )
 }
 
-// ── SaveBtn ────────────────────────────────────────────────────────────────
+//  SaveBtn 
 // Btn that shows a checkmark briefly after saving
 export function SaveBtn({ saving, saved, onClick, children }: { saving: boolean; saved: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <Btn onClick={onClick} disabled={saving} style={{ background: saved ? 'var(--sage)' : 'var(--accent)' }}>
-      {saving ? <><Loader2 size={15} className="animate-spin" />Saving…</> : saved ? '✓ Saved' : children}
+      {saving ? <><Loader2 size={15} className="animate-spin" />Saving</> : saved ? ' Saved' : children}
     </Btn>
   )
 }
 
-// ── Toggle ─────────────────────────────────────────────────────────────────
+//  Toggle 
 export function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (
     <button
@@ -167,7 +167,7 @@ export function Toggle({ value, onChange }: { value: boolean; onChange: (v: bool
   )
 }
 
-// ── Card ───────────────────────────────────────────────────────────────────
+//  Card 
 export function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <div style={{ background: 'var(--bg3,#1a2419)', borderRadius: 16, border: '1px solid #202e1f', padding: 28, ...style }}>
@@ -176,7 +176,7 @@ export function Card({ children, style }: { children: React.ReactNode; style?: R
   )
 }
 
-// ── SectionLabel ───────────────────────────────────────────────────────────
+//  SectionLabel 
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--subheader)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>

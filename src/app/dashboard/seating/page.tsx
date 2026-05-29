@@ -72,7 +72,7 @@ export default function SeatingPage() {
     <div>
       <PageHeader
         title="Seating chart"
-        sub={`${guests.filter(g => g.tableId).length} seated · ${unassigned.length} unassigned`}
+        sub={`${guests.filter(g => g.tableId).length} seated  ${unassigned.length} unassigned`}
         action={<Btn onClick={() => setShowAdd(true)}><Plus size={17} />Add table</Btn>}
       />
 
@@ -90,7 +90,7 @@ export default function SeatingPage() {
                     <div key={t.id} className="flex items-center gap-1 py-2 border-b border-[#1a2419] last:border-0 group rounded-lg px-1 hover:bg-black/10">
                       <div className="flex-1 cursor-pointer" onClick={() => setAssign(t.id)}>
                         <p className="text-sm font-medium text-[var(--title)]">{t.name}</p>
-                        <p className="text-xs text-[#5a7057] capitalize">{t.shape} · {cnt}/{t.seats}</p>
+                        <p className="text-xs text-[#5a7057] capitalize">{t.shape}  {cnt}/{t.seats}</p>
                       </div>
                       <button onClick={async () => {
                         if (!confirm(`Delete ${t.name}?`)) return
@@ -108,7 +108,7 @@ export default function SeatingPage() {
               <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-5 flex-1 overflow-y-auto">
                 <p className="text-xs font-semibold text-[#5a7057] uppercase tracking-wider mb-3">Unassigned ({unassigned.length})</p>
                 {unassigned.length === 0
-                  ? <p className="text-xs text-[var(--body)]">Everyone seated 🎉</p>
+                  ? <p className="text-xs text-[var(--body)]">Everyone seated </p>
                   : unassigned.map(g => (
                     <div key={g.id} className="flex items-center gap-2 py-1.5 border-b border-[#1a2419] last:border-0">
                       <div className="w-5 h-5 rounded-full bg-[#1e3a1e] flex items-center justify-center text-[10px] font-semibold text-[var(--sage)] shrink-0">{g.name[0]}</div>
@@ -145,7 +145,7 @@ export default function SeatingPage() {
           onClose={() => setShowAdd(false)}
           footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={addTable} disabled={!form.name.trim()}><Plus size={17} />Add</Btn></>}
         >
-          <Field label="Table name"><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Table 1, Head Table…" autoFocus /></Field>
+          <Field label="Table name"><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Table 1, Head Table" autoFocus /></Field>
           <Field label="Shape">
             <div className="grid grid-cols-3 gap-3">
               {['round', 'rectangular', 'oval'].map(s => (

@@ -5,7 +5,7 @@ import { Modal, Field, Input, Select, Btn, PageHeader } from '@/components/ui'
 
 interface MoodItem { id: string; label: string; imageUrl: string; category: string }
 
-const CATS = ['Color palette','Venue','Florals','Tablescape','Dress','Invitations','Décor','Cake','Hair & makeup']
+const CATS = ['Color palette','Venue','Florals','Tablescape','Dress','Invitations','Dcor','Cake','Hair & makeup']
 
 export default function MoodboardPage() {
   const [items, setItems]   = useState<MoodItem[]>([])

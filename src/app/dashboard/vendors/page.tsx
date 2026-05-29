@@ -49,7 +49,7 @@ export default function VendorsPage() {
     <div>
       <PageHeader
         title="Vendors"
-        sub={`${vendors.length} vendors · ${vendors.filter(v => v.status === 'booked' || v.status === 'paid').length} booked`}
+        sub={`${vendors.length} vendors  ${vendors.filter(v => v.status === 'booked' || v.status === 'paid').length} booked`}
         action={<Btn onClick={() => setShowAdd(true)}><Plus size={17} />Add vendor</Btn>}
       />
 
@@ -105,7 +105,7 @@ export default function VendorsPage() {
         <Modal
           title="Add vendor"
           onClose={() => setShowAdd(false)}
-          footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={save} disabled={saving || !form.name.trim()}>{saving ? <><Loader2 size={17} className="animate-spin" />Saving…</> : <><Plus size={17} />Add vendor</>}</Btn></>}
+          footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={save} disabled={saving || !form.name.trim()}>{saving ? <><Loader2 size={17} className="animate-spin" />Saving</> : <><Plus size={17} />Add vendor</>}</Btn></>}
         >
           <Field label="Name *"><Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="ABC Photography" autoFocus /></Field>
           <div className="grid grid-cols-2 gap-4">

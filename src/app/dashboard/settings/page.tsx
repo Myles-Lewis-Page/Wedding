@@ -142,7 +142,7 @@ export default function SettingsPage() {
               style={{ flex: 1, minWidth: 0, padding: '8px 10px', borderRadius: 8, border: '1px solid #2a3829', fontSize: 13, background: 'var(--bg3,#1a2419)', color: 'var(--title)', outline: 'none' }} />
             <button onClick={save}
               style={{ flexShrink: 0, padding: '8px 12px', borderRadius: 8, background: saved ? '#22c55e' : 'var(--accent)', color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'background 0.2s' }}>
-              {saved ? '✓' : 'Save'}
+              {saved ? '' : 'Save'}
             </button>
           </div>
         </div>
@@ -164,7 +164,7 @@ export default function SettingsPage() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <SectionLabel>Wedding names</SectionLabel>
           <button onClick={saveNames} style={{ padding: '8px 16px', borderRadius: 8, background: namesSaved ? 'var(--sage)' : 'var(--accent)', color: '#fff', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
-            {namesSaved ? '✓ Saved' : 'Save names'}
+            {namesSaved ? ' Saved' : 'Save names'}
           </button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
@@ -191,11 +191,11 @@ export default function SettingsPage() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <SectionLabel>Wedding date</SectionLabel>
           <button onClick={saveDate} disabled={!weddingDate} style={{ padding: '8px 16px', borderRadius: 8, background: dateSaved ? 'var(--sage)' : 'var(--accent)', color: '#fff', border: 'none', fontSize: 13, fontWeight: 700, cursor: weddingDate ? 'pointer' : 'not-allowed', opacity: weddingDate ? 1 : 0.5 }}>
-            {dateSaved ? '✓ Saved' : 'Save date'}
+            {dateSaved ? ' Saved' : 'Save date'}
           </button>
         </div>
         <p style={{ fontSize: 13, color: 'var(--body)', marginBottom: 12 }}>
-          {fmtDate || 'Pick your date — it shows across the whole app and on the RSVP page'}
+          {fmtDate || 'Pick your date  it shows across the whole app and on the RSVP page'}
         </p>
         <input type="date" value={weddingDate} onChange={e => setWDate(e.target.value)}
           style={{ width: '100%', maxWidth: 280, padding: '10px 14px', borderRadius: 10, border: '1px solid #2a3829', background: '#141c13', color: 'var(--title)', fontSize: 14, outline: 'none' }} />

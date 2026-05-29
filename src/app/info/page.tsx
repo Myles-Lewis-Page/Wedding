@@ -38,7 +38,7 @@ export default async function InfoPage() {
   const timeStr = [
     ceremonyTime  && `Ceremony ${ceremonyTime}`,
     receptionTime && `Reception ${receptionTime}`,
-  ].filter(Boolean).join(' · ') || 'Times TBD'
+  ].filter(Boolean).join('  ') || 'Times TBD'
 
   const venueName = venue?.name    || 'Venue TBD'
   const venueAddr = venue?.address || ''
@@ -59,7 +59,7 @@ export default async function InfoPage() {
       <div style={{ maxWidth: 640, margin: '0 auto', padding: '0 24px 60px' }}>
         <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #e7e2da', overflow: 'hidden', marginBottom: 32 }}>
           {[
-            { icon: MapPin, label: 'Venue',     value: venueAddr ? `${venueName} · ${venueAddr}` : venueName },
+            { icon: MapPin, label: 'Venue',     value: venueAddr ? `${venueName}  ${venueAddr}` : venueName },
             { icon: Clock,  label: 'Timing',    value: timeStr },
             { icon: Shirt,  label: 'Dress code', value: dressCode },
           ].map(({ icon: Icon, label, value }) => (

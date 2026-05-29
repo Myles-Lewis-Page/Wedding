@@ -12,9 +12,9 @@ interface Guest {
 }
 
 const ROLE_ICONS: Record<string, string> = {
-  'Maid of Honor': '👑', 'Bridesmaid': '💐', 'Flower Girl': '🌸',
-  'Junior Bridesmaid': '🎀', 'Best Man': '🎩', 'Groomsman': '🤵',
-  'Usher': '🚪', 'Ring Bearer': '💍', 'Officiant': '📖',
+  'Maid of Honor': '', 'Bridesmaid': '', 'Flower Girl': '',
+  'Junior Bridesmaid': '', 'Best Man': '', 'Groomsman': '',
+  'Usher': '', 'Ring Bearer': '', 'Officiant': '',
 }
 
 const STATUS: Record<string, [string, string]> = {
@@ -112,7 +112,7 @@ export default function GuestsPage() {
                           <div className="min-w-0">
                             <div className="flex items-center gap-1">
                               <p className="font-semibold text-[var(--title)] text-xs truncate">{g.name}</p>
-                              {g.partyRole && <span className="text-sm" title={g.partyRole}>{ROLE_ICONS[g.partyRole] || '⭐'}</span>}
+                              {g.partyRole && <span className="text-sm" title={g.partyRole}>{ROLE_ICONS[g.partyRole] || ''}</span>}
                             </div>
                             {g.email && <p className="text-[var(--body)] text-[10px] truncate">{g.email}</p>}
                           </div>
@@ -120,7 +120,7 @@ export default function GuestsPage() {
                       </td>
                       <td className="px-4 py-3"><Tag color={color}>{label}</Tag></td>
                       <td className="px-4 py-3 text-center">
-                        {g.address ? <Check size={14} className="text-[#00ff00] mx-auto" /> : <span className="text-[var(--body)] text-xs">—</span>}
+                        {g.address ? <Check size={14} className="text-[#00ff00] mx-auto" /> : <span className="text-[var(--body)] text-xs"></span>}
                       </td>
                       <td className="px-2 py-3">
                         <button onClick={() => del(g.id)} className="text-[var(--body)] hover:text-red-400 transition-colors"><Trash2 size={13} /></button>
@@ -138,7 +138,7 @@ export default function GuestsPage() {
                           </div>
                         </td>
                         <td className="px-4 py-2"><Tag color={STATUS[p.rsvpStatus]?.[1] ?? '#f0b429'}>{STATUS[p.rsvpStatus]?.[0] ?? 'Pending'}</Tag></td>
-                        <td className="px-4 py-2 text-center">{p.address ? <Check size={13} className="text-[#00ff00] mx-auto" /> : <span className="text-[var(--body)] text-xs">—</span>}</td>
+                        <td className="px-4 py-2 text-center">{p.address ? <Check size={13} className="text-[#00ff00] mx-auto" /> : <span className="text-[var(--body)] text-xs"></span>}</td>
                         <td className="px-2 py-2" />
                       </tr>
                     )}
@@ -155,7 +155,7 @@ export default function GuestsPage() {
     <div>
       <PageHeader
         title="Guest list"
-        sub={`${stats.all} guests · ${stats.attending} attending · ${stats.pending} pending`}
+        sub={`${stats.all} guests  ${stats.attending} attending  ${stats.pending} pending`}
         action={
           <div className="flex gap-3">
             <Btn variant="ghost" onClick={exportCSV}>Export CSV</Btn>
@@ -174,7 +174,7 @@ export default function GuestsPage() {
       </div>
 
       <div className="mb-7">
-        <Input placeholder="Search guests…" value={search} onChange={e => setSearch(e.target.value)} />
+        <Input placeholder="Search guests" value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
       {loading
@@ -195,7 +195,7 @@ export default function GuestsPage() {
             <>
               <Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn>
               <Btn onClick={save} disabled={saving || !form.name.trim()}>
-                {saving ? <><Loader2 size={17} className="animate-spin" />Saving…</> : <><Plus size={17} />Add guest</>}
+                {saving ? <><Loader2 size={17} className="animate-spin" />Saving</> : <><Plus size={17} />Add guest</>}
               </Btn>
             </>
           }

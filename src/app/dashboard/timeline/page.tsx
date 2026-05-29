@@ -49,7 +49,7 @@ export default function TimelinePage() {
                 {editing === item.id
                   ? <input value={item.time} onChange={e => update(item.id, 'time', e.target.value)}
                       style={{ width: '100%', textAlign: 'right', fontSize: 13, fontWeight: 600, border: '1px solid #2a3829', borderRadius: 8, padding: '4px 8px', background: 'var(--bg3,#1a2419)', color: 'var(--sage)', outline: 'none' }} placeholder="4:00 PM" />
-                  : <span style={{ fontSize: 13, fontWeight: 600, color: '#6a9068' }}>{item.time || '—'}</span>}
+                  : <span style={{ fontSize: 13, fontWeight: 600, color: '#6a9068' }}>{item.time || ''}</span>}
               </div>
               <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'var(--accent)', border: '2px solid #111714', flexShrink: 0, marginTop: 14, position: 'relative', zIndex: 1 }} />
               <div

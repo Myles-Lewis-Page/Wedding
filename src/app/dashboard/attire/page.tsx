@@ -62,7 +62,7 @@ export default function AttirePage() {
                       <td className="px-5 py-3">
                         <input value={i.shop} onChange={e => upd(i.id, 'shop', e.target.value)}
                           className="w-full bg-transparent border-0 focus:outline-none text-sm"
-                          style={{ color: 'var(--body)' }} placeholder="Add shop…" />
+                          style={{ color: 'var(--body)' }} placeholder="Add shop" />
                       </td>
                       <td className="px-5 py-3">
                         <select value={i.status} onChange={e => upd(i.id, 'status', e.target.value)}
@@ -73,7 +73,7 @@ export default function AttirePage() {
                       <td className="px-5 py-3">
                         <input value={i.notes} onChange={e => upd(i.id, 'notes', e.target.value)}
                           className="w-full bg-transparent border-0 focus:outline-none text-sm"
-                          style={{ color: 'var(--body)' }} placeholder="Notes…" />
+                          style={{ color: 'var(--body)' }} placeholder="Notes" />
                       </td>
                       <td className="px-5 py-3">
                         <button onClick={() => del(i.id)} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
@@ -94,7 +94,7 @@ export default function AttirePage() {
           footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!form.item.trim()}><Plus size={17} />Add</Btn></>}
         >
           <Field label="Person"><Select value={form.person} onChange={e => setForm(f => ({ ...f, person: e.target.value }))}>{PEOPLE.map(p => <option key={p}>{p}</option>)}</Select></Field>
-          <Field label="Item *"><Input value={form.item} onChange={e => setForm(f => ({ ...f, item: e.target.value }))} placeholder="Wedding gown, Suit…" autoFocus /></Field>
+          <Field label="Item *"><Input value={form.item} onChange={e => setForm(f => ({ ...f, item: e.target.value }))} placeholder="Wedding gown, Suit" autoFocus /></Field>
           <Field label="Shop / Designer"><Input value={form.shop} onChange={e => setForm(f => ({ ...f, shop: e.target.value }))} /></Field>
           <Field label="Notes"><Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></Field>
         </Modal>

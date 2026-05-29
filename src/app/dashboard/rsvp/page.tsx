@@ -24,7 +24,7 @@ interface RsvpSettings {
 
 const RSVP_URL = 'https://wedding-production-7483.up.railway.app/rsvp'
 
-// ── TextField ──────────────────────────────────────────────────────────────
+// -- TextField --------------------------------------------------------------
 // Defined at module level so hooks are never called inside another render
 interface TextFieldProps {
   label: string
@@ -109,7 +109,7 @@ function TextField({ label, desc, field, value, multiline, rows = 2, onSave }: T
   )
 }
 
-// ── PhotoField ─────────────────────────────────────────────────────────────
+// -- PhotoField -------------------------------------------------------------
 interface PhotoFieldProps {
   field: string
   label: string
@@ -142,7 +142,7 @@ function PhotoField({ field, label, desc, value, saving, saved, uploading, onSav
 
         <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '9px 16px', borderRadius: 10, background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', marginBottom: 10 }}>
           {isUploading ? (
-            <><Loader2 size={14} className="animate-spin" />Uploading…</>
+            <><Loader2 size={14} className="animate-spin" />Uploading...</>
           ) : (
             <><Upload size={14} />Upload JPG / PNG</>
           )}
@@ -159,7 +159,7 @@ function PhotoField({ field, label, desc, value, saving, saved, uploading, onSav
             value={urlInput}
             onChange={e => setUrlInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleUrl()}
-            placeholder="or paste image URL…"
+            placeholder="or paste image URL..."
             style={{ flex: 1, minWidth: 0, padding: '8px 12px', borderRadius: 10, border: '1px solid #2a3829', background: '#141c13', color: 'var(--title)', fontSize: 13, outline: 'none' }}
           />
           <button
@@ -203,7 +203,7 @@ function PhotoField({ field, label, desc, value, saving, saved, uploading, onSav
   )
 }
 
-// ── Page ───────────────────────────────────────────────────────────────────
+// -- Page -------------------------------------------------------------------
 export default function RsvpDashboardPage() {
   const [s, setS] = useState<RsvpSettings | null>(null)
   const [loading, setLoading] = useState(true)
@@ -356,7 +356,7 @@ export default function RsvpDashboardPage() {
           </div>
           <p style={{ fontSize: 12, color: 'var(--body)', marginTop: 8 }}>
             Dress code color swatches are managed in{' '}
-            <strong style={{ color: 'var(--sage)' }}>Settings → Dress code colors</strong>
+            <strong style={{ color: 'var(--sage)' }}>Settings &gt; Dress code colors</strong>
           </p>
         </div>
 

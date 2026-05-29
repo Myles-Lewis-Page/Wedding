@@ -6,7 +6,7 @@ import { $get, $post, $patch, $del } from '@/lib/utils'
 
 interface Shot { id: string; group: string; desc: string; mustHave: boolean; done: boolean }
 
-const GROUPS = ['Couples','Ceremony','Family — Bride','Family — Groom','Wedding party','Details','Getting ready','Reception']
+const GROUPS = ['Couples','Ceremony','Family  Bride','Family  Groom','Wedding party','Details','Getting ready','Reception']
 
 export default function PhotoshootPage() {
   const [shots, setShots]     = useState<Shot[]>([])
@@ -48,7 +48,7 @@ export default function PhotoshootPage() {
         : (
           <div className="space-y-4">
             {grouped.length === 0
-              ? <div className="text-center py-16 text-[var(--body)]">No shots yet — add must-have moments for your photographer</div>
+              ? <div className="text-center py-16 text-[var(--body)]">No shots yet  add must-have moments for your photographer</div>
               : grouped.map(({ g, shots: gs }) => (
                 <div key={g} className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
                   <div className="flex justify-between px-6 py-3 border-b border-[#202e1f]">

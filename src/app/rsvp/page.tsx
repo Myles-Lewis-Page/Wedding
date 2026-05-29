@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Heart, Check, ChevronRight, Loader2, ArrowLeft } from 'lucide-react'
 
-// ── Types ──────────────────────────────────────────────────────────────────
+//  Types 
 interface S {
   heading: string; subheading: string
   heroImage: string
@@ -32,7 +32,7 @@ const DEF: S = {
   confirmedMessage: "We can't wait to celebrate with you!",
   declinedMessage: "Thank you for letting us know. We'll be thinking of you!",
   contactEmail: '',
-  ourStory: "We didn't expect our story to begin the way it did, but from the very first moment something just felt right.\n\nWhat started with simple conversations quickly turned into something deeper, and little by little we realised we had found someone truly special.\n\nSince then, we've shared so many memories — the quiet moments, the big laughs, the small adventures that somehow become the ones you cherish most.",
+  ourStory: "We didn't expect our story to begin the way it did, but from the very first moment something just felt right.\n\nWhat started with simple conversations quickly turned into something deeper, and little by little we realised we had found someone truly special.\n\nSince then, we've shared so many memories  the quiet moments, the big laughs, the small adventures that somehow become the ones you cherish most.",
   photo1: '', photo2: '', photo3: '',
   dressCode: 'Garden Formal',
   dressCodeNote: 'We would love for you to celebrate with us in attire that feels elegant and true to your style.',
@@ -41,25 +41,25 @@ const DEF: S = {
   titleColor: '#ffffff', bodyColor: '#9ca3af',
 }
 
-// ── Timeline icon mapping ──────────────────────────────────────────────────
+//  Timeline icon mapping 
 function timelineIcon(title: string): string {
   const t = title.toLowerCase()
-  if (t.includes('arrive') || t.includes('guest'))    return '🌿'
-  if (t.includes('ceremony') || t.includes('processional')) return '💍'
-  if (t.includes('first kiss') || t.includes('vow'))  return '💋'
-  if (t.includes('cocktail'))                         return '🥂'
-  if (t.includes('reception') || t.includes('opens')) return '✨'
-  if (t.includes('first dance') || t.includes('dance')) return '💃'
-  if (t.includes('toast') || t.includes('speech'))    return '🥂'
-  if (t.includes('dinner') || t.includes('meal') || t.includes('service')) return '🍽️'
-  if (t.includes('cake'))                             return '🎂'
-  if (t.includes('send') || t.includes('exit') || t.includes('last')) return '🎇'
-  if (t.includes('photo') || t.includes('portrait'))  return '📸'
-  if (t.includes('music') || t.includes('dj') || t.includes('band')) return '🎵'
-  return '💚'
+  if (t.includes('arrive') || t.includes('guest'))    return ''
+  if (t.includes('ceremony') || t.includes('processional')) return ''
+  if (t.includes('first kiss') || t.includes('vow'))  return ''
+  if (t.includes('cocktail'))                         return ''
+  if (t.includes('reception') || t.includes('opens')) return ''
+  if (t.includes('first dance') || t.includes('dance')) return ''
+  if (t.includes('toast') || t.includes('speech'))    return ''
+  if (t.includes('dinner') || t.includes('meal') || t.includes('service')) return ''
+  if (t.includes('cake'))                             return ''
+  if (t.includes('send') || t.includes('exit') || t.includes('last')) return ''
+  if (t.includes('photo') || t.includes('portrait'))  return ''
+  if (t.includes('music') || t.includes('dj') || t.includes('band')) return ''
+  return ''
 }
 
-// ── Nav back button ────────────────────────────────────────────────────────
+//  Nav back button 
 function Nav({ onBack, col }: { onBack: () => void; col: string }) {
   return (
     <button onClick={onBack} style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 6, fontSize: 15, color: col + '88', background: 'none', border: 'none', cursor: 'pointer', marginBottom: 8, fontFamily: 'Cormorant Garamond, Georgia, serif' }}
@@ -70,7 +70,7 @@ function Nav({ onBack, col }: { onBack: () => void; col: string }) {
   )
 }
 
-// ── Main ───────────────────────────────────────────────────────────────────
+//  Main 
 export default function RSVPPage() {
   const [page, setPage]             = useState<Page>('envelope')
   const [envelopeOpen, setEnvOpen]  = useState(false)
@@ -151,7 +151,7 @@ export default function RSVPPage() {
   const timeStr = [
     ceremonyItem?.time  && `Ceremony ${ceremonyItem.time}`,
     receptionItem?.time && `Reception ${receptionItem.time}`,
-  ].filter(Boolean).join(' · ') || ''
+  ].filter(Boolean).join('  ') || ''
 
   // Colors
   const ac  = s.accentColor    || '#4a7a44'
@@ -224,7 +224,7 @@ export default function RSVPPage() {
   return (
     <div style={{ minHeight: '100vh', background: bg, fontFamily: font }}>
 
-      {/* ── ENVELOPE ─────────────────────────────────────────────────── */}
+      {/*  ENVELOPE  */}
       {page === 'envelope' && (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 24px', textAlign: 'center' }}>
           <p style={{ fontSize: 12, letterSpacing: '0.28em', textTransform: 'uppercase', color: sg + '88', marginBottom: 10, fontFamily: font }}>You&apos;ve got mail from</p>
@@ -241,7 +241,7 @@ export default function RSVPPage() {
         </div>
       )}
 
-      {/* ── INVITE CARD ──────────────────────────────────────────────── */}
+      {/*  INVITE CARD  */}
       {page === 'invite' && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('envelope')} col={sg} />
@@ -259,7 +259,7 @@ export default function RSVPPage() {
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: sg + 'aa', marginBottom: 6, fontFamily: font }}>DATE</p>
               <p style={{ fontFamily: font, fontSize: 20, color: tc, marginBottom: 6 }}>{dateStr}</p>
               {timeStr && <p style={{ fontSize: 13, color: sg + '88', fontFamily: font, marginBottom: 6 }}>{timeStr}</p>}
-              <p style={{ fontSize: 14, color: sg + '88', fontFamily: font }}>{venueName}{venueAddr ? ` · ${venueAddr}` : ''}</p>
+              <p style={{ fontSize: 14, color: sg + '88', fontFamily: font }}>{venueName}{venueAddr ? `  ${venueAddr}` : ''}</p>
             </div>
             {/* 4 nav buttons in 2x2 grid */}
             <div style={{ padding: '0 20px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -274,7 +274,7 @@ export default function RSVPPage() {
         </div>
       )}
 
-      {/* ── DETAILS ──────────────────────────────────────────────────── */}
+      {/*  DETAILS  */}
       {page === 'details' && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('invite')} col={sg} />
@@ -320,7 +320,7 @@ export default function RSVPPage() {
         </div>
       )}
 
-      {/* ── OUR STORY ────────────────────────────────────────────────── */}
+      {/*  OUR STORY  */}
       {page === 'story' && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('invite')} col={sg} />
@@ -355,7 +355,7 @@ export default function RSVPPage() {
         </div>
       )}
 
-      {/* ── THE NIGHT ────────────────────────────────────────────────── */}
+      {/*  THE NIGHT  */}
       {page === 'night' && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('invite')} col={sg} />
@@ -366,7 +366,7 @@ export default function RSVPPage() {
             </div>
             <div style={{ ...card, padding: '28px' }}>
               {timeline.length === 0
-                ? <p style={{ textAlign: 'center', color: bc, fontFamily: font, fontStyle: 'italic' }}>Timeline coming soon…</p>
+                ? <p style={{ textAlign: 'center', color: bc, fontFamily: font, fontStyle: 'italic' }}>Timeline coming soon</p>
                 : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                     {[...timeline].sort((a, b) => a.order - b.order).map((item, idx) => (
@@ -393,7 +393,7 @@ export default function RSVPPage() {
         </div>
       )}
 
-      {/* ── RSVP SEARCH ──────────────────────────────────────────────── */}
+      {/*  RSVP SEARCH  */}
       {page === 'rsvp-search' && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('invite')} col={sg} />
@@ -407,13 +407,13 @@ export default function RSVPPage() {
               placeholder="Your full name" style={{ ...inp, marginBottom: 12 }} />
             <button onClick={searchGuest} disabled={!nameInput.trim() || searching}
               style={{ width: '100%', padding: '14px', borderRadius: 14, background: nameInput.trim() && !searching ? ac : '#1e2e1c', color: tc, border: 'none', fontSize: 15, fontWeight: 600, cursor: nameInput.trim() && !searching ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: font }}>
-              {searching ? <><Loader2 size={17} style={{ animation: 'spin 1s linear infinite' }} />Searching…</> : 'Find my invitation'}
+              {searching ? <><Loader2 size={17} style={{ animation: 'spin 1s linear infinite' }} />Searching</> : 'Find my invitation'}
             </button>
           </div>
         </div>
       )}
 
-      {/* ── MULTIPLE MATCHES ─────────────────────────────────────────── */}
+      {/*  MULTIPLE MATCHES  */}
       {page === 'rsvp-multiple' && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('rsvp-search')} col={sg} />
@@ -432,12 +432,12 @@ export default function RSVPPage() {
         </div>
       )}
 
-      {/* ── NOT FOUND ────────────────────────────────────────────────── */}
+      {/*  NOT FOUND  */}
       {page === 'rsvp-not-found' && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('rsvp-search')} col={sg} />
           <div style={{ ...mw, ...card, padding: '32px', textAlign: 'center', marginTop: 8 }}>
-            <p style={{ fontSize: 32, marginBottom: 16 }}>🔍</p>
+            <p style={{ fontSize: 32, marginBottom: 16 }}></p>
             <h2 style={{ fontFamily: font, fontSize: 24, fontWeight: 400, color: tc, marginBottom: 8 }}>Name not found</h2>
             <p style={{ fontSize: 14, color: bc, lineHeight: 1.7, marginBottom: 20, fontFamily: font }}>
               We couldn&apos;t find your name. Try a different spelling{s.contactEmail ? `, or contact us at ${s.contactEmail}` : ''}.
@@ -450,7 +450,7 @@ export default function RSVPPage() {
         </div>
       )}
 
-      {/* ── RSVP FORM ────────────────────────────────────────────────── */}
+      {/*  RSVP FORM  */}
       {page === 'rsvp-form' && guest && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('rsvp-search')} col={sg} />
@@ -460,13 +460,13 @@ export default function RSVPPage() {
             <RSVPForm attending={attending} setAttending={setAttending} dietary={dietary} setDietary={setDietary} plusOneName={plusOneName} setPlusOneName={setPlusOne} plusOneDietary={plusOneDietary} setPlusOneDietary={setPlusDiet} email={email} setEmail={setEmail} hasPlusOne={guest.has_plus_one} attendingLabel={s.attendingLabel} declineLabel={s.declineLabel} ac={ac} sg={sg} cd={cd} tc={tc} bc={bc} font={font} inp={inp} lbl={lbl} />
             <button onClick={() => submit(false)} disabled={attending === null || submitting}
               style={{ width: '100%', padding: '14px', borderRadius: 14, background: attending === null || submitting ? '#1e2e1c' : ac, color: tc, border: 'none', fontSize: 15, fontWeight: 600, cursor: attending === null || submitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 20, fontFamily: font }}>
-              {submitting ? <><Loader2 size={17} style={{ animation: 'spin 1s linear infinite' }} />Submitting…</> : 'Submit RSVP'}
+              {submitting ? <><Loader2 size={17} style={{ animation: 'spin 1s linear infinite' }} />Submitting</> : 'Submit RSVP'}
             </button>
           </div>
         </div>
       )}
 
-      {/* ── RSVP DETAILS (already rsvp'd) ────────────────────────────── */}
+      {/*  RSVP DETAILS (already rsvp'd)  */}
       {page === 'rsvp-details' && guest && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('invite')} col={sg} />
@@ -478,7 +478,7 @@ export default function RSVPPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {[
                 { label: 'Name',     val: guest.name },
-                { label: 'Status',   val: guest.rsvp_status === 'attending' ? '✅ Attending' : '❌ Declined' },
+                { label: 'Status',   val: guest.rsvp_status === 'attending' ? ' Attending' : ' Declined' },
                 ...(guest.dietary        ? [{ label: 'Dietary',  val: guest.dietary        }] : []),
                 ...(guest.email          ? [{ label: 'Email',    val: guest.email          }] : []),
                 ...(guest.plus_one_name  ? [{ label: 'Plus one', val: guest.plus_one_name  }] : []),
@@ -496,7 +496,7 @@ export default function RSVPPage() {
         </div>
       )}
 
-      {/* ── EDIT RSVP ────────────────────────────────────────────────── */}
+      {/*  EDIT RSVP  */}
       {page === 'rsvp-editing' && guest && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('rsvp-details')} col={sg} />
@@ -505,13 +505,13 @@ export default function RSVPPage() {
             <RSVPForm attending={attending} setAttending={setAttending} dietary={dietary} setDietary={setDietary} plusOneName={plusOneName} setPlusOneName={setPlusOne} plusOneDietary={plusOneDietary} setPlusOneDietary={setPlusDiet} email={email} setEmail={setEmail} hasPlusOne={guest.has_plus_one} attendingLabel={s.attendingLabel} declineLabel={s.declineLabel} ac={ac} sg={sg} cd={cd} tc={tc} bc={bc} font={font} inp={inp} lbl={lbl} />
             <button onClick={() => submit(true)} disabled={attending === null || submitting}
               style={{ width: '100%', padding: '14px', borderRadius: 14, background: attending === null || submitting ? '#1e2e1c' : ac, color: tc, border: 'none', fontSize: 15, fontWeight: 600, cursor: attending === null || submitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 20, fontFamily: font }}>
-              {submitting ? <><Loader2 size={17} style={{ animation: 'spin 1s linear infinite' }} />Saving…</> : 'Save changes'}
+              {submitting ? <><Loader2 size={17} style={{ animation: 'spin 1s linear infinite' }} />Saving</> : 'Save changes'}
             </button>
           </div>
         </div>
       )}
 
-      {/* ── DONE ─────────────────────────────────────────────────────── */}
+      {/*  DONE  */}
       {page === 'rsvp-done' && (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 20px' }}>
           <div style={{ ...mw, ...card, padding: '40px', textAlign: 'center' }}>
@@ -519,7 +519,7 @@ export default function RSVPPage() {
               {attending ? <Heart size={28} fill={ac} style={{ color: ac }} /> : <Check size={28} style={{ color: ac }} />}
             </div>
             <h2 style={{ fontFamily: font, fontSize: 36, fontWeight: 400, color: tc, marginBottom: 12 }}>
-              {attending ? "We'll see you there! 🌿" : "We'll miss you!"}
+              {attending ? "We'll see you there! " : "We'll miss you!"}
             </h2>
             <p style={{ fontSize: 15, color: bc, lineHeight: 1.7, marginBottom: 28, fontFamily: font }}>
               {attending ? s.confirmedMessage : s.declinedMessage}
@@ -536,7 +536,7 @@ export default function RSVPPage() {
   )
 }
 
-// ── RSVP Form component ────────────────────────────────────────────────────
+//  RSVP Form component 
 function RSVPForm({ attending, setAttending, dietary, setDietary, plusOneName, setPlusOneName, plusOneDietary, setPlusOneDietary, email, setEmail, hasPlusOne, attendingLabel, declineLabel, ac, sg, cd, tc, bc, font, inp, lbl }: {
   attending: boolean | null; setAttending: (v: boolean) => void
   dietary: string; setDietary: (v: string) => void

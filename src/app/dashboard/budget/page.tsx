@@ -176,7 +176,7 @@ export default function BudgetPage() {
           footer={<><Btn variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Btn><Btn onClick={add} disabled={!addName.trim()}><Plus size={17} />Add</Btn></>}
         >
           <Field label="Category name">
-            <Input value={addName} onChange={e => setAddName(e.target.value)} onKeyDown={e => e.key === 'Enter' && add()} placeholder="Photography, Flowers…" autoFocus />
+            <Input value={addName} onChange={e => setAddName(e.target.value)} onKeyDown={e => e.key === 'Enter' && add()} placeholder="Photography, Flowers" autoFocus />
           </Field>
         </Modal>
       )}

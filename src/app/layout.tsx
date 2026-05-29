@@ -16,7 +16,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
 }
 
-// Inline script: apply saved colors before first paint — prevents flash
+// Inline script: apply saved colors before first paint  prevents flash
 const colorScript = `(function(){try{
   var c=localStorage.getItem('weddingColors');
   if(c){

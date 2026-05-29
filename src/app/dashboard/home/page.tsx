@@ -57,7 +57,7 @@ export default function HomePage() {
 
   return (
     <div>
-      <PageHeader title="Good morning 🌿" sub="Here's where your wedding planning stands." />
+      <PageHeader title="Good morning " sub="Here's where your wedding planning stands." />
 
       {/* Selected venue banner */}
       {venue && (
@@ -71,7 +71,7 @@ export default function HomePage() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontSize: 11, color: '#4a7a44', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Selected venue</p>
             <p style={{ fontSize: 15, fontWeight: 600, color: '#b8d4b4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {venue.name}{(venue as { address?: string }).address ? ` · ${(venue as { address: string }).address}` : ''}
+              {venue.name}{(venue as { address?: string }).address ? `  ${(venue as { address: string }).address}` : ''}
             </p>
           </div>
           <ChevronRight size={17} style={{ color: '#4a7a44', flexShrink: 0 }} />
@@ -118,11 +118,11 @@ export default function HomePage() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
           <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--title)' }}>Upcoming tasks</p>
           <button onClick={() => router.push('/dashboard/tasks')} style={{ fontSize: 13, color: 'var(--sage)', background: 'none', border: 'none', cursor: 'pointer' }}>
-            View all →
+            View all 
           </button>
         </div>
         {upcomingTasks.length === 0
-          ? <p style={{ fontSize: 14, color: 'var(--body)', textAlign: 'center', padding: '16px 0' }}>No pending tasks 🎉</p>
+          ? <p style={{ fontSize: 14, color: 'var(--body)', textAlign: 'center', padding: '16px 0' }}>No pending tasks </p>
           : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {upcomingTasks.map(t => {

@@ -4,7 +4,7 @@ import Sidebar from '@/components/Sidebar'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    // Apply colors from DB on first load — localStorage is already applied
+    // Apply colors from DB on first load  localStorage is already applied
     // by the inline script in layout.tsx (no flash), this just keeps DB as source of truth
     fetch('/api/db?t=rsvp-settings')
       .then(r => r.json())
