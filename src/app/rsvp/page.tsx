@@ -81,10 +81,14 @@ export default function RSVPPage() {
         const p = JSON.parse(saved)
         setS(prev => ({
           ...prev,
-          ...(p.accent ? { accentColor: p.accent } : {}),
-          ...(p.sage   ? { secondaryColor: p.sage } : {}),
-          ...(p.bg     ? { bgColor: p.bg } : {}),
-          ...(p.tertiary ? { tertiaryColor: p.tertiary } : {}),
+          ...(p.accent    ? { accentColor:    p.accent    } : {}),
+          ...(p.sage      ? { secondaryColor: p.sage      } : {}),
+          ...(p.bg        ? { bgColor:        p.bg        } : {}),
+          ...(p.tertiary  ? { tertiaryColor:  p.tertiary  } : {}),
+          ...(p.swatchBridesmaids ? { swatchBridesmaids: p.swatchBridesmaids } : {}),
+          ...(p.swatchSuits       ? { swatchSuits:       p.swatchSuits       } : {}),
+          ...(p.swatchVenue       ? { swatchVenue:       p.swatchVenue       } : {}),
+          ...(p.swatchFlowers     ? { swatchFlowers:     p.swatchFlowers     } : {}),
         }))
       }
     } catch {}
@@ -123,6 +127,13 @@ export default function RSVPPage() {
   const bg = s.bgColor || '#111714'
   const card = s.tertiaryColor || '#1a2419'
   const accentLight = accent + '18'
+  // Text colors from localStorage (set by Color scheme tab)
+  const getStoredColor = (key: string, fallback: string) => {
+    if (typeof window === 'undefined') return fallback
+    try { const p = JSON.parse(localStorage.getItem('weddingColors')||'{}'); return p[key] || fallback } catch { return fallback }
+  }
+  const titleCol = getStoredColor('title', '#ffffff')
+  const bodyCol = getStoredColor('body', '#9ca3af')
 
   const openEnvelope = () => {
     setEnvelopeOpen(true)
@@ -183,7 +194,7 @@ export default function RSVPPage() {
       {page === 'envelope' && (
         <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'48px 24px' }}>
           <p style={{ fontSize:12, letterSpacing:'0.25em', textTransform:'uppercase', color:sage+'aa', marginBottom:8 }}>You&apos;ve got mail from</p>
-          <h1 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:42, fontWeight:300, color:'#e8f0e6', marginBottom:48 }}>{s.coupleNames}</h1>
+          <h1 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:42, fontWeight:300, color:titleCol, marginBottom:48 }}>{s.coupleNames}</h1>
 
           <div style={{ position:'relative', width:320, height:210, cursor:'pointer' }} onClick={openEnvelope}>
             {/* Body */}
@@ -199,7 +210,7 @@ export default function RSVPPage() {
             </div>
           </div>
 
-          <button onClick={openEnvelope} style={{ marginTop:40, padding:'12px 36px', borderRadius:50, background:accent, color:'#e8f0e6', border:'none', fontSize:15, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', cursor:'pointer' }}>
+          <button onClick={openEnvelope} style={{ marginTop:40, padding:'12px 36px', borderRadius:50, background:accent, color:titleCol, border:'none', fontSize:15, fontWeight:600, letterSpacing:'0.1em', textTransform:'uppercase', cursor:'pointer' }}>
             Open
           </button>
           <p style={{ fontSize:13, color:sage+'44', marginTop:12 }}>Tap to open your invitation</p>
@@ -218,17 +229,17 @@ export default function RSVPPage() {
               {s.photo1 && (
                 <div style={{ position:'absolute', bottom:12, right:12, background:'#fff', padding:6, boxShadow:'0 8px 24px rgba(0,0,0,0.5)', transform:'rotate(2deg)' }}>
                   <img src={s.photo1} alt="" style={{ width:72, height:56, objectFit:'cover' }} />
-                  <p style={{ textAlign:'center', fontSize:9, color:'#888', marginTop:4, fontStyle:'italic' }}>a new adventure</p>
+                  <p style={{ textAlign:'center', fontSize:9, color:bodyCol, marginTop:4, fontStyle:'italic' }}>a new adventure</p>
                 </div>
               )}
             </div>
             {/* Content */}
             <div style={{ padding:'28px 32px', textAlign:'center' }}>
               <p style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:accent, marginBottom:6 }}>{s.subheading}</p>
-              <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:32, fontWeight:300, color:'#e8f0e6', marginBottom:12 }}>{s.coupleNames}</h2>
+              <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:32, fontWeight:300, color:titleCol, marginBottom:12 }}>{s.coupleNames}</h2>
               <div style={{ width:40, height:1, background:'#2a3829', margin:'0 auto 16px' }}/>
               <p style={{ fontSize:11, fontWeight:700, letterSpacing:'0.2em', textTransform:'uppercase', color:sage, marginBottom:6 }}>DATE</p>
-              <p style={{ fontFamily:'Palatino,serif', fontSize:18, color:'#cde0ca', marginBottom:12 }}>{dateDisplay}</p>
+              <p style={{ fontFamily:'Palatino,serif', fontSize:18, color:titleCol, marginBottom:12 }}>{dateDisplay}</p>
               <p style={{ fontSize:13, color:sage+'aa' }}>{venueDisplay}{venueAddress ? ` · ${venueAddress}` : ''}</p>
             </div>
             {/* Nav buttons */}
@@ -250,10 +261,10 @@ export default function RSVPPage() {
           <div style={{ width:'100%', maxWidth:380, ...cardStyle, overflow:'hidden', marginTop:12 }}>
             <div style={{ padding:'28px 28px 12px', textAlign:'center' }}>
               <p style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:accent, marginBottom:4 }}>Date &</p>
-              <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:30, fontWeight:300, color:'#e8f0e6', marginBottom:16 }}>Location</h2>
+              <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:30, fontWeight:300, color:titleCol, marginBottom:16 }}>Location</h2>
               <div style={{ width:32, height:1, background:'#2a3829', margin:'0 auto 16px' }}/>
               <p style={{ fontSize:11, fontWeight:700, letterSpacing:'0.2em', textTransform:'uppercase', color:sage+'aa', marginBottom:4 }}>DATE</p>
-              <p style={{ fontFamily:'Palatino,serif', fontSize:19, color:'#cde0ca', marginBottom:6 }}>{dateDisplay}</p>
+              <p style={{ fontFamily:'Palatino,serif', fontSize:19, color:titleCol, marginBottom:6 }}>{dateDisplay}</p>
               {venueAddress && <p style={{ fontSize:13, color:sage+'aa', marginBottom:4 }}>{venueDisplay}</p>}
               {venueAddress && <p style={{ fontSize:12, color:sage+'44' }}>{venueAddress}</p>}
             </div>
@@ -280,7 +291,7 @@ export default function RSVPPage() {
               {/* Dress code */}
               <div style={{ marginTop:20, textAlign:'center', borderTop:`1px solid ${card}`, paddingTop:18 }}>
                 <p style={{ fontFamily:'Palatino,serif', fontStyle:'italic', fontSize:16, color:sage, marginBottom:6 }}>Dress Code</p>
-                <p style={{ fontSize:13, fontWeight:700, letterSpacing:'0.15em', textTransform:'uppercase', color:'#cde0ca', marginBottom:8 }}>{s.dressCode}</p>
+                <p style={{ fontSize:13, fontWeight:700, letterSpacing:'0.15em', textTransform:'uppercase', color:titleCol, marginBottom:8 }}>{s.dressCode}</p>
                 <p style={{ fontSize:12, color:sage+'aa', lineHeight:1.6, marginBottom:20 }}>{s.dressCodeNote}</p>
                 {/* Color palette swatches */}
                 <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10 }}>
@@ -299,7 +310,7 @@ export default function RSVPPage() {
               </div>
             </div>
           </div>
-          <button onClick={() => setPage('rsvp-search')} style={{ marginTop:16, width:'100%', maxWidth:380, padding:'14px', borderRadius:14, background:accent, color:'#e8f0e6', border:'none', fontSize:15, fontWeight:600, cursor:'pointer' }}>
+          <button onClick={() => setPage('rsvp-search')} style={{ marginTop:16, width:'100%', maxWidth:380, padding:'14px', borderRadius:14, background:accent, color:titleCol, border:'none', fontSize:15, fontWeight:600, cursor:'pointer' }}>
             RSVP now
           </button>
         </div>
@@ -312,21 +323,21 @@ export default function RSVPPage() {
           <div style={{ width:'100%', maxWidth:380, marginTop:12 }}>
             <div style={{ ...cardStyle, padding:'24px', textAlign:'center', marginBottom:12, borderStyle:'solid', borderWidth:8, borderColor:'#1e2e1c' }}>
               <p style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:accent, marginBottom:4 }}>Our</p>
-              <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontStyle:'italic', fontSize:30, fontWeight:300, color:'#e8f0e6', marginBottom:16 }}>Love Story</h2>
+              <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontStyle:'italic', fontSize:30, fontWeight:300, color:titleCol, marginBottom:16 }}>Love Story</h2>
               {(s.photo2 || s.photo1) && (
                 <div style={{ display:'inline-block', background:'#fff', padding:8, boxShadow:'0 12px 32px rgba(0,0,0,0.5)', transform:'rotate(-1deg)', marginBottom:12 }}>
                   <img src={s.photo2||s.photo1} alt="" style={{ width:180, height:130, objectFit:'cover' }} />
-                  <p style={{ textAlign:'center', fontSize:10, color:'#aaa', marginTop:6, fontStyle:'italic' }}>a new adventure will begin</p>
+                  <p style={{ textAlign:'center', fontSize:10, color:bodyCol, marginTop:6, fontStyle:'italic' }}>a new adventure will begin</p>
                 </div>
               )}
             </div>
             <div style={{ ...cardStyle, padding:'28px 28px' }}>
               {s.ourStory.split('\n\n').map((para, i) => (
-                <p key={i} style={{ fontFamily:'Palatino,Georgia,serif', fontStyle:'italic', fontSize:14, color:'#8fa88c', lineHeight:1.9, marginBottom:i < s.ourStory.split('\n\n').length-1 ? 16 : 0, textAlign:'center' }}>{para}</p>
+                <p key={i} style={{ fontFamily:'Palatino,Georgia,serif', fontStyle:'italic', fontSize:14, color:bodyCol, lineHeight:1.9, marginBottom:i < s.ourStory.split('\n\n').length-1 ? 16 : 0, textAlign:'center' }}>{para}</p>
               ))}
             </div>
           </div>
-          <button onClick={() => setPage('rsvp-search')} style={{ marginTop:16, width:'100%', maxWidth:380, padding:'14px', borderRadius:14, background:accent, color:'#e8f0e6', border:'none', fontSize:15, fontWeight:600, cursor:'pointer' }}>
+          <button onClick={() => setPage('rsvp-search')} style={{ marginTop:16, width:'100%', maxWidth:380, padding:'14px', borderRadius:14, background:accent, color:titleCol, border:'none', fontSize:15, fontWeight:600, cursor:'pointer' }}>
             RSVP now
           </button>
         </div>
@@ -339,19 +350,19 @@ export default function RSVPPage() {
           <div style={{ width:'100%', maxWidth:380, ...cardStyle, padding:'32px', marginTop:12 }}>
             <div style={{ textAlign:'center', marginBottom:24 }}>
               <Heart size={22} fill={accent} style={{ color:accent, margin:'0 auto 12px' }} />
-              <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:30, fontWeight:300, color:'#e8f0e6', marginBottom:6 }}>RSVP</h2>
+              <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:30, fontWeight:300, color:titleCol, marginBottom:6 }}>RSVP</h2>
               <p style={{ fontSize:14, color:sage+'aa' }}>{s.searchLabel}</p>
             </div>
             <div style={{ position:'relative', marginBottom:12 }}>
               <input type="text" value={nameInput} onChange={e => setNameInput(e.target.value)}
                 onKeyDown={e => e.key==='Enter' && searchGuest()} placeholder="Your full name" autoFocus
-                style={{ width:'100%', padding:'14px 48px 14px 18px', borderRadius:14, border:'1px solid #2a3829', fontSize:16, background:'#141c13', color:'#e8f0e6', outline:'none', boxSizing:'border-box' }}
+                style={{ width:'100%', padding:'14px 48px 14px 18px', borderRadius:14, border:'1px solid #2a3829', fontSize:16, background:'#141c13', color:titleCol, outline:'none', boxSizing:'border-box' }}
                 onFocus={e=>{e.target.style.borderColor=accent;e.target.style.boxShadow=`0 0 0 3px ${accent}25`}}
                 onBlur={e=>{e.target.style.borderColor='#2a3829';e.target.style.boxShadow='none'}} />
               <Search size={17} style={{ position:'absolute', right:16, top:'50%', transform:'translateY(-50%)', color:sage+'44' }} />
             </div>
             <button onClick={searchGuest} disabled={searching || !nameInput.trim()}
-              style={{ width:'100%', padding:'14px', borderRadius:14, background: searching||!nameInput.trim() ? '#1e2e1c' : accent, color:'#e8f0e6', border:'none', fontSize:15, fontWeight:600, cursor: searching||!nameInput.trim() ? 'not-allowed' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
+              style={{ width:'100%', padding:'14px', borderRadius:14, background: searching||!nameInput.trim() ? '#1e2e1c' : accent, color:titleCol, border:'none', fontSize:15, fontWeight:600, cursor: searching||!nameInput.trim() ? 'not-allowed' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
               {searching ? <><Loader2 size={17} style={{animation:'spin 1s linear infinite'}} />Searching…</> : <>Find my invitation <ChevronRight size={17}/></>}
             </button>
           </div>
@@ -363,11 +374,11 @@ export default function RSVPPage() {
         <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', padding:'32px 20px' }}>
           <Nav onBack={() => setPage('rsvp-search')} sage={sage} />
           <div style={{ width:'100%', maxWidth:380, ...cardStyle, padding:'32px', marginTop:12 }}>
-            <h2 style={{ fontFamily:'Palatino,serif', fontSize:26, fontWeight:300, color:'#e8f0e6', marginBottom:6 }}>A few matches</h2>
+            <h2 style={{ fontFamily:'Palatino,serif', fontSize:26, fontWeight:300, color:titleCol, marginBottom:6 }}>A few matches</h2>
             <p style={{ fontSize:14, color:sage+'aa', marginBottom:20 }}>Select your name below</p>
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
               {matches.map(g => (
-                <button key={g.id} onClick={() => pickGuest(g)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', borderRadius:14, border:'1px solid #2a3829', background:'#141c13', color:'#cde0ca', cursor:'pointer', textAlign:'left', fontSize:15, fontWeight:500 }}>
+                <button key={g.id} onClick={() => pickGuest(g)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', borderRadius:14, border:'1px solid #2a3829', background:'#141c13', color:titleCol, cursor:'pointer', textAlign:'left', fontSize:15, fontWeight:500 }}>
                   {g.name}
                   <div style={{ display:'flex', alignItems:'center', gap:8 }}>
                     {g.already_rsvpd && <span style={{ fontSize:12, padding:'2px 8px', borderRadius:20, background:accentLight, color:accent }}>RSVPd</span>}
@@ -388,7 +399,7 @@ export default function RSVPPage() {
             <div style={{ width:56, height:56, borderRadius:'50%', background:'#2a1a08', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
               <Search size={24} style={{ color:'#d97706' }} />
             </div>
-            <h2 style={{ fontFamily:'Palatino,serif', fontSize:24, color:'#e8f0e6', marginBottom:8 }}>Name not found</h2>
+            <h2 style={{ fontFamily:'Palatino,serif', fontSize:24, color:titleCol, marginBottom:8 }}>Name not found</h2>
             <p style={{ fontSize:14, color:sage+'aa', lineHeight:1.6, marginBottom:24 }}>We couldn&apos;t find &ldquo;{nameInput}&rdquo; on the guest list. Please try your full name{s.contactEmail ? ` or contact us at ${s.contactEmail}` : ''}.</p>
             <button onClick={() => { setPage('rsvp-search'); setNameInput('') }} style={{ width:'100%', padding:'13px', borderRadius:14, background:'#1e2e1c', color:sage, border:'1px solid #2a3829', fontSize:14, fontWeight:600, cursor:'pointer' }}>
               Try again
@@ -404,7 +415,7 @@ export default function RSVPPage() {
           <div style={{ width:'100%', maxWidth:380, ...cardStyle, overflow:'hidden', marginTop:12 }}>
             <div style={{ padding:'28px 28px 24px' }}>
               <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
-                <h2 style={{ fontFamily:'Palatino,serif', fontSize:28, fontWeight:300, color:'#e8f0e6' }}>Hi, {guest.name.split(' ')[0]}!</h2>
+                <h2 style={{ fontFamily:'Palatino,serif', fontSize:28, fontWeight:300, color:titleCol }}>Hi, {guest.name.split(' ')[0]}!</h2>
                 <button onClick={startEdit} style={{ display:'flex', alignItems:'center', gap:6, fontSize:14, color:sage, background:'none', border:'none', cursor:'pointer' }}><Edit3 size={15}/>Edit</button>
               </div>
               <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'8px 16px', borderRadius:20, fontSize:14, fontWeight:600, marginBottom:20, background: guest.rsvp_status==='attending' ? accent+'20' : '#7f202020', color: guest.rsvp_status==='attending' ? sage : '#f87171' }}>
@@ -417,12 +428,12 @@ export default function RSVPPage() {
               ].map(([label, val]) => (
                 <div key={label} style={{ display:'flex', justifyContent:'space-between', padding:'10px 0', borderBottom:`1px solid ${card}` }}>
                   <span style={{ fontSize:12, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.08em', color:sage+'aa' }}>{label}</span>
-                  <span style={{ fontSize:14, color:'#cde0ca', textAlign:'right', maxWidth:'60%' }}>{val}</span>
+                  <span style={{ fontSize:14, color:titleCol, textAlign:'right', maxWidth:'60%' }}>{val}</span>
                 </div>
               ))}
             </div>
             <div style={{ padding:'16px 24px', borderTop:'1px solid #1a2419', background:card+'cc' }}>
-              <a href="/info" style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, width:'100%', padding:'13px', borderRadius:14, background:accent, color:'#e8f0e6', textDecoration:'none', fontSize:14, fontWeight:600 }}>
+              <a href="/info" style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, width:'100%', padding:'13px', borderRadius:14, background:accent, color:titleCol, textDecoration:'none', fontSize:14, fontWeight:600 }}>
                 View wedding details <ChevronRight size={15}/>
               </a>
             </div>
@@ -435,9 +446,9 @@ export default function RSVPPage() {
         <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', padding:'32px 20px' }}>
           <Nav onBack={() => setPage('rsvp-details')} sage={sage} />
           <div style={{ width:'100%', maxWidth:380, ...cardStyle, padding:'28px', marginTop:12 }}>
-            <h2 style={{ fontFamily:'Palatino,serif', fontSize:26, fontWeight:300, color:'#e8f0e6', marginBottom:20 }}>Update your RSVP</h2>
-            <RSVPForm attending={attending} setAttending={setAttending} dietary={dietary} setDietary={setDietary} plusOneName={plusOneName} setPlusOneName={setPlusOneName} plusOneDietary={plusOneDietary} setPlusOneDietary={setPlusOneDietary} email={email} setEmail={setEmail} hasPlusOne={guest.has_plus_one} attendingLabel={s.attendingLabel} declineLabel={s.declineLabel} accent={accent} sage={sage} card={card} />
-            <button onClick={() => submit(true)} disabled={attending===null||submitting} style={{ width:'100%', padding:'14px', borderRadius:14, background: attending===null||submitting ? '#1e2e1c' : accent, color:'#e8f0e6', border:'none', fontSize:15, fontWeight:600, cursor: attending===null||submitting ? 'not-allowed' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginTop:20 }}>
+            <h2 style={{ fontFamily:'Palatino,serif', fontSize:26, fontWeight:300, color:titleCol, marginBottom:20 }}>Update your RSVP</h2>
+            <RSVPForm attending={attending} setAttending={setAttending} dietary={dietary} setDietary={setDietary} plusOneName={plusOneName} setPlusOneName={setPlusOneName} plusOneDietary={plusOneDietary} setPlusOneDietary={setPlusOneDietary} email={email} setEmail={setEmail} hasPlusOne={guest.has_plus_one} attendingLabel={s.attendingLabel} declineLabel={s.declineLabel} accent={accent} sage={sage} card={card} titleCol={titleCol} />
+            <button onClick={() => submit(true)} disabled={attending===null||submitting} style={{ width:'100%', padding:'14px', borderRadius:14, background: attending===null||submitting ? '#1e2e1c' : accent, color:titleCol, border:'none', fontSize:15, fontWeight:600, cursor: attending===null||submitting ? 'not-allowed' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginTop:20 }}>
               {submitting ? <><Loader2 size={17} style={{animation:'spin 1s linear infinite'}}/>Saving…</> : 'Save changes'}
             </button>
           </div>
@@ -449,10 +460,10 @@ export default function RSVPPage() {
         <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', padding:'32px 20px' }}>
           <Nav onBack={() => setPage('rsvp-search')} sage={sage} />
           <div style={{ width:'100%', maxWidth:380, ...cardStyle, padding:'28px', marginTop:12 }}>
-            <h2 style={{ fontFamily:'Palatino,serif', fontSize:28, fontWeight:300, color:'#e8f0e6', marginBottom:4 }}>Hi, {guest.name.split(' ')[0]}!</h2>
+            <h2 style={{ fontFamily:'Palatino,serif', fontSize:28, fontWeight:300, color:titleCol, marginBottom:4 }}>Hi, {guest.name.split(' ')[0]}!</h2>
             <p style={{ fontSize:14, color:sage+'aa', marginBottom:24 }}>We can&apos;t wait to celebrate with you.</p>
-            <RSVPForm attending={attending} setAttending={setAttending} dietary={dietary} setDietary={setDietary} plusOneName={plusOneName} setPlusOneName={setPlusOneName} plusOneDietary={plusOneDietary} setPlusOneDietary={setPlusOneDietary} email={email} setEmail={setEmail} hasPlusOne={guest.has_plus_one} attendingLabel={s.attendingLabel} declineLabel={s.declineLabel} accent={accent} sage={sage} card={card} />
-            <button onClick={() => submit(false)} disabled={attending===null||submitting} style={{ width:'100%', padding:'14px', borderRadius:14, background: attending===null||submitting ? '#1e2e1c' : accent, color:'#e8f0e6', border:'none', fontSize:15, fontWeight:600, cursor: attending===null||submitting ? 'not-allowed' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginTop:20 }}>
+            <RSVPForm attending={attending} setAttending={setAttending} dietary={dietary} setDietary={setDietary} plusOneName={plusOneName} setPlusOneName={setPlusOneName} plusOneDietary={plusOneDietary} setPlusOneDietary={setPlusOneDietary} email={email} setEmail={setEmail} hasPlusOne={guest.has_plus_one} attendingLabel={s.attendingLabel} declineLabel={s.declineLabel} accent={accent} sage={sage} card={card} titleCol={titleCol} />
+            <button onClick={() => submit(false)} disabled={attending===null||submitting} style={{ width:'100%', padding:'14px', borderRadius:14, background: attending===null||submitting ? '#1e2e1c' : accent, color:titleCol, border:'none', fontSize:15, fontWeight:600, cursor: attending===null||submitting ? 'not-allowed' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginTop:20 }}>
               {submitting ? <><Loader2 size={17} style={{animation:'spin 1s linear infinite'}}/>Submitting…</> : 'Submit RSVP'}
             </button>
           </div>
@@ -466,14 +477,14 @@ export default function RSVPPage() {
             <div style={{ width:64, height:64, borderRadius:'50%', background:accentLight, display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 24px' }}>
               {attending ? <Heart size={28} fill={accent} style={{ color:accent }} /> : <Check size={28} style={{ color:accent }} />}
             </div>
-            <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:32, fontWeight:300, color:'#e8f0e6', marginBottom:12 }}>
+            <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:32, fontWeight:300, color:titleCol, marginBottom:12 }}>
               {attending ? "We'll see you there! 🌿" : "We'll miss you!"}
             </h2>
             <p style={{ fontSize:14, color:sage+'aa', lineHeight:1.7, marginBottom:28 }}>
               {attending ? s.confirmedMessage : s.declinedMessage}
             </p>
             <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-              {attending && <a href="/info" style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'13px', borderRadius:14, background:accent, color:'#e8f0e6', textDecoration:'none', fontSize:14, fontWeight:600 }}>View wedding details <ChevronRight size={15}/></a>}
+              {attending && <a href="/info" style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'13px', borderRadius:14, background:accent, color:titleCol, textDecoration:'none', fontSize:14, fontWeight:600 }}>View wedding details <ChevronRight size={15}/></a>}
               <button onClick={() => setPage('rsvp-details')} style={{ padding:'13px', borderRadius:14, background:'transparent', color:sage, border:`1px solid ${card}`, fontSize:14, cursor:'pointer', fontWeight:500 }}>View my RSVP</button>
             </div>
           </div>
@@ -493,12 +504,12 @@ function Nav({ onBack, sage }: { onBack: () => void; sage: string }) {
   )
 }
 
-function RSVPForm({ attending, setAttending, dietary, setDietary, plusOneName, setPlusOneName, plusOneDietary, setPlusOneDietary, email, setEmail, hasPlusOne, attendingLabel, declineLabel, accent, sage, card }: {
+function RSVPForm({ attending, setAttending, dietary, setDietary, plusOneName, setPlusOneName, plusOneDietary, setPlusOneDietary, email, setEmail, hasPlusOne, attendingLabel, declineLabel, accent, sage, card, titleCol }: {
   attending: boolean|null; setAttending:(v:boolean)=>void; dietary:string; setDietary:(v:string)=>void
   plusOneName:string; setPlusOneName:(v:string)=>void; plusOneDietary:string; setPlusOneDietary:(v:string)=>void
-  email:string; setEmail:(v:string)=>void; hasPlusOne:boolean; attendingLabel:string; declineLabel:string; accent:string; sage:string; card:string
+  email:string; setEmail:(v:string)=>void; hasPlusOne:boolean; attendingLabel:string; declineLabel:string; accent:string; sage:string; card:string; titleCol:string
 }) {
-  const inp = { width:'100%', padding:'12px 16px', borderRadius:12, border:'1px solid #2a3829', fontSize:15, background:card+'88', color:'#e8f0e6', outline:'none', boxSizing:'border-box' as const }
+  const inp = { width:'100%', padding:'12px 16px', borderRadius:12, border:'1px solid #2a3829', fontSize:15, background:card+'88', color:titleCol, outline:'none', boxSizing:'border-box' as const }
   const lbl = { display:'block' as const, fontSize:12, fontWeight:700 as const, color:sage, textTransform:'uppercase' as const, letterSpacing:'0.08em', marginBottom:8 }
 
   return (
