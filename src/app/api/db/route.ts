@@ -141,10 +141,20 @@ export async function PATCH(req: NextRequest) {
         const allowed = ['accentColor','secondaryColor','bgColor','tertiaryColor','titleColor','subheaderColor','bodyColor','brideName','groomName','heroImage','photo1','photo2','photo3','swatchBridesmaids','swatchSuits','swatchVenue','swatchFlowers','heroImage','photo1','photo2','photo3','heading','subheading','dateText','venueText','searchLabel','attendingLabel','declineLabel','confirmedMessage','declinedMessage','contactEmail','weddingDate','coupleNames','ourStory','dressCode','dressCodeNote','ceremonyTime','receptionTime']
         const safe: Record<string,unknown> = {}
         for (const k of allowed) { if (k in data) safe[k] = data[k] }
+        // Remap JS camelCase keys to actual DB column names where they differ
+        const fieldMap: Record<string,string> = {
+          heroImage: 'hero_image', dateText: 'date_text', venueText: 'venue_text',
+          searchLabel: 'search_label', attendingLabel: 'attending_label',
+          declineLabel: 'decline_label', confirmedMessage: 'confirmed_message',
+          declinedMessage: 'declined_message', contactEmail: 'contact_email',
+          weddingDate: 'wedding_date',
+        }
+        const remapped: Record<string,unknown> = {}
+        for (const [k,v] of Object.entries(safe)) { remapped[fieldMap[k] || k] = v }
         // Try full upsert first, fall back to raw SQL for new columns
         try {
           return ok(await prisma.rsvpSettings.upsert({ where: { id: 'main' }, update: safe, create: { id: 'main', ...safe } }))
-        } catch {
+        } catch (e: unknown) { console.error('upsert error', e);
           // Columns may not exist yet - run migration then retry
           await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "secondaryColor" TEXT NOT NULL DEFAULT '#8fb882'`)
           await prisma.$executeRawUnsafe(`ALTER TABLE rsvp_settings ADD COLUMN IF NOT EXISTS "bgColor" TEXT NOT NULL DEFAULT '#111714'`)
