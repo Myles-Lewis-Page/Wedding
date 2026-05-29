@@ -1095,62 +1095,92 @@ function TabRSVP() {
   // SF: uncontrolled inputs so typing never loses focus
   // Uses defaultValue + key (stable per field) + onBlur to sync back to state
   // PhotoField: file upload → base64 stored in DB, or paste URL
-  const PhotoField = ({ label, field, height }: { label: string; field: keyof typeof settings; height: number }) => {
+  const PhotoField = ({ label, field }: { label: string; field: keyof typeof settings }) => {
     const [uploading, setUploading] = useState(false)
     const [saving, setSaving] = useState(false)
+    const [saved, setSaved] = useState(false)
+    const [urlVal, setUrlVal] = useState('')
     const current = String(settings[field] ?? '')
+
     const savePhoto = async (val: string) => {
       setSaving(true)
       const n = {...settingsRef.current, [field]: val}
       setSettings(n); settingsRef.current = n
       await $patch('rsvp-settings', { id: 'main', [field]: val })
-      setSaving(false)
+      setSaving(false); setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
     }
     const handleFile = (file: File) => {
       if (!file.type.startsWith('image/')) return
       setUploading(true)
       const reader = new FileReader()
       reader.onload = async e => {
-        const b64 = e.target?.result as string
         setUploading(false)
-        await savePhoto(b64)
+        await savePhoto(e.target?.result as string)
       }
       reader.readAsDataURL(file)
     }
+    const saveUrl = () => { if (urlVal.trim()) { savePhoto(urlVal.trim()); setUrlVal('') } }
+
     return (
-      <Field label={label}>
-        <div className="space-y-2">
-          {current && <div style={{height, borderRadius:10, overflow:'hidden', position:'relative'}}>
-            <img src={current} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}} />
-            {saving && <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center'}}><Loader2 size={20} className="animate-spin text-white"/></div>}
-          </div>}
-          <div style={{display:'flex',gap:8,alignItems:'center'}}>
-            <label style={{flexShrink:0,padding:'8px 14px',borderRadius:10,background:'var(--accent)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:6}}>
+      <div style={{display:'flex', gap:16, alignItems:'flex-start'}}>
+        {/* Controls - left */}
+        <div style={{flex:1, minWidth:0}}>
+          <p style={{fontSize:11,fontWeight:700,color:'var(--subheader)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>{label}</p>
+          <div style={{display:'flex', flexDirection:'column', gap:8}}>
+            <label style={{padding:'10px 14px',borderRadius:10,background:'var(--accent)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
               {uploading ? <><Loader2 size={14} className="animate-spin"/>Uploading…</> : <><Upload size={14}/>Upload image</>}
               <input type="file" accept="image/*" style={{display:'none'}} onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
             </label>
-            <input placeholder="or paste URL…"
-              onBlur={e => { if (e.target.value.trim()) savePhoto(e.target.value.trim()) }}
-              style={{flex:1,padding:'8px 12px',borderRadius:10,border:'1px solid #2a3829',background:'var(--bg3,#1a2419)',color:'var(--title)',fontSize:13,outline:'none'}} />
-            {current && <button onClick={() => savePhoto('')}
-              style={{flexShrink:0,padding:'8px 10px',borderRadius:10,background:'#1f2b1e',border:'1px solid #2a3829',color:'var(--body)',fontSize:12,cursor:'pointer'}}>✕</button>}
+            <div style={{display:'flex', gap:6}}>
+              <input value={urlVal} onChange={e=>setUrlVal(e.target.value)} placeholder="or paste URL…" onKeyDown={e=>e.key==='Enter'&&saveUrl()}
+                style={{flex:1,minWidth:0,padding:'8px 12px',borderRadius:10,border:'1px solid #2a3829',background:'var(--bg3,#1a2419)',color:'var(--title)',fontSize:13,outline:'none'}} />
+              <button onClick={saveUrl} disabled={!urlVal.trim()}
+                style={{flexShrink:0,padding:'8px 14px',borderRadius:10,background:urlVal.trim()?'var(--accent)':' #1f2b1e',color:'#fff',border:'none',fontSize:12,fontWeight:700,cursor:urlVal.trim()?'pointer':'default'}}>
+                Save
+              </button>
+            </div>
+            {current && <button onClick={()=>savePhoto('')}
+              style={{padding:'6px 12px',borderRadius:8,background:'#1f2b1e',border:'1px solid #2a3829',color:'var(--body)',fontSize:12,cursor:'pointer',alignSelf:'flex-start'}}>
+              ✕ Remove
+            </button>}
           </div>
         </div>
-      </Field>
+        {/* Preview - right */}
+        <div style={{width:120,flexShrink:0}}>
+          {current ? (
+            <div style={{position:'relative',width:120,height:90,borderRadius:10,overflow:'hidden',border:'2px solid var(--accent)'}}>
+              <img src={current} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}} />
+              {(saving||saved) && <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                {saving ? <Loader2 size={18} className="animate-spin" style={{color:'#fff'}}/> : <Check size={18} style={{color:'#4ade80'}}/>}
+              </div>}
+            </div>
+          ) : (
+            <div style={{width:120,height:90,borderRadius:10,border:'2px dashed #2a3829',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:4}}>
+              <p style={{fontSize:10,color:'var(--body)',textAlign:'center'}}>No image</p>
+            </div>
+          )}
+        </div>
+      </div>
     )
   }
 
-  const SF = ({ label, field, type = 'text', rows }: { label: string; field: keyof typeof settings; type?: string; rows?: number }) => (
-    <Field label={label}>
-      {rows
-        ? <textarea key={field} defaultValue={String(settingsRef.current[field] ?? '')}
-            onBlur={e => setSettings(s => ({ ...s, [field]: e.target.value }))}
-            rows={rows} className="w-full px-6 py-3.5 rounded-2xl border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)] resize-none text-[var(--title)]" style={{background:'var(--bg3,#1a2419)'}} />
-        : <input key={field} type={type} defaultValue={String(settingsRef.current[field] ?? '')}
-            onBlur={e => setSettings(s => ({ ...s, [field]: e.target.value }))}
-            className="w-full px-6 py-3.5 rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] text-base text-[var(--title)] focus:outline-none focus:border-[var(--sage)]" />}
-    </Field>
-  )
+  const SF = ({ label, field, type = 'text', rows }: { label: string; field: keyof typeof settings; type?: string; rows?: number }) => {
+    const val = String(settings[field] ?? '')
+    const update = (v: string) => {
+      const n = { ...settingsRef.current, [field]: v }
+      setSettings(n); settingsRef.current = n
+    }
+    return (
+      <Field label={label}>
+        {rows
+          ? <textarea value={val} onChange={e => update(e.target.value)}
+              rows={rows} className="w-full px-6 py-3.5 rounded-2xl border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)] resize-none text-[var(--title)]" style={{background:'var(--bg3,#1a2419)'}} />
+          : <input type={type} value={val} onChange={e => update(e.target.value)}
+              className="w-full px-6 py-3.5 rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] text-base text-[var(--title)] focus:outline-none focus:border-[var(--sage)]" />}
+      </Field>
+    )
+  }
 
   return (
     <div>
@@ -1215,10 +1245,10 @@ function TabRSVP() {
               <SF label="Groom / Partner 2 name" field="groomName" />
             </div>
             <p className="text-base font-bold text-[var(--subheader)] uppercase tracking-wider pt-3 pb-1 border-b border-[#000000]/20">Photos & media</p>
-            <PhotoField label="Cover photo (RSVP background)" field="heroImage" height={120} />
-            <PhotoField label="Photo 1" field="photo1" height={80} />
-            <PhotoField label="Photo 2" field="photo2" height={80} />
-            <PhotoField label="Photo 3" field="photo3" height={80} />
+            <PhotoField label="Cover photo (RSVP background)" field="heroImage" />
+            <PhotoField label="Photo 1" field="photo1" />
+            <PhotoField label="Photo 2" field="photo2" />
+            <PhotoField label="Photo 3" field="photo3" />
 
 
           </div>
