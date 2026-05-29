@@ -333,21 +333,51 @@ export default function RSVPPage() {
               {(() => {
                 const paras  = s.ourStory.split('\n\n').filter(Boolean)
                 const photos = [s.photo1, s.photo2, s.photo3].filter(Boolean)
-                const polar  = (src: string, rot: number, side: 'left' | 'right') => (
-                  <div style={{ display: 'flex', justifyContent: side === 'left' ? 'flex-start' : 'flex-end', marginBottom: 8 }}>
-                    <div style={{ background: '#fff', padding: 6, boxShadow: '0 8px 28px rgba(0,0,0,0.5)', transform: `rotate(${rot}deg)`, display: 'inline-block' }}>
-                      <img src={src} alt="" style={{ width: 150, height: 115, objectFit: 'cover', display: 'block' }} />
-                    </div>
+
+                const paraStyle: React.CSSProperties = {
+                  fontFamily: font,
+                  fontStyle: 'italic',
+                  fontSize: 15,
+                  color: bc,
+                  lineHeight: 1.9,
+                  marginBottom: 16,
+                }
+
+                // Polaroid helper  floated so text wraps around it
+                const polar = (src: string, rot: number, floatDir: 'left' | 'right', key: string) => (
+                  <div key={key} style={{
+                    float: floatDir,
+                    margin: floatDir === 'left' ? '0 16px 12px 0' : '0 0 12px 16px',
+                    background: '#fff',
+                    padding: 6,
+                    boxShadow: '0 8px 28px rgba(0,0,0,0.5)',
+                    transform: `rotate(${rot}deg)`,
+                    display: 'inline-block',
+                  }}>
+                    <img src={src} alt="" style={{ width: 130, height: 100, objectFit: 'cover', display: 'block' }} />
                   </div>
                 )
-                const items: React.ReactNode[] = []
-                photos[0] && items.push(<div key="p0">{polar(photos[0], -2, 'left')}</div>)
-                paras[0]  && items.push(<p key="t0" style={{ fontFamily: font, fontStyle: 'italic', fontSize: 15, color: bc, lineHeight: 1.9, textAlign: 'center', marginBottom: 8 }}>{paras[0]}</p>)
-                photos[1] && items.push(<div key="p1">{polar(photos[1], 1.5, 'right')}</div>)
-                paras[1]  && items.push(<p key="t1" style={{ fontFamily: font, fontStyle: 'italic', fontSize: 15, color: bc, lineHeight: 1.9, textAlign: 'center', marginBottom: 8 }}>{paras[1]}</p>)
-                photos[2] && items.push(<div key="p2">{polar(photos[2], -1, 'left')}</div>)
-                paras.slice(2).forEach((p, i) => items.push(<p key={`t${i + 2}`} style={{ fontFamily: font, fontStyle: 'italic', fontSize: 15, color: bc, lineHeight: 1.9, textAlign: 'center', marginBottom: 8 }}>{p}</p>))
-                return items
+
+                return (
+                  <div style={{ overflow: 'hidden' }}>
+                    {/* Photo 1 floats left, first paragraph wraps around it */}
+                    {photos[0] && polar(photos[0], -2, 'left', 'p0')}
+                    {paras[0] && <p style={paraStyle}>{paras[0]}</p>}
+
+                    {/* Photo 2 floats right (middle), second paragraph wraps around it */}
+                    {photos[1] && polar(photos[1], 1.5, 'right', 'p1')}
+                    {paras[1] && <p style={paraStyle}>{paras[1]}</p>}
+
+                    {/* Photo 3 floats left at the end, remaining paragraphs wrap */}
+                    {photos[2] && polar(photos[2], -1, 'left', 'p2')}
+                    {paras.slice(2).map((p, i) => (
+                      <p key={i} style={paraStyle}>{p}</p>
+                    ))}
+
+                    {/* Clear floats */}
+                    <div style={{ clear: 'both' }} />
+                  </div>
+                )
               })()}
             </div>
             <button onClick={() => setPage('rsvp-search')} style={{ width: '100%', padding: '14px', borderRadius: 14, background: ac, color: tc, border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: font }}>RSVP now</button>
