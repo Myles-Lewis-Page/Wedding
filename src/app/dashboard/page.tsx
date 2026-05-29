@@ -1203,11 +1203,11 @@ function TabRSVP() {
               <SF label="Bride / Partner 1 name" field="brideName" />
               <SF label="Groom / Partner 2 name" field="groomName" />
             </div>
-            <p className="text-base font-bold text-[var(--subheader)] uppercase tracking-wider pt-3 pb-1 border-b border-[#000000]/20">Photos</p>
-            <PhotoField label="Hero image (main background)" field="heroImage" height={96} />
-            <PhotoField label="Photo 1 (invite card + story)" field="photo1" height={72} />
-            <PhotoField label="Photo 2 (story polaroid)" field="photo2" height={72} />
-            <PhotoField label="Photo 3" field="photo3" height={72} />
+            <p className="text-base font-bold text-[var(--subheader)] uppercase tracking-wider pt-3 pb-1 border-b border-[#000000]/20">Photos & media</p>
+            <PhotoField label="Cover photo (RSVP background)" field="heroImage" height={120} />
+            <PhotoField label="Photo 1" field="photo1" height={80} />
+            <PhotoField label="Photo 2" field="photo2" height={80} />
+            <PhotoField label="Photo 3" field="photo3" height={80} />
 
 
           </div>

@@ -5,6 +5,7 @@ import { Search, Heart, Check, ChevronRight, Loader2, Edit3, X, ArrowLeft } from
 
 interface Settings {
   heading: string; subheading: string; heroImage: string; accentColor: string; secondaryColor: string; bgColor: string; tertiaryColor: string
+  brideName: string; groomName: string
   searchLabel: string; attendingLabel: string; declineLabel: string
   confirmedMessage: string; declinedMessage: string; contactEmail: string
   coupleNames: string; ourStory: string; photo1: string; photo2: string
@@ -31,7 +32,7 @@ const DEFAULT: Settings = {
   attendingLabel: "Yes, I'll be there!", declineLabel: 'Regretfully no',
   confirmedMessage: "We can't wait to celebrate with you!",
   declinedMessage: "Thank you for letting us know. We'll be thinking of you!",
-  contactEmail: '', coupleNames: 'Our Wedding', secondaryColor: '#8fb882', bgColor: '#111714', tertiaryColor: '#1a2419',
+  contactEmail: '', coupleNames: 'Our Wedding', brideName: '', groomName: '', secondaryColor: '#8fb882', bgColor: '#111714', tertiaryColor: '#1a2419',
   ourStory: "We didn't expect our story to begin the way it did, but from the very first moment something just felt right.\n\nWhat started with simple conversations quickly turned into something deeper, and little by little we realised we had found someone truly special.\n\nSince then, we've shared so many memories — the quiet moments, the big laughs, the small adventures that somehow become the ones you cherish most.",
   photo1: '', photo2: '', dressCode: 'Garden Formal',
   swatchBridesmaids: '#9bb89a', swatchSuits: '#4a5568', swatchVenue: '#8b7355', swatchFlowers: '#e8b4bc',
@@ -115,6 +116,14 @@ export default function RSVPPage() {
   }, [])
 
   // Derive date and venue from live data
+  // Build coupleNames from brideName+groomName if coupleNames not set
+  const displayNames = (() => {
+    if (s.coupleNames && s.coupleNames !== 'Our Wedding') return s.coupleNames
+    if (s.brideName && s.groomName) return `${s.brideName} & ${s.groomName}`
+    if (s.brideName) return s.brideName
+    if (s.groomName) return s.groomName
+    return s.coupleNames || 'Our Wedding'
+  })()
   const weddingDateFmt = s.weddingDate || (typeof window !== 'undefined' ? localStorage.getItem('weddingDate') : null)
   const dateDisplay = weddingDateFmt
     ? new Date(weddingDateFmt + 'T12:00:00').toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' })
@@ -194,7 +203,7 @@ export default function RSVPPage() {
       {page === 'envelope' && (
         <div style={{ minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'48px 24px' }}>
           <p style={{ fontSize:12, letterSpacing:'0.25em', textTransform:'uppercase', color:sage+'aa', marginBottom:8 }}>You&apos;ve got mail from</p>
-          <h1 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:42, fontWeight:300, color:titleCol, marginBottom:48 }}>{s.coupleNames}</h1>
+          <h1 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:42, fontWeight:300, color:titleCol, marginBottom:48 }}>{displayNames}</h1>
 
           <div style={{ position:'relative', width:320, height:210, cursor:'pointer' }} onClick={openEnvelope}>
             {/* Body */}
@@ -223,8 +232,8 @@ export default function RSVPPage() {
           <Nav onBack={() => setPage('envelope')} sage={sage} />
           <div style={{ width:'100%', maxWidth:380, ...cardStyle, overflow:'hidden', marginTop:12 }}>
             {/* Hero */}
-            <div style={{ position:'relative', height:220, background: s.heroImage ? undefined : 'linear-gradient(135deg, #1a2419, #0f180e)' }}>
-              {s.heroImage && <img src={s.heroImage} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />}
+            <div style={{ position:'relative', height:260, background: s.heroImage ? undefined : `linear-gradient(135deg, ${card}, ${bg})` }}>
+              {s.heroImage && <img src={s.heroImage} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />}
               <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%)' }}/>
               {s.photo1 && (
                 <div style={{ position:'absolute', bottom:12, right:12, background:'#fff', padding:6, boxShadow:'0 8px 24px rgba(0,0,0,0.5)', transform:'rotate(2deg)' }}>
@@ -236,7 +245,7 @@ export default function RSVPPage() {
             {/* Content */}
             <div style={{ padding:'28px 32px', textAlign:'center' }}>
               <p style={{ fontSize:11, letterSpacing:'0.2em', textTransform:'uppercase', color:accent, marginBottom:6 }}>{s.subheading}</p>
-              <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:32, fontWeight:300, color:titleCol, marginBottom:12 }}>{s.coupleNames}</h2>
+              <h2 style={{ fontFamily:'Palatino,Georgia,serif', fontSize:32, fontWeight:300, color:titleCol, marginBottom:12 }}>{displayNames}</h2>
               <div style={{ width:40, height:1, background:'#2a3829', margin:'0 auto 16px' }}/>
               <p style={{ fontSize:11, fontWeight:700, letterSpacing:'0.2em', textTransform:'uppercase', color:sage, marginBottom:6 }}>DATE</p>
               <p style={{ fontFamily:'Palatino,serif', fontSize:18, color:titleCol, marginBottom:12 }}>{dateDisplay}</p>
