@@ -1891,6 +1891,7 @@ const DEFAULT_COLORS: ColorSet = { accent:'#4a7a44', sage:'#8fb882', bg:'#111714
 
 function TabColors() {
   const [weddingNames, setWeddingNames] = useState({ brideName:'', groomName:'', lastName:'' })
+  const [namesLoaded, setNamesLoaded] = useState(false)
   const [namesSaved, setNamesSaved] = useState(false)
   const [colors, setColors] = useState<ColorSet>(DEFAULT_COLORS)
   const [presets, setPresets] = useState<(ColorSet & {name:string})[]>([
@@ -1903,7 +1904,7 @@ function TabColors() {
 
   useEffect(() => {
     $get('rsvp-settings').then(d => {
-      if (d && !d.error) setWeddingNames({ brideName: d.brideName||'', groomName: d.groomName||'', lastName: d.lastName||'' })
+      if (d && !d.error) { setWeddingNames({ brideName: d.brideName||'', groomName: d.groomName||'', lastName: d.lastName||'' }); setNamesLoaded(true) }
     })
     try {
       const stored = localStorage.getItem('weddingColors')
@@ -2052,7 +2053,7 @@ function TabColors() {
             <div key={key}>
               <p style={{ fontSize:11, fontWeight:700, color:'var(--subheader)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:8 }}>{label}</p>
               <input value={weddingNames[key]} onChange={e => setWeddingNames(p=>({...p,[key]:e.target.value}))}
-                placeholder={key==='lastName'?'e.g. Smith':key==='brideName'?'e.g. Jennifer':'e.g. Myles'}
+                placeholder={key==='lastName'?'Last name':key==='brideName'?'Bride':'Groom'}
                 style={{ width:'100%', padding:'10px 14px', borderRadius:10, border:'1px solid #2a3829', background:'#141c13', color:'var(--title)', fontSize:14, outline:'none' }} />
             </div>
           ))}
