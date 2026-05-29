@@ -1972,8 +1972,6 @@ const DEFAULT_COLORS: ColorSet = { accent:'#4a7a44', sage:'#8fb882', bg:'#111714
 
 function TabColors() {
   const [colors, setColors] = useState<ColorSet>(DEFAULT_COLORS)
-  const [saving, setSaving] = useState(false)
-  const [saveMsg, setSaveMsg] = useState('')
   const [presets, setPresets] = useState<(ColorSet & {name:string})[]>([
     { name:'Preset 1', ...DEFAULT_COLORS },
     { name:'Preset 2', ...DEFAULT_COLORS },
@@ -1985,14 +1983,14 @@ function TabColors() {
   useEffect(() => {
     try {
       const stored = localStorage.getItem('weddingColors')
-      if (stored) { const p = JSON.parse(stored); setColors(c => ({ ...c, ...p })) }
+      if (stored) { const p = JSON.parse(stored); setColors(prev => ({ ...prev, ...p })) }
       const ps = localStorage.getItem('colorPresets')
       if (ps) setPresets(JSON.parse(ps))
     } catch {}
     $get('rsvp-settings').then(rs => {
       if (!rs || rs.error) return
-      setColors(c => ({
-        ...c,
+      setColors(prev => ({
+        ...prev,
         ...(rs.accentColor && { accent: rs.accentColor }),
         ...(rs.secondaryColor && { sage: rs.secondaryColor }),
         ...(rs.bgColor && { bg: rs.bgColor }),
@@ -2000,44 +1998,43 @@ function TabColors() {
         ...(rs.titleColor && { title: rs.titleColor }),
         ...(rs.subheaderColor && { subheader: rs.subheaderColor }),
         ...(rs.bodyColor && { body: rs.bodyColor }),
+        ...(rs.swatchBridesmaids && { swatchBridesmaids: rs.swatchBridesmaids }),
+        ...(rs.swatchSuits && { swatchSuits: rs.swatchSuits }),
+        ...(rs.swatchVenue && { swatchVenue: rs.swatchVenue }),
+        ...(rs.swatchFlowers && { swatchFlowers: rs.swatchFlowers }),
       }))
     })
   }, [])
 
-  const apply = (col: ColorSet) => {
+  const applyCSS = (col: ColorSet) => {
     document.documentElement.style.setProperty('--accent', col.accent)
     document.documentElement.style.setProperty('--sage', col.sage)
     document.documentElement.style.setProperty('--bg', col.bg)
     document.documentElement.style.setProperty('--bg2', col.bg)
     document.documentElement.style.setProperty('--bg3', col.tertiary)
-    document.documentElement.style.setProperty('--text', col.title)
-    document.documentElement.style.setProperty('--text-sub', col.subheader)
-    document.documentElement.style.setProperty('--text-body', col.body)
   }
 
-  const persist = async (col: ColorSet) => {
-    localStorage.setItem('weddingColors', JSON.stringify(col))
-    apply(col)
-    setSaving(true)
-    await $patch('rsvp-settings', { id:'main', accentColor:col.accent, secondaryColor:col.sage, bgColor:col.bg, tertiaryColor:col.tertiary, titleColor:col.title, subheaderColor:col.subheader, bodyColor:col.body, swatchBridesmaids:col.swatchBridesmaids||'#9bb89a', swatchSuits:col.swatchSuits||'#4a5568', swatchVenue:col.swatchVenue||'#8b7355', swatchFlowers:col.swatchFlowers||'#e8b4bc' })
-    setSaving(false)
-    setSaveMsg('Saved')
-    setTimeout(() => setSaveMsg(''), 1500)
-  }
-
-  // Auto-save when color picker loses focus
-  const handleBlur = (updated: ColorSet) => { persist(updated) }
-
-  const updateColor = (key: keyof ColorSet, val: string) => {
+  const saveColor = async (key: keyof ColorSet, val: string) => {
     const updated = { ...colors, [key]: val }
     setColors(updated)
-    apply(updated) // apply live as you drag
+    applyCSS(updated)
+    localStorage.setItem('weddingColors', JSON.stringify(updated))
+    await $patch('rsvp-settings', { id:'main',
+      accentColor: updated.accent, secondaryColor: updated.sage,
+      bgColor: updated.bg, tertiaryColor: updated.tertiary,
+      titleColor: updated.title, subheaderColor: updated.subheader, bodyColor: updated.body,
+      swatchBridesmaids: updated.swatchBridesmaids||'#9bb89a',
+      swatchSuits: updated.swatchSuits||'#4a5568',
+      swatchVenue: updated.swatchVenue||'#8b7355',
+      swatchFlowers: updated.swatchFlowers||'#e8b4bc',
+    })
   }
 
   const loadPreset = (p: ColorSet & {name:string}) => {
-    const updated = { ...p }
-    setColors(updated)
-    persist(updated)
+    setColors(p)
+    applyCSS(p)
+    localStorage.setItem('weddingColors', JSON.stringify(p))
+    $patch('rsvp-settings', { id:'main', accentColor:p.accent, secondaryColor:p.sage, bgColor:p.bg, tertiaryColor:p.tertiary, titleColor:p.title, subheaderColor:p.subheader, bodyColor:p.body })
   }
 
   const saveToPreset = (idx: number) => {
@@ -2045,8 +2042,6 @@ function TabColors() {
     updated[idx] = { ...colors, name: presets[idx].name }
     setPresets(updated)
     localStorage.setItem('colorPresets', JSON.stringify(updated))
-    setSaveMsg(`Saved to ${presets[idx].name}`)
-    setTimeout(() => setSaveMsg(''), 1500)
   }
 
   const renamePreset = (idx: number, name: string) => {
@@ -2056,32 +2051,29 @@ function TabColors() {
     localStorage.setItem('colorPresets', JSON.stringify(updated))
   }
 
-  const [cpSaved, setCpSaved] = useState<string|null>(null)
-  const saveSingleColor = async (key: keyof ColorSet, val: string) => {
-    const updated = { ...colors, [key]: val }
-    setColors(updated)
-    apply(updated)
-    await persist(updated)
-    setCpSaved(String(key))
-    setTimeout(() => setCpSaved(null), 1500)
-  }
-  const ColorPicker = ({ label, desc, colorKey }: { label:string; desc:string; colorKey: keyof ColorSet }) => {
-    const val = colors[colorKey] as string
-    const saved = cpSaved === colorKey
+  // Each picker is fully self-contained with its own local state
+  function Picker({ label, desc, colorKey }: { label: string; desc?: string; colorKey: keyof ColorSet }) {
+    const [val, setVal] = useState(colors[colorKey] as string)
+    const [saved, setSaved] = useState(false)
+    // sync if parent changes (e.g. preset load)
+    useEffect(() => { setVal(colors[colorKey] as string) }, [colors[colorKey]])
+    const save = async () => {
+      await saveColor(colorKey, val)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 1500)
+    }
     return (
       <div style={{ background:'var(--bg3,#1a2419)', borderRadius:12, border:'1px solid #202e1f', overflow:'hidden' }}>
         <div style={{ padding:'14px' }}>
-          <p style={{ fontSize:12, fontWeight:700, color:'#000', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:3 }}>{label}</p>
-          <p style={{ fontSize:11, color:'#9ca3af', marginBottom:10 }}>{desc}</p>
+          <p style={{ fontSize:12, fontWeight:700, color:'#000', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom: desc ? 3 : 10 }}>{label}</p>
+          {desc && <p style={{ fontSize:11, color:'#9ca3af', marginBottom:10 }}>{desc}</p>}
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-            <input type="color" value={val}
-              onChange={e => setColors(p => ({ ...p, [colorKey]: e.target.value }))}
+            <input type="color" value={val} onChange={e => setVal(e.target.value)}
               style={{ width:40, height:40, borderRadius:8, border:'1px solid #2a3829', cursor:'pointer', padding:2, background:'transparent', flexShrink:0 }} />
-            <input type="text" value={val}
-              onChange={e => setColors(p => ({ ...p, [colorKey]: e.target.value }))}
+            <input type="text" value={val} onChange={e => setVal(e.target.value)}
               style={{ flex:1, minWidth:0, padding:'8px 10px', borderRadius:8, border:'1px solid #2a3829', fontSize:13, background:'#141c13', color:'#e8f0e6', outline:'none' }} />
-            <button onClick={() => saveSingleColor(colorKey, val)}
-              style={{ flexShrink:0, padding:'8px 12px', borderRadius:8, background: saved ? 'var(--sage)' : 'var(--accent)', color:'#fff', border:'none', fontSize:12, fontWeight:700, cursor:'pointer' }}>
+            <button onClick={save}
+              style={{ flexShrink:0, padding:'8px 12px', borderRadius:8, background: saved ? '#22c55e' : 'var(--accent)', color:'#fff', border:'none', fontSize:12, fontWeight:700, cursor:'pointer', transition:'background 0.2s' }}>
               {saved ? '✓' : 'Save'}
             </button>
           </div>
@@ -2093,10 +2085,7 @@ function TabColors() {
 
   return (
     <div>
-      <PageHeader title="Color scheme" sub="Pick your colors then hit Save"
-        action={<Btn onClick={() => persist(colors)} style={{ background: saveMsg ? 'var(--sage)' : 'var(--accent)' }}>
-          {saving ? <><Loader2 size={17} className="animate-spin"/>Saving…</> : saveMsg ? <><Check size={17}/>Saved!</> : 'Save colors'}
-        </Btn>} />
+      <PageHeader title="Color scheme" sub="Each color has its own Save button" />
 
       {/* Presets */}
       <div style={{ marginBottom:28 }}>
@@ -2104,13 +2093,12 @@ function TabColors() {
         <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:12 }}>
           {presets.map((p, i) => (
             <div key={i} style={{ background:'var(--bg3,#1a2419)', borderRadius:12, border:'1px solid #202e1f', overflow:'hidden' }}>
-              {/* Color preview strips */}
-              <div style={{ display:'flex', height:32 }}>
+              <div style={{ display:'flex', height:28 }}>
                 {[p.accent, p.sage, p.bg, p.tertiary].map((col, j) => (
                   <div key={j} style={{ flex:1, background:col }} />
                 ))}
               </div>
-              <div style={{ padding:'10px 12px' }}>
+              <div style={{ padding:'10px 10px' }}>
                 <input value={p.name} onChange={e => renamePreset(i, e.target.value)}
                   style={{ width:'100%', background:'transparent', border:'none', outline:'none', fontSize:12, fontWeight:600, color:'#ffffff', marginBottom:8 }} />
                 <div style={{ display:'flex', gap:6 }}>
@@ -2133,26 +2121,20 @@ function TabColors() {
       <div style={{ marginBottom:28 }}>
         <p className="text-base font-bold text-black uppercase tracking-wider mb-4">Theme colors</p>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))', gap:16 }}>
-          <ColorPicker label="Primary / buttons" desc="Buttons, active states" colorKey="accent" />
-          <ColorPicker label="Secondary / highlights" desc="Icons, tags, nav accents" colorKey="sage" />
-          <ColorPicker label="Background" desc="App & RSVP background" colorKey="bg" />
-          <ColorPicker label="Card / surface" desc="Card backgrounds" colorKey="tertiary" />
+          <Picker label="Primary / buttons" desc="Buttons, active states" colorKey="accent" />
+          <Picker label="Secondary / highlights" desc="Icons, tags, nav accents" colorKey="sage" />
+          <Picker label="Background" desc="App & RSVP background" colorKey="bg" />
+          <Picker label="Card / surface" desc="Card backgrounds" colorKey="tertiary" />
         </div>
       </div>
 
       {/* Text colors */}
       <div style={{ marginBottom:28 }}>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
-          <p className="text-base font-bold text-black uppercase tracking-wider">Text colors</p>
-          <button onClick={() => { const u = {...colors,title:'#ffffff',subheader:'#000000',body:'#9ca3af'}; setColors(u); persist(u) }}
-            style={{ fontSize:12, color:'#9ca3af', background:'none', border:'none', cursor:'pointer', textDecoration:'underline' }}>
-            Reset text defaults
-          </button>
-        </div>
+        <p className="text-base font-bold text-black uppercase tracking-wider mb-4">Text colors</p>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))', gap:16 }}>
-          <ColorPicker label="Page titles" desc="Section headings, card titles" colorKey="title" />
-          <ColorPicker label="Sub-headers" desc="Labels, table headers" colorKey="subheader" />
-          <ColorPicker label="Body text" desc="Descriptions, helper text" colorKey="body" />
+          <Picker label="Page titles" desc="Section headings, card titles" colorKey="title" />
+          <Picker label="Sub-headers" desc="Labels, table headers" colorKey="subheader" />
+          <Picker label="Body text" desc="Descriptions, helper text" colorKey="body" />
         </div>
       </div>
 
@@ -2161,62 +2143,16 @@ function TabColors() {
         <p className="text-base font-bold text-black uppercase tracking-wider mb-2">Dress code colors</p>
         <p className="text-xs text-[#9ca3af] mb-4">These 4 dots appear on the RSVP details page under dress code</p>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(220px,1fr))', gap:16 }}>
-          {([
-            { label:'Bridesmaid dresses', key:'swatchBridesmaids' },
-            { label:"Men's suits",        key:'swatchSuits' },
-            { label:'Venue colors',        key:'swatchVenue' },
-            { label:'Floral colors',       key:'swatchFlowers' },
-          ] as {label:string; key: keyof ColorSet}[]).map(({ label, key }) => (
-            <div key={key} style={{ background:'var(--bg3,#1a2419)', borderRadius:12, border:'1px solid #202e1f', overflow:'hidden' }}>
-              <div style={{ padding:'14px' }}>
-                <p style={{ fontSize:12, fontWeight:700, color:'#000', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:10 }}>{label}</p>
-                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                  <input type="color" value={colors[key] as string}
-                    onChange={e => setColors(p => ({ ...p, [key]: e.target.value }))}
-                    style={{ width:40, height:40, borderRadius:8, border:'1px solid #2a3829', cursor:'pointer', padding:2, background:'transparent', flexShrink:0 }} />
-                  <input type="text" value={colors[key] as string}
-                    onChange={e => setColors(p => ({ ...p, [key]: e.target.value }))}
-                    style={{ flex:1, minWidth:0, padding:'8px 10px', borderRadius:8, border:'1px solid #2a3829', fontSize:13, background:'#141c13', color:'#e8f0e6', outline:'none' }} />
-                  <button onClick={() => saveSingleColor(key, colors[key] as string)}
-                    style={{ flexShrink:0, padding:'8px 12px', borderRadius:8, background: cpSaved===key ? 'var(--sage)' : 'var(--accent)', color:'#fff', border:'none', fontSize:12, fontWeight:700, cursor:'pointer' }}>
-                    {cpSaved===key ? '✓' : 'Save'}
-                  </button>
-                </div>
-              </div>
-              <div style={{ height:5, background:colors[key] as string }} />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Live preview */}
-      <div style={{ background:'var(--bg3,#1a2419)', borderRadius:16, padding:28, border:'1px solid #202e1f' }}>
-        <p style={{ fontSize:13, fontWeight:700, color:'#000', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:16 }}>Live preview</p>
-        <div style={{ display:'flex', gap:16, flexWrap:'wrap' }}>
-          <div style={{ flex:1, minWidth:200, background:colors.bg, borderRadius:12, padding:20, border:'1px solid #202e1f' }}>
-            <p style={{ fontSize:11, fontWeight:700, color:colors.subheader, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:4 }}>Sub-header label</p>
-            <p style={{ fontSize:22, color:colors.title, fontFamily:'var(--font-display)', marginBottom:6 }}>Page Title</p>
-            <p style={{ fontSize:13, color:colors.body, marginBottom:12 }}>Body text and helper copy looks like this across the app.</p>
-            <button style={{ padding:'8px 16px', borderRadius:8, background:colors.accent, color:colors.title, border:'none', fontSize:13, fontWeight:600, cursor:'pointer' }}>Primary button</button>
-          </div>
-          <div style={{ flex:1, minWidth:200, background:colors.tertiary, borderRadius:12, padding:20, border:'1px solid #202e1f' }}>
-            <p style={{ fontSize:11, fontWeight:700, color:colors.subheader, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:8 }}>Card surface</p>
-            <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:12 }}>
-              <div style={{ width:32, height:32, borderRadius:'50%', background:colors.accent }} />
-              <div>
-                <p style={{ fontSize:13, fontWeight:600, color:colors.title }}>Guest name</p>
-                <p style={{ fontSize:11, color:colors.sage }}>Attending</p>
-              </div>
-            </div>
-            <div style={{ height:6, borderRadius:3, background:colors.bg, overflow:'hidden' }}>
-              <div style={{ height:'100%', width:'70%', background:colors.accent, borderRadius:3 }} />
-            </div>
-          </div>
+          <Picker label="Bridesmaid dresses" colorKey="swatchBridesmaids" />
+          <Picker label="Men's suits" colorKey="swatchSuits" />
+          <Picker label="Venue colors" colorKey="swatchVenue" />
+          <Picker label="Floral colors" colorKey="swatchFlowers" />
         </div>
       </div>
     </div>
   )
 }
+
 
 // ─── MAIN WRAPPER ────────────────────────────────────────────────────────────
 const TAB_COMPONENTS: Record<string, React.ComponentType<{ onTab?: (t: string) => void }>> = {
