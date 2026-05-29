@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+:root {
+  --font-display: 'Cormorant Garamond', serif;
+  --font-body: 'DM Sans', sans-serif;
+  --accent: #4a7a44;
+  --sage: #8fb882;
+  --sage-light: #1e3a1e;
+  --sage-dark: #b8d4b4;
+  --bg: #111714;
+  --bg2: #1a2419;
+  --bg3: #1f2b1e;
+  --border: #2a3829;
+  --text: #e8f0e6;
+  --text2: #8fa88c;
+  --text3: #5a7057;
+  --title: #ffffff;
+  --subheader: #000000;
+  --body: #9ca3af;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-body); background: var(--bg); color: var(--title); font-size: 15px; }
+h1,h2,h3 { font-family: var(--font-display); font-weight: 400; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a3829; border-radius: 4px; }
+
+input[type=range] { -webkit-appearance: none; height: 4px; border-radius: 2px; background: var(--border); outline: none; width: 100%; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--sage); cursor: pointer; }
+
+@media (max-width: 768px) {
+  body { font-size: 14px; }
+}
