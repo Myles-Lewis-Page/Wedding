@@ -1903,8 +1903,17 @@ function TabColors() {
   ])
 
   useEffect(() => {
+    // Load from localStorage first for instant display
+    try {
+      const saved = localStorage.getItem('weddingNamesCache')
+      if (saved) { const p = JSON.parse(saved); setWeddingNames(p); setNamesLoaded(true) }
+    } catch {}
     $get('rsvp-settings').then(d => {
-      if (d && !d.error) { setWeddingNames({ brideName: d.brideName||'', groomName: d.groomName||'', lastName: d.lastName||'' }); setNamesLoaded(true) }
+      if (d && !d.error) {
+        const n = { brideName: d.brideName||'', groomName: d.groomName||'', lastName: d.lastName||'' }
+        setWeddingNames(n); setNamesLoaded(true)
+        try { localStorage.setItem('weddingNamesCache', JSON.stringify(n)) } catch {}
+      }
     })
     try {
       const stored = localStorage.getItem('weddingColors')
@@ -2040,7 +2049,7 @@ function TabColors() {
             // Update localStorage so sidebar + RSVP page pick it up immediately
             try {
               localStorage.setItem('coupleName', full)
-              // Dispatch storage event so Sidebar CoupleName component re-reads
+              localStorage.setItem('weddingNamesCache', JSON.stringify({ brideName: weddingNames.brideName, groomName: weddingNames.groomName, lastName: weddingNames.lastName }))
               window.dispatchEvent(new StorageEvent('storage', { key:'coupleName', newValue:full }))
             } catch {}
             setNamesSaved(true); setTimeout(()=>setNamesSaved(false),2000)
