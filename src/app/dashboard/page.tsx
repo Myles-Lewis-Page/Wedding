@@ -1008,57 +1008,25 @@ function TabChecklist() {
   )
 }
 
+// ─── RSVP PORTAL ─────────────────────────────────────────────────────────────
 function TabRSVP() {
   const RSVP_URL = 'https://wedding-production-7483.up.railway.app/rsvp'
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [copied, setCopied] = useState(false)
-  const [guests, setGuests] = useState<Guest[]>([])
-  const [loadingGuests, setLoadingGuests] = useState(true)
-  const [editTarget, setEditTarget] = useState<Guest | null>(null)
-  const [editForm, setEditForm] = useState({ rsvpStatus: 'pending', dietary: '', email: '', plusOneName: '', plusOneDietary: '', hasPlusOne: false })
-  const [savingEdit, setSavingEdit] = useState(false)
-
-  // RSVP page settings
-  const [settings, setSettings] = useState({
-    brideName: '',
-    groomName: '',
-    heading: 'Our Wedding',
-    subheading: 'Together with their families',
-    dateText: 'September 24, 2026',
-    venueText: '4:00 PM · The Glass House Garden, Austin TX',
-    heroImage: '',
-    accentColor: 'var(--accent)',
-    searchLabel: 'Enter your name as it appears on your invitation',
-    attendingLabel: "Yes, I'll be there!",
-    declineLabel: 'Regretfully no',
-    confirmedMessage: "We can't wait to celebrate with you!",
-    declinedMessage: "Thank you for letting us know. We'll be thinking of you!",
-    contactEmail: '',
-    coupleNames: 'Our Wedding',
-    ourStory: "We didn't expect our story to begin the way it did...",
-    photo1: '',
-    photo2: '',
-    photo3: '',
-    ceremonyTime: '4:00 PM',
-    receptionTime: '6:00 PM',
-    dressCode: 'Garden Formal',
-    dressCodeNote: 'We would love for you to celebrate with us in attire that feels elegant and true to your style.',
-    swatchBridesmaids: '#9bb89a',
-    swatchSuits: '#4a5568',
-    swatchVenue: '#8b7355',
-    swatchFlowers: '#e8b4bc',
-  })
-  const [savingSettings, setSavingSettings] = useState(false)
-  const [settingsSaved, setSettingsSaved] = useState(false)
-  const STATUS_COLORS: Record<string, [string, string]> = {
-    attending: ['#00ff00', '#00330022'],
-    declined: ['#ff0000', '#33000022'],
-    pending: ['#f0b429', '#2a200022'],
-  }
+  const [photos, setPhotos] = useState({ heroImage:'', photo1:'', photo2:'', photo3:'' })
+  const [uploading, setUploading] = useState<string|null>(null)
+  const [saving, setSaving] = useState<string|null>(null)
+  const [saved, setSaved] = useState<string|null>(null)
 
   useEffect(() => {
-    $get('guests').then(d => { setGuests(Array.isArray(d) ? d : []); setLoadingGuests(false) })
-    $get('rsvp-settings').then(d => { if (d && !d.error) setSettings(s => ({ ...s, ...d })) })
+    $get('rsvp-settings').then(d => {
+      if (d && !d.error) setPhotos({
+        heroImage: d.hero_image || d.heroImage || '',
+        photo1:    d.photo1  || '',
+        photo2:    d.photo2  || '',
+        photo3:    d.photo3  || '',
+      })
+    })
     const canvas = canvasRef.current
     if (!canvas) return
     const img = new Image()
@@ -1067,247 +1035,123 @@ function TabRSVP() {
     img.onload = () => { const ctx = canvas.getContext('2d'); if (ctx) { ctx.clearRect(0,0,200,200); ctx.drawImage(img,0,0,200,200) } }
   }, [])
 
-  const openEdit = (g: Guest) => {
-    setEditTarget(g)
-    setEditForm({ rsvpStatus: g.rsvpStatus, dietary: g.dietary || '', email: g.email || '', plusOneName: g.plusOneName || '', plusOneDietary: g.plusOneDietary || '', hasPlusOne: g.hasPlusOne })
+  const savePhoto = async (field: string, val: string) => {
+    setSaving(field)
+    setPhotos(p => ({ ...p, [field]: val }))
+    await $patch('rsvp-settings', { id: 'main', [field]: val })
+    setSaving(null); setSaved(field)
+    setTimeout(() => setSaved(null), 2000)
   }
 
-  const saveGuestEdit = async () => {
-    if (!editTarget) return
-    setSavingEdit(true)
-    const res = await $patch('guest', { id: editTarget.id, rsvpStatus: editForm.rsvpStatus, dietary: editForm.dietary || null, email: editForm.email || null, plusOneName: editForm.plusOneName || null, plusOneDietary: editForm.plusOneDietary || null, hasPlusOne: editForm.hasPlusOne })
-    setGuests(p => p.map(g => g.id === res.id ? res : g))
-    setEditTarget(null); setSavingEdit(false)
-  }
-
-  const settingsRef = useRef(settings)
-  useEffect(() => { settingsRef.current = settings }, [settings])
-  const saveSettings = async () => {
-    setSavingSettings(true)
-    const s = settingsRef.current
-    const coupleNames = (s.brideName && s.groomName) ? `${s.brideName} & ${s.groomName}` : (s.brideName || s.groomName || 'Our Wedding')
-    try { localStorage.setItem('coupleName', coupleNames) } catch {}
-    await $patch('rsvp-settings', { id: 'main', ...s, coupleNames })
-    setSavingSettings(false); setSettingsSaved(true)
-    setTimeout(() => setSettingsSaved(false), 2000)
-  }
-
-  // SF: uncontrolled inputs so typing never loses focus
-  // Uses defaultValue + key (stable per field) + onBlur to sync back to state
-  // PhotoField: file upload → base64 stored in DB, or paste URL
-  const PhotoField = ({ label, field }: { label: string; field: keyof typeof settings }) => {
-    const [uploading, setUploading] = useState(false)
-    const [saving, setSaving] = useState(false)
-    const [saved, setSaved] = useState(false)
-    const [urlVal, setUrlVal] = useState('')
-    const current = String(settings[field] ?? '')
-
-    const savePhoto = async (val: string) => {
-      setSaving(true)
-      const n = {...settingsRef.current, [field]: val}
-      setSettings(n); settingsRef.current = n
-      await $patch('rsvp-settings', { id: 'main', [field]: val })
-      setSaving(false); setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
+  const handleFile = (field: string, file: File) => {
+    if (!file.type.startsWith('image/')) return
+    setUploading(field)
+    const reader = new FileReader()
+    reader.onload = async e => {
+      setUploading(null)
+      await savePhoto(field, e.target?.result as string)
     }
-    const handleFile = (file: File) => {
-      if (!file.type.startsWith('image/')) return
-      setUploading(true)
-      const reader = new FileReader()
-      reader.onload = async e => {
-        setUploading(false)
-        await savePhoto(e.target?.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-    const saveUrl = () => { if (urlVal.trim()) { savePhoto(urlVal.trim()); setUrlVal('') } }
-
-    return (
-      <div style={{display:'flex', gap:16, alignItems:'flex-start'}}>
-        {/* Controls - left */}
-        <div style={{flex:1, minWidth:0}}>
-          <p style={{fontSize:11,fontWeight:700,color:'var(--subheader)',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>{label}</p>
-          <div style={{display:'flex', flexDirection:'column', gap:8}}>
-            <label style={{padding:'10px 14px',borderRadius:10,background:'var(--accent)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
-              {uploading ? <><Loader2 size={14} className="animate-spin"/>Uploading…</> : <><Upload size={14}/>Upload image</>}
-              <input type="file" accept="image/*" style={{display:'none'}} onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
-            </label>
-            <div style={{display:'flex', gap:6}}>
-              <input value={urlVal} onChange={e=>setUrlVal(e.target.value)} placeholder="or paste URL…" onKeyDown={e=>e.key==='Enter'&&saveUrl()}
-                style={{flex:1,minWidth:0,padding:'8px 12px',borderRadius:10,border:'1px solid #2a3829',background:'var(--bg3,#1a2419)',color:'var(--title)',fontSize:13,outline:'none'}} />
-              <button onClick={saveUrl} disabled={!urlVal.trim()}
-                style={{flexShrink:0,padding:'8px 14px',borderRadius:10,background:urlVal.trim()?'var(--accent)':' #1f2b1e',color:'#fff',border:'none',fontSize:12,fontWeight:700,cursor:urlVal.trim()?'pointer':'default'}}>
-                Save
-              </button>
-            </div>
-            {current && <button onClick={()=>savePhoto('')}
-              style={{padding:'6px 12px',borderRadius:8,background:'#1f2b1e',border:'1px solid #2a3829',color:'var(--body)',fontSize:12,cursor:'pointer',alignSelf:'flex-start'}}>
-              ✕ Remove
-            </button>}
-          </div>
-        </div>
-        {/* Preview - right */}
-        <div style={{width:120,flexShrink:0}}>
-          {current ? (
-            <div style={{position:'relative',width:120,height:90,borderRadius:10,overflow:'hidden',border:'2px solid var(--accent)'}}>
-              <img src={current} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}} />
-              {(saving||saved) && <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                {saving ? <Loader2 size={18} className="animate-spin" style={{color:'#fff'}}/> : <Check size={18} style={{color:'#4ade80'}}/>}
-              </div>}
-            </div>
-          ) : (
-            <div style={{width:120,height:90,borderRadius:10,border:'2px dashed #2a3829',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:4}}>
-              <p style={{fontSize:10,color:'var(--body)',textAlign:'center'}}>No image</p>
-            </div>
-          )}
-        </div>
-      </div>
-    )
+    reader.readAsDataURL(file)
   }
 
-  const SF = ({ label, field, type = 'text', rows }: { label: string; field: keyof typeof settings; type?: string; rows?: number }) => {
-    const val = String(settings[field] ?? '')
-    const update = (v: string) => {
-      const n = { ...settingsRef.current, [field]: v }
-      setSettings(n); settingsRef.current = n
-    }
-    return (
-      <Field label={label}>
-        {rows
-          ? <textarea value={val} onChange={e => update(e.target.value)}
-              rows={rows} className="w-full px-6 py-3.5 rounded-2xl border border-[#2a3829] text-base focus:outline-none focus:border-[var(--sage)] resize-none text-[var(--title)]" style={{background:'var(--bg3,#1a2419)'}} />
-          : <input type={type} value={val} onChange={e => update(e.target.value)}
-              className="w-full px-6 py-3.5 rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] text-base text-[var(--title)] focus:outline-none focus:border-[var(--sage)]" />}
-      </Field>
-    )
-  }
+  const PHOTO_FIELDS: { field: string; label: string; desc: string }[] = [
+    { field: 'heroImage', label: 'Cover photo', desc: 'Main background on the RSVP invite card' },
+    { field: 'photo1',    label: 'Photo 1',     desc: 'Top-left polaroid on Our Story page' },
+    { field: 'photo2',    label: 'Photo 2',     desc: 'Right-side polaroid on Our Story page' },
+    { field: 'photo3',    label: 'Photo 3',     desc: 'Bottom-left polaroid on Our Story page' },
+  ]
 
   return (
     <div>
-      <PageHeader title="RSVP portal" sub="Customize the guest experience and manage RSVPs" />
+      <PageHeader title="RSVP portal" sub="Share the link and manage photos" />
 
-      <div className="grid grid-cols-2 gap-7 mb-7 items-start">
-        {/* QR Code */}
-        <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 text-center">
-          <canvas ref={canvasRef} width={160} height={160} className="rounded-2xl mx-auto mb-3 block" style={{imageRendering:'pixelated',width:160,height:160}} />
-          <p className="text-base text-[#5a7057] mb-4 break-all">{RSVP_URL}</p>
-          <div className="flex flex-col gap-2">
-            <Btn onClick={() => { const c = canvasRef.current; if(c){const a=document.createElement('a');a.download='rsvp-qr.png';a.href=c.toDataURL();a.click()} }} style={{width:'100%',justifyContent:'center'}}><QrCode size={15}/>Download QR</Btn>
-            <Btn variant="ghost" onClick={() => { navigator.clipboard.writeText(RSVP_URL); setCopied(true); setTimeout(()=>setCopied(false),2000) }} style={{width:'100%',justifyContent:'center'}}>
+      {/* QR + Links */}
+      <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 mb-7">
+        <div className="flex gap-8 items-start flex-wrap">
+          <div className="flex flex-col items-center gap-3">
+            <canvas ref={canvasRef} width={160} height={160} className="rounded-xl block" style={{imageRendering:'pixelated',width:160,height:160}} />
+            <p className="text-xs text-[var(--body)] break-all text-center max-w-[160px]">{RSVP_URL}</p>
+          </div>
+          <div className="flex flex-col gap-3 flex-1 min-w-[180px] justify-center" style={{paddingTop:8}}>
+            <Btn onClick={() => { const cv = canvasRef.current; if(cv){const a=document.createElement('a');a.download='rsvp-qr.png';a.href=cv.toDataURL();a.click()} }}>
+              <QrCode size={15}/>Download QR
+            </Btn>
+            <Btn variant="ghost" onClick={() => { navigator.clipboard.writeText(RSVP_URL); setCopied(true); setTimeout(()=>setCopied(false),2000) }}>
               {copied ? <><Check size={15}/>Copied!</> : 'Copy link'}
             </Btn>
-            <Btn variant="ghost" onClick={() => window.open(RSVP_URL,'_blank')} style={{width:'100%',justifyContent:'center'}}><ExternalLink size={15}/>Preview</Btn>
+            <Btn variant="ghost" onClick={() => window.open(RSVP_URL,'_blank')}>
+              <ExternalLink size={15}/>Preview RSVP page
+            </Btn>
           </div>
         </div>
+      </div>
 
-        {/* Quick stats */}
-        <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8 flex flex-col justify-center">
-          <p className="text-base font-semibold text-[var(--title)] mb-7">RSVP stats</p>
-          {(() => {
-            const attending = guests.filter(g=>g.rsvpStatus==='attending').length
-            const declined = guests.filter(g=>g.rsvpStatus==='declined').length
-            const pending = guests.filter(g=>g.rsvpStatus==='pending').length
-            const total = guests.length
+      {/* Photos */}
+      <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-8">
+        <p className="text-base font-bold text-[var(--subheader)] uppercase tracking-wider mb-6">RSVP page photos</p>
+        <p className="text-sm text-[var(--body)] mb-6">Photos are stored in your database. Upload a JPG or PNG, or paste an image URL.</p>
+        <div className="flex flex-col gap-8">
+          {PHOTO_FIELDS.map(({ field, label, desc }) => {
+            const current = photos[field as keyof typeof photos]
+            const isUploading = uploading === field
+            const isSaving   = saving   === field
+            const isSaved    = saved    === field
+            const [urlInput, setUrlInput] = useState('')
             return (
-              <div className="space-y-[28px]">
-                {[['Attending',attending,'#00ff00'],['Declined',declined,'#ff0000'],['Pending',pending,'#f0b429']].map(([l,v,c])=>(
-                  <div key={String(l)} className="flex items-center gap-5">
-                    <div className="flex-1 h-2 bg-[#1f2b1e] rounded-full overflow-hidden">
-                      <div className="h-full rounded-full" style={{width:`${total?((v as number)/total)*100:0}%`,background:String(c)}}/>
-                    </div>
-                    <span className="text-base text-[#7a9878] w-20 text-right">{l}: {v}</span>
+              <div key={field} style={{ display:'flex', gap:20, alignItems:'flex-start', paddingBottom:24, borderBottom:'1px solid #202e1f' }}>
+                {/* Left: controls */}
+                <div style={{ flex:1, minWidth:0 }}>
+                  <p style={{ fontSize:14, fontWeight:700, color:'var(--title)', marginBottom:3 }}>{label}</p>
+                  <p style={{ fontSize:12, color:'var(--body)', marginBottom:12 }}>{desc}</p>
+                  {/* Upload button */}
+                  <label style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'9px 16px', borderRadius:10, background:'var(--accent)', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', marginBottom:10 }}>
+                    {isUploading ? <><Loader2 size={14} className="animate-spin"/>Uploading…</> : <><Upload size={14}/>Upload JPG / PNG</>}
+                    <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" style={{ display:'none' }}
+                      onChange={e => e.target.files?.[0] && handleFile(field, e.target.files[0])} />
+                  </label>
+                  {/* URL input + save */}
+                  <div style={{ display:'flex', gap:8 }}>
+                    <input value={urlInput} onChange={e => setUrlInput(e.target.value)} placeholder="or paste image URL…"
+                      onKeyDown={e => { if(e.key==='Enter'&&urlInput.trim()){savePhoto(field,urlInput.trim());setUrlInput('')} }}
+                      style={{ flex:1, minWidth:0, padding:'8px 12px', borderRadius:10, border:'1px solid #2a3829', background:'#141c13', color:'var(--title)', fontSize:13, outline:'none' }} />
+                    <button onClick={() => { if(urlInput.trim()){savePhoto(field,urlInput.trim());setUrlInput('')} }} disabled={!urlInput.trim()}
+                      style={{ flexShrink:0, padding:'8px 14px', borderRadius:10, background:urlInput.trim()?'var(--accent)':'#1f2b1e', color:'#fff', border:'none', fontSize:12, fontWeight:700, cursor:urlInput.trim()?'pointer':'default' }}>
+                      Save
+                    </button>
                   </div>
-                ))}
-                <p className="text-base text-[#5a7057] pt-1">{total} total guests</p>
+                  {current && (
+                    <button onClick={() => savePhoto(field, '')}
+                      style={{ marginTop:8, fontSize:12, color:'var(--body)', background:'none', border:'none', cursor:'pointer', textDecoration:'underline' }}>
+                      Remove photo
+                    </button>
+                  )}
+                </div>
+                {/* Right: preview */}
+                <div style={{ flexShrink:0, width:130 }}>
+                  {current ? (
+                    <div style={{ width:130, height:100, borderRadius:10, overflow:'hidden', border:'2px solid var(--accent)', position:'relative' }}>
+                      <img src={current} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                      {(isSaving||isSaved) && (
+                        <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.55)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                          {isSaving ? <Loader2 size={20} style={{color:'#fff',animation:'spin 1s linear infinite'}}/> : <Check size={22} style={{color:'#4ade80'}}/>}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ width:130, height:100, borderRadius:10, border:'2px dashed #2a3829', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:6 }}>
+                      <p style={{ fontSize:11, color:'var(--body)', textAlign:'center' }}>No photo</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )
-          })()}
+          })}
         </div>
       </div>
-
-      {/* ── RSVP PAGE CUSTOMIZATION ── */}
-      <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] mb-7">
-        <div className="flex items-center justify-between px-8 py-6 border-b border-[#202e1f]">
-          <div>
-            <p className="font-semibold text-[#e8f0e6]">Customize RSVP page</p>
-            <p className="text-base text-[#5a7057] mt-0.5">Changes appear live at your RSVP link</p>
-          </div>
-          <Btn onClick={saveSettings} disabled={savingSettings} style={{ background: settingsSaved ? 'var(--sage)' : 'var(--accent)' }}>
-            {savingSettings ? <><Loader2 size={17} className="animate-spin"/>Saving…</> : settingsSaved ? <><Check size={17}/>Saved!</> : <><Check size={17}/>Save changes</>}
-          </Btn>
-        </div>
-
-        <div className="p-7" style={{maxWidth: 520}}>
-          <div className="space-y-4">
-            <p className="text-base font-bold text-[var(--subheader)] uppercase tracking-wider pb-1 border-b border-[#000000]/20">Couple names</p>
-            <div className="grid grid-cols-2 gap-5">
-              <SF label="Bride / Partner 1 name" field="brideName" />
-              <SF label="Groom / Partner 2 name" field="groomName" />
-            </div>
-            <p className="text-base font-bold text-[var(--subheader)] uppercase tracking-wider pt-3 pb-1 border-b border-[#000000]/20">Photos & media</p>
-            <PhotoField label="Cover photo (RSVP background)" field="heroImage" />
-            <PhotoField label="Photo 1" field="photo1" />
-            <PhotoField label="Photo 2" field="photo2" />
-            <PhotoField label="Photo 3" field="photo3" />
-
-
-          </div>
-        </div>
-      </div>
-
-      {/* ── GUEST RSVP RECORDS ── */}
-      <h2 className="text-xl font-light text-[var(--title)] mb-7" style={{ fontFamily: 'var(--font-display)' }}>Guest RSVP records</h2>
-      {loadingGuests ? <div className="flex justify-center py-8"><Loader2 className="animate-spin text-[var(--body)]" size={26}/></div> : (
-        <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-base min-w-[520px]">
-              <thead><tr className="border-b border-black/20 bg-black/20 text-left text-base text-[var(--subheader)] uppercase tracking-wider font-bold">
-                {['Name','Status','Email','Dietary','Plus one',''].map(h=><th key={h} className="px-6 py-3.5.5 font-medium">{h}</th>)}
-              </tr></thead>
-              <tbody>
-                {guests.length === 0 ? <tr><td colSpan={6} className="text-center py-10 text-[var(--body)]">No guests yet</td></tr>
-                : guests.map(g => {
-                  const [color, bg] = STATUS_COLORS[g.rsvpStatus] ?? STATUS_COLORS.pending
-                  return (
-                    <tr key={g.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[var(--bg3,#1a2419)]">
-                      <td className="px-6 py-3.5.5 font-medium text-[#e8f0e6]">{g.name}</td>
-                      <td className="px-8 py-4"><span className="text-base px-2.5 py-1 rounded-full font-medium capitalize" style={{color,background:bg}}>{g.rsvpStatus}</span></td>
-                      <td className="px-6 py-3.5.5 text-base text-[var(--body)]">{g.email||'—'}</td>
-                      <td className="px-6 py-3.5.5 text-base text-[var(--body)]">{g.dietary||'—'}</td>
-                      <td className="px-6 py-3.5.5 text-base text-[var(--body)]">{g.plusOneName||(g.hasPlusOne?<span className="text-[var(--sage)]">allowed</span>:'—')}</td>
-                      <td className="px-8 py-4"><button onClick={()=>openEdit(g)} className="text-base text-[#5a7057] hover:text-[var(--sage)] flex items-center gap-1"><Edit3 size={26}/>Edit</button></td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {editTarget && (
-        <Modal title={`Edit RSVP — ${editTarget.name}`} onClose={()=>setEditTarget(null)}
-          footer={<><Btn variant="ghost" onClick={()=>setEditTarget(null)}>Cancel</Btn><Btn onClick={saveGuestEdit} disabled={savingEdit}>{savingEdit?<><Loader2 size={17} className="animate-spin"/>Saving…</>:<><Check size={17}/>Save</>}</Btn></>}>
-          <Field label="RSVP status"><Select value={editForm.rsvpStatus} onChange={e=>setEditForm(f=>({...f,rsvpStatus:e.target.value}))}><option value="pending">Pending</option><option value="attending">Attending</option><option value="declined">Declined</option></Select></Field>
-          <Field label="Email"><Input type="email" value={editForm.email} onChange={e=>setEditForm(f=>({...f,email:e.target.value}))} /></Field>
-          <Field label="Dietary"><Select value={editForm.dietary} onChange={e=>setEditForm(f=>({...f,dietary:e.target.value}))}>
-            {['','Vegetarian','Vegan','Gluten-free','Nut allergy','Halal','Kosher','Other'].map(o=><option key={o} value={o}>{o||'None'}</option>)}
-          </Select></Field>
-          <div className="flex items-center justify-between py-1">
-            <p className="text-base font-medium text-[var(--title)]">Plus one allowed</p>
-            <button onClick={()=>setEditForm(f=>({...f,hasPlusOne:!f.hasPlusOne}))} className={`w-11 h-6 rounded-full transition-colors relative ${editForm.hasPlusOne?'bg-[var(--accent)]':'bg-[#243022]'}`}><div className={`absolute top-0.5 w-5 h-5 rounded-full bg-[var(--bg3,#1a2419)] shadow transition-transform ${editForm.hasPlusOne?'translate-x-5':'translate-x-0.5'}`}/></button>
-          </div>
-          {editForm.hasPlusOne && <>
-            <Field label="Plus one name"><Input value={editForm.plusOneName} onChange={e=>setEditForm(f=>({...f,plusOneName:e.target.value}))} /></Field>
-            <Field label="Plus one dietary"><Select value={editForm.plusOneDietary} onChange={e=>setEditForm(f=>({...f,plusOneDietary:e.target.value}))}>
-              {['','Vegetarian','Vegan','Gluten-free','Nut allergy','Halal','Kosher','Other'].map(o=><option key={o} value={o}>{o||'None'}</option>)}
-            </Select></Field>
-          </>}
-        </Modal>
-      )}
     </div>
   )
 }
+
 
 function TabMoodboard() {
   const [items, setItems] = useState<{ id:string; label:string; imageUrl:string; category:string }[]>([])
@@ -2046,6 +1890,8 @@ type ColorSet = { accent:string; sage:string; bg:string; tertiary:string; title:
 const DEFAULT_COLORS: ColorSet = { accent:'#4a7a44', sage:'#8fb882', bg:'#111714', tertiary:'#1a2419', title:'#ffffff', subheader:'#000000', body:'#9ca3af', swatchBridesmaids:'#9bb89a', swatchSuits:'#4a5568', swatchVenue:'#8b7355', swatchFlowers:'#e8b4bc' }
 
 function TabColors() {
+  const [weddingNames, setWeddingNames] = useState({ brideName:'', groomName:'', lastName:'' })
+  const [namesSaved, setNamesSaved] = useState(false)
   const [colors, setColors] = useState<ColorSet>(DEFAULT_COLORS)
   const [presets, setPresets] = useState<(ColorSet & {name:string})[]>([
     { name:'Preset 1', ...DEFAULT_COLORS },
@@ -2056,6 +1902,9 @@ function TabColors() {
   ])
 
   useEffect(() => {
+    $get('rsvp-settings').then(d => {
+      if (d && !d.error) setWeddingNames({ brideName: d.brideName||'', groomName: d.groomName||'', lastName: d.lastName||'' })
+    })
     try {
       const stored = localStorage.getItem('weddingColors')
       if (stored) { const p = JSON.parse(stored); setColors(prev => ({ ...prev, ...p })) }
@@ -2177,7 +2026,40 @@ function TabColors() {
 
   return (
     <div>
-      <PageHeader title="Color scheme" sub="Each color has its own Save button" />
+      <PageHeader title="Settings" sub="Names, colors and theme" />
+
+      {/* Wedding names */}
+      <div style={{ background:'var(--bg3,#1a2419)', borderRadius:16, border:'1px solid #202e1f', padding:28, marginBottom:28 }}>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
+          <p className="text-base font-bold text-[var(--subheader)] uppercase tracking-wider">Wedding names</p>
+          <button onClick={async () => {
+            await $patch('rsvp-settings', { id:'main', brideName: weddingNames.brideName, groomName: weddingNames.groomName, lastName: weddingNames.lastName,
+              coupleNames: [weddingNames.brideName, weddingNames.groomName].filter(Boolean).join(' & ') || 'Our Wedding' })
+            try { localStorage.setItem('coupleName', [weddingNames.brideName, weddingNames.groomName].filter(Boolean).join(' & ') || 'Our Wedding') } catch {}
+            setNamesSaved(true); setTimeout(()=>setNamesSaved(false),2000)
+          }} style={{ padding:'8px 16px', borderRadius:8, background: namesSaved ? 'var(--sage)' : 'var(--accent)', color:'#fff', border:'none', fontSize:13, fontWeight:700, cursor:'pointer' }}>
+            {namesSaved ? '✓ Saved' : 'Save names'}
+          </button>
+        </div>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16 }}>
+          {([['brideName','Bride / Partner 1'],['groomName','Groom / Partner 2'],['lastName','Shared last name']] as const).map(([key,label])=>(
+            <div key={key}>
+              <p style={{ fontSize:11, fontWeight:700, color:'var(--subheader)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:8 }}>{label}</p>
+              <input value={weddingNames[key]} onChange={e => setWeddingNames(p=>({...p,[key]:e.target.value}))}
+                placeholder={key==='lastName'?'e.g. Smith':key==='brideName'?'e.g. Jennifer':'e.g. Myles'}
+                style={{ width:'100%', padding:'10px 14px', borderRadius:10, border:'1px solid #2a3829', background:'#141c13', color:'var(--title)', fontSize:14, outline:'none' }} />
+            </div>
+          ))}
+        </div>
+        {(weddingNames.brideName || weddingNames.groomName) && (
+          <p style={{ marginTop:14, fontSize:13, color:'var(--body)' }}>
+            Preview: <span style={{ color:'var(--title)', fontWeight:600 }}>
+              {[weddingNames.brideName, weddingNames.groomName].filter(Boolean).join(' & ')}
+              {weddingNames.lastName ? ` ${weddingNames.lastName}` : ''}
+            </span>
+          </p>
+        )}
+      </div>
 
       {/* Presets */}
       <div style={{ marginBottom:28 }}>

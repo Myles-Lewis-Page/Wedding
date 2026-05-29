@@ -126,6 +126,7 @@ model RsvpSettings {
   id               String @id @default("main")
   brideName        String @default("")
   groomName        String @default("")
+  lastName         String @default("")
   heading          String @default("Our Wedding") @map("heading")
   subheading       String @default("Join us as we celebrate our wedding day")
   dateText         String @default("") @map("date_text")
