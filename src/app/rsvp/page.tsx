@@ -331,51 +331,55 @@ export default function RSVPPage() {
             </div>
             <div style={{ ...card, padding: '28px' }}>
               {(() => {
-                const paras  = s.ourStory.split('\n\n').filter(Boolean)
-                const photos = [s.photo1, s.photo2, s.photo3].filter(Boolean)
+                const paras = s.ourStory.split('\n\n').filter(Boolean)
+                const p1 = s.photo1
+                const p2 = s.photo2
+                const p3 = s.photo3
 
-                const paraStyle: React.CSSProperties = {
+                const pStyle: React.CSSProperties = {
                   fontFamily: font,
                   fontStyle: 'italic',
                   fontSize: 15,
                   color: bc,
                   lineHeight: 1.9,
-                  marginBottom: 16,
+                  margin: 0,
+                  flex: 1,
                 }
 
-                // Polaroid helper  floated so text wraps around it
-                const polar = (src: string, rot: number, floatDir: 'left' | 'right', key: string) => (
-                  <div key={key} style={{
-                    float: floatDir,
-                    margin: floatDir === 'left' ? '0 16px 12px 0' : '0 0 12px 16px',
-                    background: '#fff',
-                    padding: 6,
-                    boxShadow: '0 8px 28px rgba(0,0,0,0.5)',
-                    transform: `rotate(${rot}deg)`,
-                    display: 'inline-block',
-                  }}>
+                const polar = (src: string, rot: number) => (
+                  <div style={{ background: '#fff', padding: 6, boxShadow: '0 8px 28px rgba(0,0,0,0.5)', transform: 'rotate(' + rot + 'deg)', display: 'inline-block', flexShrink: 0 }}>
                     <img src={src} alt="" style={{ width: 130, height: 100, objectFit: 'cover', display: 'block' }} />
                   </div>
                 )
 
                 return (
-                  <div style={{ overflow: 'hidden' }}>
-                    {/* Photo 1 floats left, first paragraph wraps around it */}
-                    {photos[0] && polar(photos[0], -2, 'left', 'p0')}
-                    {paras[0] && <p style={paraStyle}>{paras[0]}</p>}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
 
-                    {/* Photo 2 floats right (middle), second paragraph wraps around it */}
-                    {photos[1] && polar(photos[1], 1.5, 'right', 'p1')}
-                    {paras[1] && <p style={paraStyle}>{paras[1]}</p>}
+                    {(p1 || paras[0]) && (
+                      <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+                        {p1 && polar(p1, -2)}
+                        {paras[0] && <p style={pStyle}>{paras[0]}</p>}
+                      </div>
+                    )}
 
-                    {/* Photo 3 floats left at the end, remaining paragraphs wrap */}
-                    {photos[2] && polar(photos[2], -1, 'left', 'p2')}
-                    {paras.slice(2).map((p, i) => (
-                      <p key={i} style={paraStyle}>{p}</p>
+                    {(paras[1] || p2) && (
+                      <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+                        {paras[1] && <p style={pStyle}>{paras[1]}</p>}
+                        {p2 && polar(p2, 1.5)}
+                      </div>
+                    )}
+
+                    {(p3 || paras[2]) && (
+                      <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+                        {p3 && polar(p3, -1)}
+                        {paras[2] && <p style={pStyle}>{paras[2]}</p>}
+                      </div>
+                    )}
+
+                    {paras.slice(3).map((p, i) => (
+                      <p key={i} style={pStyle}>{p}</p>
                     ))}
 
-                    {/* Clear floats */}
-                    <div style={{ clear: 'both' }} />
                   </div>
                 )
               })()}

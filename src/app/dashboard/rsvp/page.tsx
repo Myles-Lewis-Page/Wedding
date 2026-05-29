@@ -73,7 +73,7 @@ function TextField({ label, desc, field, value, multiline, rows = 2, onSave }: T
               value={val}
               onChange={e => setVal(e.target.value)}
               rows={rows}
-              style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }}
+              style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit', wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
             />
           ) : (
             <input
@@ -202,6 +202,7 @@ export default function RsvpDashboardPage() {
   const [uploading, setUploading] = useState<string | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
+  // Load settings
   useEffect(() => {
     $get('rsvp-settings').then(d => {
       if (d && !d.error) {
@@ -225,7 +226,11 @@ export default function RsvpDashboardPage() {
       }
       setLoading(false)
     })
+  }, [])
 
+  // Draw QR code once canvas is mounted (after loading is false and s is set)
+  useEffect(() => {
+    if (loading || !s) return
     const canvas = canvasRef.current
     if (!canvas) return
     const img = new Image()
@@ -235,7 +240,7 @@ export default function RsvpDashboardPage() {
       const ctx = canvas.getContext('2d')
       if (ctx) ctx.drawImage(img, 0, 0, 160, 160)
     }
-  }, [])
+  }, [loading, s])
 
   const saveField = async (field: string, val: string) => {
     setS(p => p ? { ...p, [field]: val } : p)
@@ -315,10 +320,10 @@ export default function RsvpDashboardPage() {
         <div>
           <SectionLabel>Page copy</SectionLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <TextField label="Page heading"       field="heading"          value={s.heading}          desc="Main title on the invite card"         onSave={saveField} />
-            <TextField label="Subheading"         field="subheading"       value={s.subheading}       desc="Tagline below the heading"             onSave={saveField} />
+            <TextField label="Page heading"       field="heading"          value={s.heading}          desc="Main title on the invite card"          onSave={saveField} />
+            <TextField label="Subheading"         field="subheading"       value={s.subheading}       desc="Tagline below the heading"              onSave={saveField} />
             <TextField label="Contact email"      field="contactEmail"     value={s.contactEmail}     desc="Shown if guests cannot find their name" onSave={saveField} />
-            <TextField label="Guest search label" field="searchLabel"      value={s.searchLabel}      desc="Hint text on the name search field"    onSave={saveField} />
+            <TextField label="Guest search label" field="searchLabel"      value={s.searchLabel}      desc="Hint text on the name search field"     onSave={saveField} />
           </div>
         </div>
 
