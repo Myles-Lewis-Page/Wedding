@@ -72,7 +72,7 @@ export default function SeatingPage() {
     <div>
       <PageHeader
         title="Seating chart"
-        sub={`${guests.filter(g => g.tableId).length} seated  ${unassigned.length} unassigned`}
+        sub={`${guests.filter(g => g.tableId).length} seated · ${unassigned.length} unassigned`}
         action={<Btn onClick={() => setShowAdd(true)}><Plus size={17} />Add table</Btn>}
       />
 
@@ -81,40 +81,51 @@ export default function SeatingPage() {
         : (
           <div className="flex gap-6 h-[520px]">
             {/* Sidebar */}
-            <div className="w-52 shrink-0 flex flex-col gap-4">
-              <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-5 flex-1 overflow-y-auto">
-                <p className="text-xs font-semibold text-[#5a7057] uppercase tracking-wider mb-3">Tables</p>
-                {tables.map(t => {
-                  const cnt = guests.filter(g => g.tableId === t.id).length
-                  return (
-                    <div key={t.id} className="flex items-center gap-1 py-2 border-b border-[#1a2419] last:border-0 group rounded-lg px-1 hover:bg-black/10">
-                      <div className="flex-1 cursor-pointer" onClick={() => setAssign(t.id)}>
-                        <p className="text-sm font-medium text-[var(--title)]">{t.name}</p>
-                        <p className="text-xs text-[#5a7057] capitalize">{t.shape}  {cnt}/{t.seats}</p>
+            <div className="w-56 shrink-0 flex flex-col gap-4">
+              {/* Tables panel */}
+              <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] flex-1 overflow-hidden flex flex-col">
+                <div className="px-5 pt-5 pb-3 border-b border-[#1a2419] shrink-0">
+                  <p className="text-xs font-semibold text-[#5a7057] uppercase tracking-wider">Tables</p>
+                </div>
+                <div className="overflow-y-auto flex-1 px-3 py-3">
+                  {tables.map(t => {
+                    const cnt = guests.filter(g => g.tableId === t.id).length
+                    return (
+                      <div key={t.id} className="flex items-center gap-1 py-2 border-b border-[#1a2419] last:border-0 group rounded-lg px-2 hover:bg-black/10">
+                        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setAssign(t.id)}>
+                          <p className="text-sm font-medium text-[var(--title)] truncate">{t.name}</p>
+                          <p className="text-xs text-[#5a7057] capitalize">{t.shape} · {cnt}/{t.seats}</p>
+                        </div>
+                        <button onClick={async () => {
+                          if (!confirm(`Delete ${t.name}?`)) return
+                          await $del('table', t.id)
+                          setTables(p => p.filter(x => x.id !== t.id))
+                          setGuests(p => p.map(g => g.tableId === t.id ? { ...g, tableId: null } : g))
+                        }} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-1 shrink-0">
+                          <Trash2 size={14} />
+                        </button>
                       </div>
-                      <button onClick={async () => {
-                        if (!confirm(`Delete ${t.name}?`)) return
-                        await $del('table', t.id)
-                        setTables(p => p.filter(x => x.id !== t.id))
-                        setGuests(p => p.map(g => g.tableId === t.id ? { ...g, tableId: null } : g))
-                      }} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all p-1 shrink-0">
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  )
-                })}
-                {tables.length === 0 && <p className="text-xs text-[var(--body)]">No tables yet</p>}
+                    )
+                  })}
+                  {tables.length === 0 && <p className="text-xs text-[var(--body)] px-1 pt-1">No tables yet</p>}
+                </div>
               </div>
-              <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] p-5 flex-1 overflow-y-auto">
-                <p className="text-xs font-semibold text-[#5a7057] uppercase tracking-wider mb-3">Unassigned ({unassigned.length})</p>
-                {unassigned.length === 0
-                  ? <p className="text-xs text-[var(--body)]">Everyone seated </p>
-                  : unassigned.map(g => (
-                    <div key={g.id} className="flex items-center gap-2 py-1.5 border-b border-[#1a2419] last:border-0">
-                      <div className="w-5 h-5 rounded-full bg-[#1e3a1e] flex items-center justify-center text-[10px] font-semibold text-[var(--sage)] shrink-0">{g.name[0]}</div>
-                      <span className="text-xs text-[#a8c4a4] truncate">{g.name}</span>
-                    </div>
-                  ))}
+
+              {/* Unassigned panel */}
+              <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] flex-1 overflow-hidden flex flex-col">
+                <div className="px-5 pt-5 pb-3 border-b border-[#1a2419] shrink-0">
+                  <p className="text-xs font-semibold text-[#5a7057] uppercase tracking-wider">Unassigned ({unassigned.length})</p>
+                </div>
+                <div className="overflow-y-auto flex-1 px-3 py-3">
+                  {unassigned.length === 0
+                    ? <p className="text-xs text-[var(--body)] px-1 pt-1">Everyone seated 🎉</p>
+                    : unassigned.map(g => (
+                      <div key={g.id} className="flex items-center gap-2 py-1.5 border-b border-[#1a2419] last:border-0 px-1">
+                        <div className="w-5 h-5 rounded-full bg-[#1e3a1e] flex items-center justify-center text-[10px] font-semibold text-[var(--sage)] shrink-0">{g.name[0]}</div>
+                        <span className="text-xs text-[#a8c4a4] truncate min-w-0">{g.name}</span>
+                      </div>
+                    ))}
+                </div>
               </div>
             </div>
 

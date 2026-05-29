@@ -44,12 +44,15 @@ export default function AttirePage() {
         ? <div className="flex justify-center py-16"><Loader2 className="animate-spin text-[var(--body)]" size={26} /></div>
         : (
           <div className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-x-auto">
-            <table className="w-full text-sm min-w-[560px]">
+            <table className="w-full text-sm" style={{ minWidth: 620 }}>
               <thead>
                 <tr className="border-b border-black/20 bg-black/20 text-left text-xs text-[var(--subheader)] uppercase tracking-wider font-bold">
-                  {['Person', 'Item', 'Shop', 'Status', 'Notes', ''].map(h => (
-                    <th key={h} className="px-5 py-3 font-medium">{h}</th>
-                  ))}
+                  <th className="px-6 py-3 font-medium w-32">Person</th>
+                  <th className="px-6 py-3 font-medium">Item</th>
+                  <th className="px-6 py-3 font-medium w-36">Shop</th>
+                  <th className="px-6 py-3 font-medium w-36">Status</th>
+                  <th className="px-6 py-3 font-medium">Notes</th>
+                  <th className="px-6 py-3 font-medium w-10"></th>
                 </tr>
               </thead>
               <tbody>
@@ -57,25 +60,25 @@ export default function AttirePage() {
                   ? <tr><td colSpan={6} className="text-center py-10 text-[var(--body)]">No attire items yet</td></tr>
                   : items.map(i => (
                     <tr key={i.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#1a2419] group">
-                      <td className="px-5 py-3 text-sm font-medium text-[#a8c4a4]">{i.person}</td>
-                      <td className="px-5 py-3 font-medium text-[#e8f0e6]">{i.item}</td>
-                      <td className="px-5 py-3">
+                      <td className="px-6 py-4 text-sm font-medium text-[#a8c4a4] whitespace-nowrap">{i.person}</td>
+                      <td className="px-6 py-4 font-medium text-[#e8f0e6]">{i.item}</td>
+                      <td className="px-6 py-4">
                         <input value={i.shop} onChange={e => upd(i.id, 'shop', e.target.value)}
                           className="w-full bg-transparent border-0 focus:outline-none text-sm"
                           style={{ color: 'var(--body)' }} placeholder="Add shop" />
                       </td>
-                      <td className="px-5 py-3">
+                      <td className="px-6 py-4">
                         <select value={i.status} onChange={e => upd(i.id, 'status', e.target.value)}
                           className={`text-xs px-2.5 py-1 rounded-full border-0 font-medium cursor-pointer focus:outline-none ${i.status === 'Ready' || i.status === 'Picked up' ? 'bg-emerald-950 text-emerald-400' : 'bg-amber-950 text-amber-400'}`}>
                           {STATUSES.map(s => <option key={s}>{s}</option>)}
                         </select>
                       </td>
-                      <td className="px-5 py-3">
+                      <td className="px-6 py-4">
                         <input value={i.notes} onChange={e => upd(i.id, 'notes', e.target.value)}
                           className="w-full bg-transparent border-0 focus:outline-none text-sm"
                           style={{ color: 'var(--body)' }} placeholder="Notes" />
                       </td>
-                      <td className="px-5 py-3">
+                      <td className="px-6 py-4">
                         <button onClick={() => del(i.id)} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
                           <Trash2 size={15} />
                         </button>

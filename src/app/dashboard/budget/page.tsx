@@ -86,10 +86,12 @@ export default function BudgetPage() {
             <div key={c.id} className="h-full transition-all" style={{ width: `${(c.budgeted / total) * 100}%`, background: c.color }} />
           ))}
         </div>
-        <div className="flex flex-wrap gap-4 mt-3">
+        {/* Legend — wraps naturally, each item has breathing room */}
+        <div className="flex flex-wrap gap-x-5 gap-y-2 mt-4">
           {cats.map(c => (
-            <span key={c.id} className="flex items-center gap-1.5 text-xs text-[var(--body)]">
-              <span className="w-2.5 h-2.5 rounded-full" style={{ background: c.color }} />{c.name}
+            <span key={c.id} className="flex items-center gap-2 text-xs text-[var(--body)] min-w-0">
+              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: c.color }} />
+              <span className="truncate max-w-[120px]">{c.name}</span>
             </span>
           ))}
         </div>
@@ -118,8 +120,8 @@ export default function BudgetPage() {
                       <tr key={c.id} className="border-b border-[#1a2419] last:border-0 hover:bg-[#1a2419] group">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full" style={{ background: c.color }} />
-                            <span className="font-medium text-[#e8f0e6]">{c.name}</span>
+                            <div className="w-3 h-3 rounded-full shrink-0" style={{ background: c.color }} />
+                            <span className="font-medium text-[#e8f0e6] truncate">{c.name}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -144,7 +146,7 @@ export default function BudgetPage() {
                             <div className="flex-1 h-1.5 bg-[#1f2b1e] rounded-full overflow-hidden">
                               <div className="h-full rounded-full" style={{ width: `${pct}%`, background: c.color }} />
                             </div>
-                            <span className="text-xs text-[#5a7057] w-8 text-right">{pct}%</span>
+                            <span className="text-xs text-[#5a7057] w-8 text-right shrink-0">{pct}%</span>
                           </div>
                         </td>
                         <td className="px-6 py-4">

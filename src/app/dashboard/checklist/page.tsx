@@ -19,7 +19,6 @@ export default function ChecklistPage() {
     await $patch('checklist-item', { id: item.id, completed: !item.completed })
   }
 
-  // Group by section preserving order
   const sections = Array.from(new Set(items.map(i => i.section)))
   const done     = items.filter(i => i.completed).length
 
@@ -43,11 +42,11 @@ export default function ChecklistPage() {
               const sectionDone  = sectionItems.filter(i => i.completed).length
               return (
                 <div key={section} className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
-                  <div className="flex justify-between px-6 py-3 border-b border-[#202e1f]">
+                  <div className="flex justify-between items-center px-6 py-3 border-b border-[#202e1f]">
                     <p className="text-sm font-medium text-[var(--title)]">{section}</p>
-                    <span className="text-xs text-[var(--body)]">{sectionDone}/{sectionItems.length}</span>
+                    <span className="text-xs text-[var(--body)] shrink-0 ml-4">{sectionDone}/{sectionItems.length}</span>
                   </div>
-                  <div className="p-2">
+                  <div className="p-3">
                     {sectionItems.map(item => (
                       <button
                         key={item.id}
@@ -57,9 +56,10 @@ export default function ChecklistPage() {
                         <div className={`w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${item.completed ? 'border-[var(--sage)] bg-[var(--accent)]' : 'border-[#5a7057]'}`}>
                           {item.completed && <Check size={11} className="text-white" />}
                         </div>
-                        <span className={`text-sm ${item.completed ? 'line-through text-[#5a7057]' : 'text-[#e8f0e6]'}`}>{item.item}</span>
+                        {/* Text must not overflow — min-w-0 + truncate on the span */}
+                        <span className={`text-sm flex-1 min-w-0 truncate pr-2 ${item.completed ? 'line-through text-[#5a7057]' : 'text-[#e8f0e6]'}`}>{item.item}</span>
                         {item.assignedTo !== 'Both' && (
-                          <span className="ml-auto text-xs text-[#3a5038] shrink-0">{item.assignedTo}</span>
+                          <span className="text-xs text-[#3a5038] shrink-0 pl-2">{item.assignedTo}</span>
                         )}
                       </button>
                     ))}

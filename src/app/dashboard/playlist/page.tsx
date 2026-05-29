@@ -51,43 +51,76 @@ export default function PlaylistPage() {
           const [bg, color]    = COLORS[sec] || ['#f5f5f4', '#78716c']
           return (
             <div key={sec} className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
+              {/* Section header */}
               <div className="flex items-center justify-between px-6 py-3 border-b border-[#202e1f]" style={{ background: bg }}>
-                <div className="flex items-center gap-2">
-                  <Music size={16} style={{ color }} />
-                  <h3 className="font-medium text-sm" style={{ color }}>{label}</h3>
-                  <span className="text-xs opacity-60" style={{ color }}>({ss.length})</span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <Music size={16} style={{ color, flexShrink: 0 }} />
+                  <h3 className="font-medium text-sm truncate" style={{ color }}>{label}</h3>
+                  <span className="text-xs opacity-60 shrink-0" style={{ color }}>({ss.length})</span>
                 </div>
-                <button onClick={() => setAdding(adding === sec ? null : sec)}
-                  className="text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1"
-                  style={{ background: color + '22', color }}>
+                <button
+                  onClick={() => setAdding(adding === sec ? null : sec)}
+                  className="text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1 shrink-0 ml-4"
+                  style={{ background: color + '22', color }}
+                >
                   <Plus size={12} />Add
                 </button>
               </div>
+
               <div className="p-2">
+                {/* Inline add row */}
                 {adding === sec && (
-                  <div className="flex gap-2 p-2 bg-black/10 rounded-xl mb-2">
-                    <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} onKeyDown={e => e.key === 'Enter' && add(sec)}
-                      className="flex-1 px-2 py-1.5 rounded-lg border border-[#2a3829] text-sm focus:outline-none focus:border-[var(--sage)] bg-[var(--bg3)] text-[var(--title)]"
-                      placeholder="Song title" autoFocus />
-                    <input value={form.artist} onChange={e => setForm(f => ({ ...f, artist: e.target.value }))}
-                      className="w-32 px-2 py-1.5 rounded-lg border border-[#2a3829] text-sm focus:outline-none focus:border-[var(--sage)] bg-[var(--bg3)] text-[var(--title)]"
-                      placeholder="Artist" />
-                    <input value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))}
-                      className="w-24 px-2 py-1.5 rounded-lg border border-[#2a3829] text-sm focus:outline-none focus:border-[var(--sage)] bg-[var(--bg3)] text-[var(--title)]"
-                      placeholder="Note" />
-                    <button onClick={() => add(sec)} className="px-3 py-1.5 rounded-lg text-white text-sm font-medium" style={{ background: 'var(--accent)' }}>Add</button>
-                    <button onClick={() => setAdding(null)} className="text-[var(--body)]"><X size={16} /></button>
+                  <div className="flex gap-2 p-2 bg-black/10 rounded-xl mb-2 flex-wrap">
+                    <input
+                      value={form.title}
+                      onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                      onKeyDown={e => e.key === 'Enter' && add(sec)}
+                      className="flex-1 min-w-[120px] px-3 py-1.5 rounded-lg border border-[#2a3829] text-sm focus:outline-none focus:border-[var(--sage)] bg-[var(--bg3)] text-[var(--title)]"
+                      placeholder="Song title"
+                      autoFocus
+                    />
+                    <input
+                      value={form.artist}
+                      onChange={e => setForm(f => ({ ...f, artist: e.target.value }))}
+                      className="w-28 px-3 py-1.5 rounded-lg border border-[#2a3829] text-sm focus:outline-none focus:border-[var(--sage)] bg-[var(--bg3)] text-[var(--title)]"
+                      placeholder="Artist"
+                    />
+                    <input
+                      value={form.note}
+                      onChange={e => setForm(f => ({ ...f, note: e.target.value }))}
+                      className="w-24 px-3 py-1.5 rounded-lg border border-[#2a3829] text-sm focus:outline-none focus:border-[var(--sage)] bg-[var(--bg3)] text-[var(--title)]"
+                      placeholder="Note"
+                    />
+                    <button
+                      onClick={() => add(sec)}
+                      className="px-3 py-1.5 rounded-lg text-white text-sm font-medium shrink-0"
+                      style={{ background: 'var(--accent)' }}
+                    >
+                      Add
+                    </button>
+                    <button onClick={() => setAdding(null)} className="text-[var(--body)] shrink-0">
+                      <X size={16} />
+                    </button>
                   </div>
                 )}
+
+                {/* Song list */}
                 {ss.length === 0 && adding !== sec
-                  ? <p className="text-xs text-[#3a5038] px-4 py-2">No songs yet</p>
+                  ? <p className="text-xs text-[#3a5038] px-5 py-3">No songs yet</p>
                   : ss.map(s => (
-                    <div key={s.id} className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-black/10 group">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-[#e8f0e6]">{s.title}</p>
-                        <p className="text-xs text-[var(--body)]">{s.artist}{s.note ? `  ${s.note}` : ''}</p>
+                    <div key={s.id} className="flex items-center gap-3 px-5 py-3 rounded-xl hover:bg-black/10 group">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-[#e8f0e6] truncate">{s.title}</p>
+                        <p className="text-xs text-[var(--body)] truncate">
+                          {s.artist}{s.note ? ` · ${s.note}` : ''}
+                        </p>
                       </div>
-                      <button onClick={() => del(s.id)} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={15} /></button>
+                      <button
+                        onClick={() => del(s.id)}
+                        className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all shrink-0"
+                      >
+                        <Trash2 size={15} />
+                      </button>
                     </div>
                   ))}
               </div>

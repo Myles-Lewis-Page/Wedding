@@ -6,7 +6,7 @@ import { $get, $post, $patch, $del } from '@/lib/utils'
 
 interface Shot { id: string; group: string; desc: string; mustHave: boolean; done: boolean }
 
-const GROUPS = ['Couples','Ceremony','Family  Bride','Family  Groom','Wedding party','Details','Getting ready','Reception']
+const GROUPS = ['Couples','Ceremony','Family — Bride','Family — Groom','Wedding party','Details','Getting ready','Reception']
 
 export default function PhotoshootPage() {
   const [shots, setShots]     = useState<Shot[]>([])
@@ -48,25 +48,35 @@ export default function PhotoshootPage() {
         : (
           <div className="space-y-4">
             {grouped.length === 0
-              ? <div className="text-center py-16 text-[var(--body)]">No shots yet  add must-have moments for your photographer</div>
+              ? <div className="text-center py-16 text-[var(--body)]">No shots yet — add must-have moments for your photographer</div>
               : grouped.map(({ g, shots: gs }) => (
                 <div key={g} className="rounded-2xl border border-[#2a3829] bg-[var(--bg3,#1a2419)] overflow-hidden">
-                  <div className="flex justify-between px-6 py-3 border-b border-[#202e1f]">
+                  <div className="flex justify-between items-center px-6 py-3 border-b border-[#202e1f]">
                     <p className="text-sm font-medium text-[var(--title)]">{g}</p>
-                    <span className="text-xs text-[var(--body)]">{gs.filter(s => s.done).length}/{gs.length}</span>
+                    <span className="text-xs text-[var(--body)] shrink-0 ml-4">{gs.filter(s => s.done).length}/{gs.length}</span>
                   </div>
-                  <div className="p-2">
+                  <div className="p-3">
                     {gs.map(shot => (
-                      <div key={shot.id} className={`flex items-center gap-3 px-4 py-3 rounded-xl group hover:bg-black/10 ${shot.done ? 'opacity-60' : ''}`}>
+                      <div key={shot.id} className={`flex items-center gap-3 px-5 py-3 rounded-xl group hover:bg-black/10 ${shot.done ? 'opacity-60' : ''}`}>
                         <button
                           onClick={() => toggle(shot)}
                           className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${shot.done ? 'border-[var(--sage)] bg-[var(--accent)]' : 'border-[#5a7057]'}`}
                         >
                           {shot.done && <Check size={11} className="text-white" />}
                         </button>
-                        <span className={`text-sm flex-1 ${shot.done ? 'line-through text-[#5a7057]' : 'text-[#e8f0e6]'}`}>{shot.desc}</span>
-                        {shot.mustHave && <span className="text-xs px-2 py-0.5 bg-[#1e3a1e] text-[var(--sage)] rounded-full shrink-0">Must have</span>}
-                        <button onClick={() => del(shot.id)} className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all shrink-0"><Trash2 size={15} /></button>
+                        {/* desc takes remaining space, truncates gracefully */}
+                        <span className={`text-sm flex-1 min-w-0 truncate ${shot.done ? 'line-through text-[#5a7057]' : 'text-[#e8f0e6]'}`}>{shot.desc}</span>
+                        {shot.mustHave && (
+                          <span className="text-xs px-2.5 py-0.5 bg-[#1e3a1e] text-[var(--sage)] rounded-full shrink-0 whitespace-nowrap ml-2">
+                            Must have
+                          </span>
+                        )}
+                        <button
+                          onClick={() => del(shot.id)}
+                          className="text-[#2a3828] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all shrink-0 ml-1"
+                        >
+                          <Trash2 size={15} />
+                        </button>
                       </div>
                     ))}
                   </div>
