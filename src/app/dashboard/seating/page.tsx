@@ -9,7 +9,56 @@ interface Guest        { id: string; name: string; rsvpStatus: string; tableId: 
 
 const COLORS  = { round: '#E1F5EE', rectangular: '#E6F1FB', oval: '#FAEEDA' }
 const BORDERS = { round: 'var(--sage)', rectangular: '#378ADD', oval: '#EF9F27' }
-const DIMS    = { round: { w: 72, h: 72, r: 36 }, rectangular: { w: 100, h: 55, r: 8 }, oval: { w: 108, h: 62, r: 40 } }
+const DIMS    = { round: { w: 90, h: 90, r: 45 }, rectangular: { w: 120, h: 70, r: 8 }, oval: { w: 130, h: 76, r: 50 } }
+
+/** Place guest name labels around a table shape */
+function TableGuestLabels({ table, guests }: { table: SeatingTable; guests: Guest[] }) {
+  const d = DIMS[table.shape as keyof typeof DIMS] || DIMS.round
+  const cx = d.w / 2
+  const cy = d.h / 2
+  const count = guests.length
+
+  if (count === 0) return null
+
+  return (
+    <>
+      {guests.map((g, i) => {
+        const angle = (i / count) * 2 * Math.PI - Math.PI / 2
+        // Offset radius outside the table shape
+        const rx = table.shape === 'round' ? cx + 32 : (table.shape === 'rectangular' ? cx + 28 : cx + 30)
+        const ry = table.shape === 'round' ? cy + 32 : (table.shape === 'rectangular' ? cy + 24 : cy + 26)
+        const x = cx + rx * Math.cos(angle)
+        const y = cy + ry * Math.sin(angle)
+        const firstName = g.name.split(' ')[0]
+        return (
+          <div
+            key={g.id}
+            style={{
+              position: 'absolute',
+              left: x,
+              top: y,
+              transform: 'translate(-50%, -50%)',
+              fontSize: 9,
+              fontWeight: 600,
+              color: '#1a2e1a',
+              background: 'rgba(255,255,255,0.85)',
+              borderRadius: 4,
+              padding: '1px 4px',
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+              maxWidth: 52,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              lineHeight: 1.4,
+            }}
+          >
+            {firstName}
+          </div>
+        )
+      })}
+    </>
+  )
+}
 
 export default function SeatingPage() {
   const [tables, setTables]       = useState<SeatingTable[]>([])
@@ -63,7 +112,12 @@ export default function SeatingPage() {
   const assignGuest = async (guestId: string, tableId: string | null) => {
     await $patch('guest', { id: guestId, tableId: tableId || null })
     setGuests(p => p.map(g => g.id === guestId ? { ...g, tableId: tableId || null } : g))
-    setAssign(null)
+    // ← do NOT close the modal; let user keep adding
+  }
+
+  const removeGuest = async (guestId: string) => {
+    await $patch('guest', { id: guestId, tableId: null })
+    setGuests(p => p.map(g => g.id === guestId ? { ...g, tableId: null } : g))
   }
 
   const unassigned = guests.filter(g => g.rsvpStatus === 'attending' && !g.tableId)
@@ -135,14 +189,22 @@ export default function SeatingPage() {
               {tables.length === 0 && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3a5038', fontSize: 15 }}>Add tables to build your floor plan</div>}
               {tables.map(t => {
                 const d = DIMS[t.shape as keyof typeof DIMS] || DIMS.round
+                const tableGuests = guests.filter(g => g.tableId === t.id)
                 return (
                   <div key={t.id}
-                    style={{ position: 'absolute', left: t.x, top: t.y, width: d.w, height: d.h, background: t.color, borderRadius: d.r, border: `2.5px solid ${BORDERS[t.shape as keyof typeof BORDERS] || '#888'}`, cursor: 'grab', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', userSelect: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}
-                    onMouseDown={e => onMouseDown(e, t.id, t.x, t.y)}
-                    onClick={() => setAssign(t.id)}
+                    style={{ position: 'absolute', left: t.x, top: t.y, width: d.w, height: d.h }}
                   >
-                    <p style={{ fontSize: 12, fontWeight: 700, color: '#1a2e1a', textAlign: 'center', padding: '0 6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: d.w - 10, lineHeight: 1.2 }}>{t.name}</p>
-                    <p style={{ fontSize: 11, color: '#2a4428', marginTop: 2, fontWeight: 500 }}>{guests.filter(g => g.tableId === t.id).length}/{t.seats}</p>
+                    {/* Clickable/draggable table shape */}
+                    <div
+                      style={{ position: 'absolute', inset: 0, background: t.color, borderRadius: d.r, border: `2.5px solid ${BORDERS[t.shape as keyof typeof BORDERS] || '#888'}`, cursor: 'grab', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', userSelect: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}
+                      onMouseDown={e => onMouseDown(e, t.id, t.x, t.y)}
+                      onClick={() => setAssign(t.id)}
+                    >
+                      <p style={{ fontSize: 11, fontWeight: 700, color: '#1a2e1a', textAlign: 'center', padding: '0 6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: d.w - 10, lineHeight: 1.2 }}>{t.name}</p>
+                      <p style={{ fontSize: 10, color: '#2a4428', marginTop: 1, fontWeight: 500 }}>{tableGuests.length}/{t.seats}</p>
+                    </div>
+                    {/* Guest name labels around the table */}
+                    <TableGuestLabels table={t} guests={tableGuests} />
                   </div>
                 )
               })}
@@ -173,29 +235,46 @@ export default function SeatingPage() {
         </Modal>
       )}
 
-      {assignTarget && (
-        <Modal title={tables.find(t => t.id === assignTarget)?.name || 'Table'} onClose={() => setAssign(null)}>
-          <div className="space-y-1">
-            {guests.filter(g => g.tableId === assignTarget).map(g => (
-              <div key={g.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-black/10">
-                <span className="text-sm text-[var(--title)]">{g.name}</span>
-                <button onClick={() => assignGuest(g.id, '')} className="text-xs text-red-400 hover:text-red-300">Remove</button>
+      {assignTarget && (() => {
+        const table = tables.find(t => t.id === assignTarget)
+        const seated = guests.filter(g => g.tableId === assignTarget)
+        const available = guests.filter(g => g.rsvpStatus === 'attending' && !g.tableId)
+        return (
+          <Modal title={table?.name || 'Table'} onClose={() => setAssign(null)}>
+            {/* Currently seated */}
+            {seated.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-[#5a7057] uppercase tracking-wider mb-2">Seated ({seated.length}/{table?.seats})</p>
+                <div className="space-y-1">
+                  {seated.map(g => (
+                    <div key={g.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-black/10">
+                      <span className="text-sm text-[var(--title)]">{g.name}</span>
+                      <button onClick={() => removeGuest(g.id)} className="text-xs text-red-400 hover:text-red-300">Remove</button>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-            {unassigned.length > 0 && (
-              <>
-                <p className="text-xs font-semibold text-[#5a7057] uppercase tracking-wider pt-2 pb-1">Add guest</p>
-                {unassigned.map(g => (
-                  <div key={g.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-[#1e3a1e] cursor-pointer" onClick={() => assignGuest(g.id, assignTarget)}>
-                    <span className="text-sm text-[var(--title)]">{g.name}</span>
-                    <Plus size={15} className="text-[var(--sage)]" />
-                  </div>
-                ))}
-              </>
             )}
-          </div>
-        </Modal>
-      )}
+            {/* Add guests — stays open */}
+            {available.length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-[#5a7057] uppercase tracking-wider mb-2 pt-2">Add guest</p>
+                <div className="max-h-64 overflow-y-auto space-y-1">
+                  {available.map(g => (
+                    <div key={g.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-[#1e3a1e] cursor-pointer" onClick={() => assignGuest(g.id, assignTarget)}>
+                      <span className="text-sm text-[var(--title)]">{g.name}</span>
+                      <Plus size={15} className="text-[var(--sage)]" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {seated.length === 0 && available.length === 0 && (
+              <p className="text-sm text-[var(--body)] text-center py-4">No attending guests to assign</p>
+            )}
+          </Modal>
+        )
+      })()}
     </div>
   )
 }

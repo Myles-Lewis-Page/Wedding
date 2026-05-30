@@ -32,7 +32,7 @@ const DEF: S = {
   confirmedMessage: "We can't wait to celebrate with you!",
   declinedMessage: "Thank you for letting us know. We'll be thinking of you!",
   contactEmail: '',
-  ourStory: "We didn't expect our story to begin the way it did, but from the very first moment something just felt right.\n\nWhat started with simple conversations quickly turned into something deeper, and little by little we realised we had found someone truly special.\n\nSince then, we've shared so many memories  the quiet moments, the big laughs, the small adventures that somehow become the ones you cherish most.",
+  ourStory: "We didn't expect our story to begin the way it did, but from the very first moment something just felt right.\n\nWhat started with simple conversations quickly turned into something deeper, and little by little we realised we had found someone truly special.\n\nSince then, we've shared so many memories — the quiet moments, the big laughs, the small adventures that somehow become the ones you cherish most.",
   photo1: '', photo2: '', photo3: '',
   dressCode: 'Garden Formal',
   dressCodeNote: 'We would love for you to celebrate with us in attire that feels elegant and true to your style.',
@@ -41,32 +41,37 @@ const DEF: S = {
   titleColor: '#ffffff', bodyColor: '#9ca3af',
 }
 
-// Timeline icon mapping - using unicode escapes so file stays ASCII
+// Timeline icon mapping
 function timelineIcon(title: string): string {
   const t = title.toLowerCase()
-  if (t.includes('arrive') || t.includes('guest'))                        return '\uD83C\uDF3F' // leaf
-  if (t.includes('ceremony') || t.includes('processional'))               return '\uD83D\uDC8D' // ring
-  if (t.includes('first kiss') || t.includes('vow'))                      return '\uD83D\uDC8B' // kiss
-  if (t.includes('cocktail'))                                              return '\uD83E\uDD42' // champagne
-  if (t.includes('reception') || t.includes('opens'))                     return '\u2728'        // sparkles
-  if (t.includes('first dance') || t.includes('dance'))                   return '\uD83D\uDC83' // dancer
-  if (t.includes('toast') || t.includes('speech'))                        return '\uD83E\uDD42' // champagne
-  if (t.includes('dinner') || t.includes('meal') || t.includes('service')) return '\uD83C\uDF7D' // plate
-  if (t.includes('cake'))                                                  return '\uD83C\uDF82' // cake
-  if (t.includes('send') || t.includes('exit') || t.includes('last'))     return '\uD83C\uDF87' // fireworks
-  if (t.includes('photo') || t.includes('portrait'))                      return '\uD83D\uDCF8' // camera
-  if (t.includes('music') || t.includes('dj') || t.includes('band'))      return '\uD83C\uDFB5' // music
-  return '\uD83D\uDC9A'                                                                          // green heart
+  if (t.includes('arrive') || t.includes('guest'))                        return '\uD83C\uDF3F'
+  if (t.includes('ceremony') || t.includes('processional'))               return '\uD83D\uDC8D'
+  if (t.includes('first kiss') || t.includes('vow'))                      return '\uD83D\uDC8B'
+  if (t.includes('cocktail'))                                              return '\uD83E\uDD42'
+  if (t.includes('reception') || t.includes('opens'))                     return '\u2728'
+  if (t.includes('first dance') || t.includes('dance'))                   return '\uD83D\uDC83'
+  if (t.includes('toast') || t.includes('speech'))                        return '\uD83E\uDD42'
+  if (t.includes('dinner') || t.includes('meal') || t.includes('service')) return '\uD83C\uDF7D'
+  if (t.includes('cake'))                                                  return '\uD83C\uDF82'
+  if (t.includes('send') || t.includes('exit') || t.includes('last'))     return '\uD83C\uDF87'
+  if (t.includes('photo') || t.includes('portrait'))                      return '\uD83D\uDCF8'
+  if (t.includes('music') || t.includes('dj') || t.includes('band'))      return '\uD83C\uDFB5'
+  return '\uD83D\uDC9A'
 }
 
-//  Nav back button 
+// ── Nav back button — aligned with card width ──────────────────────────────
 function Nav({ onBack, col }: { onBack: () => void; col: string }) {
   return (
-    <button onClick={onBack} style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 6, fontSize: 15, color: col + '88', background: 'none', border: 'none', cursor: 'pointer', marginBottom: 8, fontFamily: 'Cormorant Garamond, Georgia, serif' }}
-      onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = col}
-      onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = col + '88'}>
-      <ArrowLeft size={15} /> Back
-    </button>
+    <div style={{ width: '100%', maxWidth: 400, marginBottom: 4 }}>
+      <button
+        onClick={onBack}
+        style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 15, color: col + '88', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Cormorant Garamond, Georgia, serif' }}
+        onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = col}
+        onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = col + '88'}
+      >
+        <ArrowLeft size={15} /> Back
+      </button>
+    </div>
   )
 }
 
@@ -90,7 +95,6 @@ export default function RSVPPage() {
   const [email, setEmail]           = useState('')
 
   useEffect(() => {
-    // Apply saved colors instantly from localStorage
     try {
       const lc = JSON.parse(localStorage.getItem('weddingColors') || '{}')
       if (lc.accent || lc.bg) setS(p => ({
@@ -108,7 +112,6 @@ export default function RSVPPage() {
       }))
     } catch {}
 
-    // Load all data in one call
     fetch('/api/db?t=public-data').then(r => r.json()).then(d => {
       const rs  = d.rsvpSettings
       const vs  = d.selectedVenue
@@ -116,7 +119,7 @@ export default function RSVPPage() {
       const ws  = d.weddingSettings
 
       if (rs && !rs.error) {
-        setS({ ...DEF, ...rs, heroImage: rs.hero_image || rs.heroImage || rs.heroImage || '' })
+        setS({ ...DEF, ...rs, heroImage: rs.hero_image || rs.heroImage || '' })
         localStorage.setItem('weddingColors', JSON.stringify({
           accent:   rs.accentColor    || '#4a7a44',
           sage:     rs.secondaryColor || '#8fb882',
@@ -132,20 +135,17 @@ export default function RSVPPage() {
       }
       if (vs) setVenue(vs)
       if (Array.isArray(tl)) setTimeline(tl)
-      // Merge wedding date from wedding_settings if available
       if (ws?.weddingDate) setS(p => ({ ...p, weddingDate: ws.weddingDate }))
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])
 
-  // Derived values
   const names   = s.brideName && s.groomName ? `${s.brideName} & ${s.groomName}` : s.brideName || s.groomName || 'Our Wedding'
   const wdFmt   = s.weddingDate || (typeof window !== 'undefined' ? localStorage.getItem('weddingDate') || '' : '')
   const dateStr = wdFmt ? new Date(wdFmt + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : 'Date TBD'
   const venueName = venue?.name    || 'Venue TBD'
   const venueAddr = venue?.address || ''
 
-  // Derive ceremony + reception from timeline
   const ceremonyItem  = timeline.find(t => t.title.toLowerCase().includes('ceremony'))
   const receptionItem = timeline.find(t => t.title.toLowerCase().includes('reception'))
   const timeStr = [
@@ -153,7 +153,6 @@ export default function RSVPPage() {
     receptionItem?.time && `Reception ${receptionItem.time}`,
   ].filter(Boolean).join('  ') || ''
 
-  // Colors
   const ac  = s.accentColor    || '#4a7a44'
   const sg  = s.secondaryColor || '#8fb882'
   const bg  = s.bgColor        || '#111714'
@@ -169,7 +168,6 @@ export default function RSVPPage() {
   const inp  = { width: '100%', padding: '13px 16px', borderRadius: 12, border: `1px solid ${cd}`, fontSize: 15, background: cd + '88', color: tc, outline: 'none', boxSizing: 'border-box' as const, fontFamily: font }
   const lbl  = { display: 'block' as const, fontSize: 13, fontWeight: 700 as const, color: sg, textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: 8, fontFamily: font }
 
-  // RSVP actions
   const openEnvelope = () => { setEnvOpen(true); setTimeout(() => setPage('invite'), 800) }
   const searchGuest  = async () => {
     if (!nameInput.trim()) return
@@ -213,7 +211,6 @@ export default function RSVPPage() {
     </div>
   )
 
-  // Nav buttons for invite card (4 now)
   const NAV_BTNS: { label: string; p: Page }[] = [
     { label: 'Details',   p: 'details'    },
     { label: 'Our Story', p: 'story'      },
@@ -245,7 +242,7 @@ export default function RSVPPage() {
       {page === 'invite' && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('envelope')} col={sg} />
-          <div style={{ ...mw, ...card, overflow: 'hidden', marginTop: 8 }}>
+          <div style={{ ...mw, ...card, overflow: 'hidden' }}>
             <div style={{ position: 'relative', height: 280, background: heroImg ? undefined : `linear-gradient(160deg, ${cd} 0%, ${bg} 100%)`, overflow: 'hidden' }}>
               {heroImg && <img src={heroImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%)' }} />
@@ -261,7 +258,6 @@ export default function RSVPPage() {
               {timeStr && <p style={{ fontSize: 13, color: sg + '88', fontFamily: font, marginBottom: 6 }}>{timeStr}</p>}
               <p style={{ fontSize: 14, color: sg + '88', fontFamily: font }}>{venueName}{venueAddr ? `  ${venueAddr}` : ''}</p>
             </div>
-            {/* 4 nav buttons in 2x2 grid */}
             <div style={{ padding: '0 20px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {NAV_BTNS.map(({ label, p }) => (
                 <button key={label} onClick={() => setPage(p)}
@@ -278,9 +274,9 @@ export default function RSVPPage() {
       {page === 'details' && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('invite')} col={sg} />
-          <div style={{ ...mw, marginTop: 8, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ ...mw, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ ...card, padding: '28px' }}>
-              <p style={{ fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: ac, marginBottom: 4, fontFamily: font }}>Date &</p>
+              <p style={{ fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: ac, marginBottom: 4, fontFamily: font }}>Date &amp;</p>
               <h2 style={{ fontFamily: font, fontSize: 30, fontWeight: 400, color: tc, marginBottom: 20 }}>Location</h2>
               {[
                 { label: 'Date',    val: dateStr },
@@ -294,8 +290,6 @@ export default function RSVPPage() {
                 </div>
               ))}
             </div>
-
-            {/* Dress code */}
             <div style={{ ...card, padding: '28px', textAlign: 'center' }}>
               <p style={{ fontFamily: font, fontStyle: 'italic', fontSize: 18, color: sg, marginBottom: 6 }}>Dress Code</p>
               <p style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: tc, marginBottom: 8, fontFamily: font }}>{s.dressCode}</p>
@@ -314,7 +308,6 @@ export default function RSVPPage() {
                 ))}
               </div>
             </div>
-
             <button onClick={() => setPage('rsvp-search')} style={{ width: '100%', padding: '14px', borderRadius: 14, background: ac, color: tc, border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: font }}>RSVP now</button>
           </div>
         </div>
@@ -324,7 +317,7 @@ export default function RSVPPage() {
       {page === 'story' && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('invite')} col={sg} />
-          <div style={{ ...mw, marginTop: 8, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ ...mw, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ ...card, padding: '28px', textAlign: 'center' }}>
               <p style={{ fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase', color: ac, marginBottom: 4, fontFamily: font }}>Our</p>
               <h2 style={{ fontFamily: font, fontSize: 40, fontWeight: 400, color: tc }}>Love Story</h2>
@@ -336,46 +329,22 @@ export default function RSVPPage() {
                 const chunk1 = paras.slice(0, third)
                 const chunk2 = paras.slice(third, third * 2)
                 const chunk3 = paras.slice(third * 2)
-
-                const pStyle: React.CSSProperties = {
-                  margin: '0 0 14px 0',
-                  fontSize: 15,
-                  fontStyle: 'italic',
-                  color: bc,
-                  lineHeight: 1.9,
-                  fontFamily: font,
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word',
-                }
-
+                const pStyle: React.CSSProperties = { margin: '0 0 14px 0', fontSize: 15, fontStyle: 'italic', color: bc, lineHeight: 1.9, fontFamily: font, wordBreak: 'break-word', overflowWrap: 'break-word' }
                 const polar = (src: string, rot: number, dir: 'left' | 'right') => (
-                  <div style={{
-                    float: dir,
-                    margin: dir === 'left' ? '4px 18px 14px 0' : '4px 0 14px 18px',
-                    background: '#fff',
-                    padding: 6,
-                    boxShadow: '0 8px 28px rgba(0,0,0,0.5)',
-                    transform: 'rotate(' + rot + 'deg)',
-                  }}>
+                  <div style={{ float: dir, margin: dir === 'left' ? '4px 18px 14px 0' : '4px 0 14px 18px', background: '#fff', padding: 6, boxShadow: '0 8px 28px rgba(0,0,0,0.5)', transform: 'rotate(' + rot + 'deg)' }}>
                     <img src={src} alt="" style={{ width: 130, height: 100, objectFit: 'cover', display: 'block' }} />
                   </div>
                 )
-
                 return (
                   <div>
-                    {/* Block 1: photo1 floats left, first third of text wraps right */}
                     <div style={{ overflow: 'hidden' }}>
                       {s.photo1 && polar(s.photo1, -2, 'left')}
                       {chunk1.map((p, i) => <p key={i} style={pStyle}>{p}</p>)}
                     </div>
-
-                    {/* Block 2: photo2 floats right, second third of text wraps left */}
                     <div style={{ overflow: 'hidden', marginTop: 4 }}>
                       {s.photo2 && polar(s.photo2, 1.5, 'right')}
                       {chunk2.map((p, i) => <p key={i} style={pStyle}>{p}</p>)}
                     </div>
-
-                    {/* Block 3: photo3 floats left, final third of text wraps right */}
                     <div style={{ overflow: 'hidden', marginTop: 4 }}>
                       {s.photo3 && polar(s.photo3, -1, 'left')}
                       {chunk3.map((p, i) => <p key={i} style={pStyle}>{p}</p>)}
@@ -393,7 +362,7 @@ export default function RSVPPage() {
       {page === 'night' && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('invite')} col={sg} />
-          <div style={{ ...mw, marginTop: 8, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ ...mw, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ ...card, padding: '28px', textAlign: 'center' }}>
               <p style={{ fontSize: 11, letterSpacing: '0.22em', textTransform: 'uppercase', color: ac, marginBottom: 4, fontFamily: font }}>An evening to</p>
               <h2 style={{ fontFamily: font, fontSize: 40, fontWeight: 400, color: tc }}>Remember</h2>
@@ -405,11 +374,9 @@ export default function RSVPPage() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                     {[...timeline].sort((a, b) => a.order - b.order).map((item, idx) => (
                       <div key={item.id} style={{ display: 'flex', gap: 16, alignItems: 'flex-start', paddingBottom: idx < timeline.length - 1 ? 24 : 0, position: 'relative' }}>
-                        {/* Vertical line */}
                         {idx < timeline.length - 1 && (
                           <div style={{ position: 'absolute', left: 20, top: 44, bottom: 0, width: 1, background: sg + '22' }} />
                         )}
-                        {/* Icon circle */}
                         <div style={{ width: 40, height: 40, borderRadius: '50%', background: ac + '22', border: `1px solid ${ac}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 20, zIndex: 1 }}>
                           {timelineIcon(item.title)}
                         </div>
@@ -431,7 +398,7 @@ export default function RSVPPage() {
       {page === 'rsvp-search' && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('invite')} col={sg} />
-          <div style={{ ...mw, ...card, padding: '32px', marginTop: 8 }}>
+          <div style={{ ...mw, ...card, padding: '32px' }}>
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
               <Heart size={28} fill={ac} style={{ color: ac }} />
               <h2 style={{ fontFamily: font, fontSize: 28, fontWeight: 400, color: tc, marginTop: 8, marginBottom: 6 }}>Find your invitation</h2>
@@ -451,7 +418,7 @@ export default function RSVPPage() {
       {page === 'rsvp-multiple' && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('rsvp-search')} col={sg} />
-          <div style={{ ...mw, ...card, padding: '28px', marginTop: 8 }}>
+          <div style={{ ...mw, ...card, padding: '28px' }}>
             <h2 style={{ fontFamily: font, fontSize: 24, fontWeight: 400, color: tc, marginBottom: 6 }}>Multiple guests found</h2>
             <p style={{ fontSize: 14, color: bc, marginBottom: 20, fontFamily: font }}>Please select your name:</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -470,8 +437,8 @@ export default function RSVPPage() {
       {page === 'rsvp-not-found' && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('rsvp-search')} col={sg} />
-          <div style={{ ...mw, ...card, padding: '32px', textAlign: 'center', marginTop: 8 }}>
-            <p style={{ fontSize: 32, marginBottom: 16 }}></p>
+          <div style={{ ...mw, ...card, padding: '32px', textAlign: 'center' }}>
+            <p style={{ fontSize: 32, marginBottom: 16 }}>💌</p>
             <h2 style={{ fontFamily: font, fontSize: 24, fontWeight: 400, color: tc, marginBottom: 8 }}>Name not found</h2>
             <p style={{ fontSize: 14, color: bc, lineHeight: 1.7, marginBottom: 20, fontFamily: font }}>
               We couldn&apos;t find your name. Try a different spelling{s.contactEmail ? `, or contact us at ${s.contactEmail}` : ''}.
@@ -488,7 +455,7 @@ export default function RSVPPage() {
       {page === 'rsvp-form' && guest && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('rsvp-search')} col={sg} />
-          <div style={{ ...mw, ...card, padding: '28px', marginTop: 8 }}>
+          <div style={{ ...mw, ...card, padding: '28px' }}>
             <h2 style={{ fontFamily: font, fontSize: 28, fontWeight: 400, color: tc, marginBottom: 4 }}>Hi, {guest.name.split(' ')[0]}!</h2>
             <p style={{ fontSize: 14, color: bc, marginBottom: 24, fontFamily: font }}>We can&apos;t wait to celebrate with you.</p>
             <RSVPForm attending={attending} setAttending={setAttending} dietary={dietary} setDietary={setDietary} plusOneName={plusOneName} setPlusOneName={setPlusOne} plusOneDietary={plusOneDietary} setPlusOneDietary={setPlusDiet} email={email} setEmail={setEmail} hasPlusOne={guest.has_plus_one} attendingLabel={s.attendingLabel} declineLabel={s.declineLabel} ac={ac} sg={sg} cd={cd} tc={tc} bc={bc} font={font} inp={inp} lbl={lbl} />
@@ -504,7 +471,7 @@ export default function RSVPPage() {
       {page === 'rsvp-details' && guest && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('invite')} col={sg} />
-          <div style={{ ...mw, ...card, padding: '28px', marginTop: 8 }}>
+          <div style={{ ...mw, ...card, padding: '28px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <h2 style={{ fontFamily: font, fontSize: 24, fontWeight: 400, color: tc }}>Your RSVP</h2>
               <button onClick={startEdit} style={{ fontSize: 13, color: sg, background: 'none', border: 'none', cursor: 'pointer', fontFamily: font }}>Edit</button>
@@ -512,7 +479,7 @@ export default function RSVPPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {[
                 { label: 'Name',     val: guest.name },
-                { label: 'Status',   val: guest.rsvp_status === 'attending' ? ' Attending' : ' Declined' },
+                { label: 'Status',   val: guest.rsvp_status === 'attending' ? '✓ Attending' : '✗ Declined' },
                 ...(guest.dietary        ? [{ label: 'Dietary',  val: guest.dietary        }] : []),
                 ...(guest.email          ? [{ label: 'Email',    val: guest.email          }] : []),
                 ...(guest.plus_one_name  ? [{ label: 'Plus one', val: guest.plus_one_name  }] : []),
@@ -523,9 +490,13 @@ export default function RSVPPage() {
                 </div>
               ))}
             </div>
-            <a href="/info" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 20, padding: '13px', borderRadius: 14, background: ac, color: tc, textDecoration: 'none', fontSize: 14, fontWeight: 600, fontFamily: font }}>
+            {/* "View wedding details" stays within the RSVP app */}
+            <button
+              onClick={() => setPage('details')}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 20, padding: '13px', borderRadius: 14, background: ac, color: tc, border: 'none', fontSize: 14, fontWeight: 600, fontFamily: font, cursor: 'pointer' }}
+            >
               View wedding details <ChevronRight size={15} />
-            </a>
+            </button>
           </div>
         </div>
       )}
@@ -534,7 +505,7 @@ export default function RSVPPage() {
       {page === 'rsvp-editing' && guest && (
         <div style={{ ...wrap }}>
           <Nav onBack={() => setPage('rsvp-details')} col={sg} />
-          <div style={{ ...mw, ...card, padding: '28px', marginTop: 8 }}>
+          <div style={{ ...mw, ...card, padding: '28px' }}>
             <h2 style={{ fontFamily: font, fontSize: 26, fontWeight: 400, color: tc, marginBottom: 20 }}>Update your RSVP</h2>
             <RSVPForm attending={attending} setAttending={setAttending} dietary={dietary} setDietary={setDietary} plusOneName={plusOneName} setPlusOneName={setPlusOne} plusOneDietary={plusOneDietary} setPlusOneDietary={setPlusDiet} email={email} setEmail={setEmail} hasPlusOne={guest.has_plus_one} attendingLabel={s.attendingLabel} declineLabel={s.declineLabel} ac={ac} sg={sg} cd={cd} tc={tc} bc={bc} font={font} inp={inp} lbl={lbl} />
             <button onClick={() => submit(true)} disabled={attending === null || submitting}
@@ -553,13 +524,21 @@ export default function RSVPPage() {
               {attending ? <Heart size={28} fill={ac} style={{ color: ac }} /> : <Check size={28} style={{ color: ac }} />}
             </div>
             <h2 style={{ fontFamily: font, fontSize: 36, fontWeight: 400, color: tc, marginBottom: 12 }}>
-              {attending ? "We'll see you there! " : "We'll miss you!"}
+              {attending ? "We'll see you there! 💚" : "We'll miss you!"}
             </h2>
             <p style={{ fontSize: 15, color: bc, lineHeight: 1.7, marginBottom: 28, fontFamily: font }}>
               {attending ? s.confirmedMessage : s.declinedMessage}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {attending && <a href="/info" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '13px', borderRadius: 14, background: ac, color: tc, textDecoration: 'none', fontSize: 14, fontWeight: 600, fontFamily: font }}>View wedding details <ChevronRight size={15} /></a>}
+              {/* "View wedding details" stays in the RSVP app on details page */}
+              {attending && (
+                <button
+                  onClick={() => setPage('details')}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '13px', borderRadius: 14, background: ac, color: tc, border: 'none', fontSize: 14, fontWeight: 600, fontFamily: font, cursor: 'pointer', width: '100%' }}
+                >
+                  View wedding details <ChevronRight size={15} />
+                </button>
+              )}
               <button onClick={() => setPage('rsvp-details')} style={{ padding: '13px', borderRadius: 14, background: 'transparent', color: sg, border: `1px solid ${cd}`, fontSize: 14, cursor: 'pointer', fontFamily: font }}>View my RSVP</button>
             </div>
           </div>
