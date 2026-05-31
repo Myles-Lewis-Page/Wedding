@@ -12,9 +12,9 @@ interface Guest {
 }
 
 const ROLE_ICONS: Record<string, string> = {
-  'Maid of Honor': '', 'Bridesmaid': '', 'Flower Girl': '',
-  'Junior Bridesmaid': '', 'Best Man': '', 'Groomsman': '',
-  'Usher': '', 'Ring Bearer': '', 'Officiant': '',
+  'Maid of Honor': '👑', 'Bridesmaid': '💐', 'Flower Girl': '🌸',
+  'Junior Bridesmaid': '🌷', 'Best Man': '⭐', 'Groomsman': '🤵',
+  'Usher': '🎩', 'Ring Bearer': '💍', 'Officiant': '📖',
 }
 
 const STATUS: Record<string, [string, string]> = {

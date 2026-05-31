@@ -7,8 +7,8 @@ import { $get, $patch } from '@/lib/utils'
 interface Guest { id: string; name: string; email: string | null; side: string; isInvitee: boolean; partyRole: string | null }
 
 const ROLE_ICONS: Record<string, string> = {
-  'Maid of Honor': '', 'Bridesmaid': '', 'Flower Girl': '', 'Junior Bridesmaid': '',
-  'Best Man': '', 'Groomsman': '', 'Usher': '', 'Ring Bearer': '', 'Officiant': '',
+  'Maid of Honor': '👑', 'Bridesmaid': '💐', 'Flower Girl': '🌸', 'Junior Bridesmaid': '🌷',
+  'Best Man': '⭐', 'Groomsman': '🤵', 'Usher': '🎩', 'Ring Bearer': '💍', 'Officiant': '📖',
 }
 const BRIDE_ROLES = ['Maid of Honor','Bridesmaid','Flower Girl','Junior Bridesmaid']
 const GROOM_ROLES = ['Best Man','Groomsman','Usher','Ring Bearer']
