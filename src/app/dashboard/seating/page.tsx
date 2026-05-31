@@ -24,7 +24,6 @@ function TableGuestLabels({ table, guests }: { table: SeatingTable; guests: Gues
     <>
       {guests.map((g, i) => {
         const angle = (i / count) * 2 * Math.PI - Math.PI / 2
-        // Offset radius outside the table shape
         const rx = table.shape === 'round' ? cx + 32 : (table.shape === 'rectangular' ? cx + 28 : cx + 30)
         const ry = table.shape === 'round' ? cy + 32 : (table.shape === 'rectangular' ? cy + 24 : cy + 26)
         const x = cx + rx * Math.cos(angle)
@@ -110,9 +109,16 @@ export default function SeatingPage() {
   }, [tables])
 
   const assignGuest = async (guestId: string, tableId: string | null) => {
+    // Capacity check
+    const table = tables.find(t => t.id === tableId)
+    const seatedCount = guests.filter(g => g.tableId === tableId).length
+    if (table && seatedCount >= table.seats) {
+      alert(`${table.name} is full (${table.seats}/${table.seats} seats)`)
+      return
+    }
     await $patch('guest', { id: guestId, tableId: tableId || null })
     setGuests(p => p.map(g => g.id === guestId ? { ...g, tableId: tableId || null } : g))
-    // ← do NOT close the modal; let user keep adding
+    // keep modal open so user can keep adding
   }
 
   const removeGuest = async (guestId: string) => {
@@ -144,11 +150,14 @@ export default function SeatingPage() {
                 <div className="overflow-y-auto flex-1 px-3 py-3">
                   {tables.map(t => {
                     const cnt = guests.filter(g => g.tableId === t.id).length
+                    const full = cnt >= t.seats
                     return (
                       <div key={t.id} className="flex items-center gap-1 py-2 border-b border-[#1a2419] last:border-0 group rounded-lg px-2 hover:bg-black/10">
                         <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setAssign(t.id)}>
                           <p className="text-sm font-medium text-[var(--title)] truncate">{t.name}</p>
-                          <p className="text-xs text-[#5a7057] capitalize">{t.shape} · {cnt}/{t.seats}</p>
+                          <p className={`text-xs capitalize ${full ? 'text-amber-400' : 'text-[#5a7057]'}`}>
+                            {t.shape} · {cnt}/{t.seats}{full ? ' · Full' : ''}
+                          </p>
                         </div>
                         <button onClick={async () => {
                           if (!confirm(`Delete ${t.name}?`)) return
@@ -190,20 +199,19 @@ export default function SeatingPage() {
               {tables.map(t => {
                 const d = DIMS[t.shape as keyof typeof DIMS] || DIMS.round
                 const tableGuests = guests.filter(g => g.tableId === t.id)
+                const full = tableGuests.length >= t.seats
                 return (
                   <div key={t.id}
                     style={{ position: 'absolute', left: t.x, top: t.y, width: d.w, height: d.h }}
                   >
-                    {/* Clickable/draggable table shape */}
                     <div
-                      style={{ position: 'absolute', inset: 0, background: t.color, borderRadius: d.r, border: `2.5px solid ${BORDERS[t.shape as keyof typeof BORDERS] || '#888'}`, cursor: 'grab', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', userSelect: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}
+                      style={{ position: 'absolute', inset: 0, background: full ? '#3a1a1a' : t.color, borderRadius: d.r, border: `2.5px solid ${full ? '#f87171' : BORDERS[t.shape as keyof typeof BORDERS] || '#888'}`, cursor: 'grab', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', userSelect: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}
                       onMouseDown={e => onMouseDown(e, t.id, t.x, t.y)}
                       onClick={() => setAssign(t.id)}
                     >
-                      <p style={{ fontSize: 11, fontWeight: 700, color: '#1a2e1a', textAlign: 'center', padding: '0 6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: d.w - 10, lineHeight: 1.2 }}>{t.name}</p>
-                      <p style={{ fontSize: 10, color: '#2a4428', marginTop: 1, fontWeight: 500 }}>{tableGuests.length}/{t.seats}</p>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: full ? '#f87171' : '#1a2e1a', textAlign: 'center', padding: '0 6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: d.w - 10, lineHeight: 1.2 }}>{t.name}</p>
+                      <p style={{ fontSize: 10, color: full ? '#f87171' : '#2a4428', marginTop: 1, fontWeight: 500 }}>{tableGuests.length}/{t.seats}</p>
                     </div>
-                    {/* Guest name labels around the table */}
                     <TableGuestLabels table={t} guests={tableGuests} />
                   </div>
                 )
@@ -239,12 +247,17 @@ export default function SeatingPage() {
         const table = tables.find(t => t.id === assignTarget)
         const seated = guests.filter(g => g.tableId === assignTarget)
         const available = guests.filter(g => g.rsvpStatus === 'attending' && !g.tableId)
+        const seatedCount = seated.length
+        const isFull = table ? seatedCount >= table.seats : false
+
         return (
           <Modal title={table?.name || 'Table'} onClose={() => setAssign(null)}>
             {/* Currently seated */}
             {seated.length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-[#5a7057] uppercase tracking-wider mb-2">Seated ({seated.length}/{table?.seats})</p>
+                <p className="text-xs font-semibold text-[#5a7057] uppercase tracking-wider mb-2">
+                  Seated ({seatedCount}/{table?.seats})
+                </p>
                 <div className="space-y-1">
                   {seated.map(g => (
                     <div key={g.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-black/10">
@@ -255,20 +268,35 @@ export default function SeatingPage() {
                 </div>
               </div>
             )}
-            {/* Add guests — stays open */}
+
+            {/* Full warning */}
+            {isFull && (
+              <p className="text-xs text-amber-400 bg-amber-950/40 border border-amber-900 rounded-lg px-3 py-2">
+                This table is full ({table?.seats}/{table?.seats} seats). Remove a guest or increase the seat count to add more.
+              </p>
+            )}
+
+            {/* Add guests */}
             {available.length > 0 && (
               <div>
                 <p className="text-xs font-semibold text-[#5a7057] uppercase tracking-wider mb-2 pt-2">Add guest</p>
                 <div className="max-h-64 overflow-y-auto space-y-1">
                   {available.map(g => (
-                    <div key={g.id} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-[#1e3a1e] cursor-pointer" onClick={() => assignGuest(g.id, assignTarget)}>
+                    <div
+                      key={g.id}
+                      className={`flex items-center justify-between py-1.5 px-2 rounded-lg transition-colors ${isFull ? 'opacity-40 cursor-not-allowed' : 'hover:bg-[#1e3a1e] cursor-pointer'}`}
+                      onClick={() => !isFull && assignGuest(g.id, assignTarget)}
+                    >
                       <span className="text-sm text-[var(--title)]">{g.name}</span>
-                      <Plus size={15} className="text-[var(--sage)]" />
+                      {isFull
+                        ? <span className="text-xs text-[#5a7057]">Full</span>
+                        : <Plus size={15} className="text-[var(--sage)]" />}
                     </div>
                   ))}
                 </div>
               </div>
             )}
+
             {seated.length === 0 && available.length === 0 && (
               <p className="text-sm text-[var(--body)] text-center py-4">No attending guests to assign</p>
             )}
